@@ -14,9 +14,6 @@
 #include "FreeRTOS.h"
 #include "flightmode.hpp"
 #include "semphr.h"
-#ifdef TESTING
-#include <gtest/gtest_prod.h>
-#endif
 
 namespace AM {
 
@@ -28,39 +25,23 @@ typedef struct {
 struct MotorGroup_t {
     MotorInstance_t *motors;
     uint8_t motorCount;
-}
+};
 
 class AttitudeManager {
    public:
-
     // Constants used for mapping values
     static constexpr float INPUT_MAX = 100;
     static constexpr float INPUT_MIN = -100;
 
-    static void setControlInputs(const AttitudeManagerInput& new_control_inputs);
-
-    static AttitudeManagerInput getControlInputs();
-
     AttitudeManager(Flightmode* controlAlgorithm,  MotorGroup_t rollMotors, MotorGroup_t pitchMotors, MotorGroup_t yawMotors, MotorGroup_t throttleMotors);
-
     ~AttitudeManager();
 
     void runControlLoopIteration();
 
    private:
-    #ifdef TESTING
-    FRIEND_TEST(AttitudeManager, MotorInitializationAndOutput); // Remove FRIEND_TEST when updating tests with setControlInputs
-    FRIEND_TEST(AttitudeManagerOutputToMotor, NoMotors);
-    FRIEND_TEST(AttitudeManagerOutputToMotor, MotorsOfSameAxis);
-    FRIEND_TEST(AttitudeManagerOutputToMotor, setOutputInRandomAxisOrder);
-    FRIEND_TEST(AttitudeManagerOutputToMotor, InvertedTest);
-    FRIEND_TEST(AttitudeManagerOutputToMotor, CombinedTest);
-    #endif
-
     AttitudeManager();
     void outputToMotor(ControlAxis_t axis, uint8_t percent);
 
-    static SemaphoreHandle_t control_inputs_mutex;
     static struct AttitudeManagerInput control_inputs;
 
     Flightmode *controlAlgorithm_;
@@ -68,7 +49,6 @@ class AttitudeManager {
     MotorGroup_t pitchMotors_;
     MotorGroup_t yawMotors_;
     MotorGroup_t throttleMotors_;
-
 };
 
 }  // namespace AM
