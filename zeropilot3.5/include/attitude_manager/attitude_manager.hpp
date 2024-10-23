@@ -14,6 +14,7 @@
 #include "FreeRTOS.h"
 #include "flightmode.hpp"
 #include "semphr.h"
+#include "queue.h"
 
 namespace AM {
 
@@ -49,6 +50,8 @@ class AttitudeManager {
     MotorGroup_t pitchMotors_;
     MotorGroup_t yawMotors_;
     MotorGroup_t throttleMotors_;
+
+    extern QueueHandle_t rcMotorControlQueue;
 };
 
 }  // namespace AM

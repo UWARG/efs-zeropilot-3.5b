@@ -15,6 +15,18 @@ AttitudeManagerInput AttitudeManager::control_inputs = {
     .throttle = 0.0f
 };
 
+AttitudeManagerInput AttitudeManager::getControlInputs() {
+    AttitudeManagerInput temp {};
+    RCMotorControlMessage_t rcMessage;
+    if (xQueueReceive(rcMotorControlQueue, &rcMessage, (TickType_t) portMAX_DELAY) == pdPASS) {
+        temp.roll = static_cast<uint8_t>(rcMessage.roll);
+        temp.pitch = static_cast<uint8_t>(rcMessage.pitch);
+        temp.yaw = static_cast<uint8_t>(rcMessage.yaw);
+        temp.throttle = static_cast<uint8_t>(rcMessage.throttle);
+    }
+    return temp;
+}
+
 AttitudeManager::AttitudeManager(Flightmode* controlAlgorithm, MotorGroup_t rollMotors, MotorGroup_t pitchMotors, MotorGroup_t yawMotors, MotorGroup_t throttleMotors) :
     controlAlgorithm_(controlAlgorithm),
     rollMotors_(rollMotors),
@@ -28,12 +40,15 @@ AttitudeManager::~AttitudeManager()
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
+    AttitudeManagerInput control_inputs = getControlInputs();
 
-    // Write "motor_outputs" from previous step to motors
-    outputToMotor(yaw, static_cast<uint8_t>(motor_outputs.yaw));
-    outputToMotor(pitch, static_cast<uint8_t>(motor_outputs.pitch));
-    outputToMotor(roll, static_cast<uint8_t>(motor_outputs.roll));
-    outputToMotor(throttle, static_cast<uint8_t>(motor_outputs.throttle));
+    if (control_inputs.roll == 0 && control_inputs.pitch == 0 && control_inputs.yaw == 0 && control_inputs.throttle == -1) {
+        // Do something
+    }
+    outputToMotor(yaw, control_inputs.yaw);
+    outputToMotor(pitch, motor_outputs.pitch);
+    outputToMotor(roll, motor_outputs.roll);
+    outputToMotor(throttle, motor_outputs.throttle);
 
 }
 
