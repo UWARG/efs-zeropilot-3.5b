@@ -18,10 +18,8 @@ class SystemManager {
         SBusIface *rc_driver_;
         QueueIface<AM::AttitudeManager::RCMotorControlMessage_t> *queue_driver_;
 
-        SBusIface::RCData_t lastRCData_;
-        int16_t unchangedCount_ = 0;
+        int16_t invalidRCCount_ = 0;
 
-        bool isRCDataChanged(const SBusIface::RCData_t &rcData) const;
         void sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData);
         void sendDisarmedToAttitudeManager();
 };

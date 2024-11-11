@@ -11,10 +11,6 @@ void SystemManager::SMUpdate() {
     // TODO: Implement this function
 }
 
-bool SystemManager::isRCDataChanged(const SBusIface::RCData_t &rcData) const {
-    // TODO: Implement this function
-}
-
 void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData) {
     // TODO: Implement this function
 }
