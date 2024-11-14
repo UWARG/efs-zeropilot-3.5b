@@ -1,11 +1,8 @@
-#ifndef ZPSW3_SM_HPP
-#define ZPSW3_SM_HPP
+#pragma once
 
 #include "queue_iface.hpp"
 #include "sbus_iface.hpp"
 #include "rc_motor_control.hpp"
-
-namespace SM {
 
 class SystemManager {
     public:
@@ -23,7 +20,3 @@ class SystemManager {
         void sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData);
         void sendDisarmedToAttitudeManager();
 };
-
-} // namespace SM
-
-#endif // ZPSW3_SM_HPP

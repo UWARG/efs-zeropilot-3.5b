@@ -1,5 +1,4 @@
-#ifndef ZP3_RC_MOTOR_CONTROL_HPP
-#define ZP3_RC_MOTOR_CONTROL_HPP
+#pragma once
 
 struct RCMotorControlMessage_t {
     float roll;
@@ -7,5 +6,3 @@ struct RCMotorControlMessage_t {
     float yaw;
     float throttle;
 };
-
-#endif // ZP3_RC_MOTOR_CONTROL_HPP
