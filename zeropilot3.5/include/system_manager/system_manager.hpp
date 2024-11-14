@@ -3,20 +3,20 @@
 
 #include "queue_iface.hpp"
 #include "sbus_iface.hpp"
-#include "attitude_manager.hpp"
+#include "rc_motor_control.hpp"
 
 namespace SM {
 
 class SystemManager {
     public:
-    SystemManager(SBusIface *rc_driver, QueueIface<AM::AttitudeManager::RCMotorControlMessage_t> *queue_driver);
+    SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver);
     ~SystemManager();
 
     void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
         SBusIface *rc_driver_;
-        QueueIface<AM::AttitudeManager::RCMotorControlMessage_t> *queue_driver_;
+        QueueIface<RCMotorControlMessage_t> *queue_driver_;
 
         int16_t invalidRCCount_ = 0;
 

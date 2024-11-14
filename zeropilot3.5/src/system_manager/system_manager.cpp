@@ -2,7 +2,7 @@
 
 namespace SM {
 
-SystemManager::SystemManager(SBusIface *rc_driver, QueueIface<AM::AttitudeManager::RCMotorControlMessage_t> *queue_driver)
+SystemManager::SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver)
     : rc_driver_(rc_driver), queue_driver_(queue_driver) {}
 
 SystemManager::~SystemManager() {}
