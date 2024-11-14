@@ -1,8 +1,8 @@
 #pragma once
 
-struct RCMotorControlMessage_t {
+typedef struct {
     float roll;
     float pitch;
     float yaw;
     float throttle;
-};
+} RCMotorControlMessage_t;
