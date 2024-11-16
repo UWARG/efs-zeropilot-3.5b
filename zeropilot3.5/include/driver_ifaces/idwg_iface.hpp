@@ -2,10 +2,10 @@
 
 #include <cstdint>
 
-class IndependentWatchdog{
+class IIndependentWatchdog{
     protected:
-        IndependentWatchdog() = default; //do we need this if we don't call it
+        IIndependentWatchdog() = default; //do we need this if we don't call it
     public:
-        virtual ~IndependentWatchdog() = default;
+        virtual ~IIndependentWatchdog() = default;
         virtual refreshWatchdog() = 0;
 }

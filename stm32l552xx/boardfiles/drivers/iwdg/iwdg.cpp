@@ -7,7 +7,7 @@
 #define PR_OFFSET		2
 #define MAX_TIMEOUT_MS		(((1 << RELOAD_LENGTH)*4*(1 << MAX_PR)*1000) / LSI_SPEED) // should be about 32768
 
-Watchdog::Watchdog(uint32_t timeout){
+IndependentWatchdog::IndependentWatchdog(uint32_t timeout){
 	if (timeout >= MAX_TIMEOUT_MS) {
 		return;
 	}
@@ -29,7 +29,7 @@ Watchdog::Watchdog(uint32_t timeout){
 	}
 }
 
-Watchdog::Watchdog(uint32_t counter_timeout, uint32_t window_timeout){
+IndependentWatchdog::IndependentWatchdog(uint32_t counter_timeout, uint32_t window_timeout){
 	if (counter_timeout >= MAX_TIMEOUT_MS || window_timeout >= MAX_TIMEOUT_MS) {
 		return;
 	}
@@ -54,14 +54,14 @@ Watchdog::Watchdog(uint32_t counter_timeout, uint32_t window_timeout){
 	}
 }
 
-bool Watchdog::refreshWatchdog() {
+bool IndependentWatchdog::refreshWatchdog() {
 	if (this->watchdog_ == nullptr) {
 		return false;
 	}
 	return (HAL_IWDG_Refresh(this->watchdog_) == HAL_OK);
 }
 
-bool Watchdog::counterCalculation(uint32_t timeout, uint32_t &prescaler, uint32_t &counter){
+bool IndependentWatchdog::counterCalculation(uint32_t timeout, uint32_t &prescaler, uint32_t &counter){
 	int prescalerPR = 0; // start prescaler = 4
 	const uint32_t MAX_COUNTER = (1 << RELOAD_LENGTH);
 
@@ -80,7 +80,7 @@ bool Watchdog::counterCalculation(uint32_t timeout, uint32_t &prescaler, uint32_
 /* 	Helper function
 	Only update the window depending on the timeout
 */
-bool Watchdog::windowCalculation(uint32_t timeout, uint32_t prescaler, uint32_t &window){
+bool IndependentWatchdog::windowCalculation(uint32_t timeout, uint32_t prescaler, uint32_t &window){
 	const uint32_t MAX_WINDOW = (1 << WINDOW_LENGTH);
 
 	uint32_t prescalerValue = 1 << (prescaler + PR_OFFSET);
