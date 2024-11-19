@@ -1,12 +1,15 @@
-#include <queue>
+#pragma once
+
 template <typename T>
 class MessageQueue {
-    queue<T> messages;
+    protected: 
+        MessageQueue() = default;
     public: 
+        virtual ~MessageQueue() = default;
         // retrieves the top of the queue
-        T get();
+        virtual T get() = 0;
         // pushes template message to the back of the queue
-        T push(T message);
+        virtual T push(T message) = 0;
         // pops the top of the queue
-        T pop();
+        virtual T pop() = 0;
 };
