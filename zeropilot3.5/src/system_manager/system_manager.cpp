@@ -14,5 +14,12 @@ void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcDat
 }
 
 void SystemManager::sendDisarmedToAttitudeManager() {
-    // TODO: Implement this function
+    RCMotorControlMessage_t disarmedMessage;
+
+    disarmedMessage.roll = 0.0f;
+    disarmedMessage.pitch = 0.0f;
+    disarmedMessage.yaw = 0.0f;
+    disarmedMessage.throttle = -1.0f;
+
+    queue_driver_->push(disarmedMessage);
 }
