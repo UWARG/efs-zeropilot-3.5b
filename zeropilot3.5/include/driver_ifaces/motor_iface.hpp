@@ -1,16 +1,13 @@
-#ifndef MOTOR_CONTROL_HPP
-#define MOTOR_CONTROL_HPP
+#ifndef MOTOR_IFACE_HPP
+#define MOTOR_IFACE_HPP
 
-
-class MotorControl {
+class PWMChannel {
 public:
-    virtual ~MotorControl() = default;
+    virtual ~PWMChannel() = default;
 
     // Set the motor speed
     virtual void set(uint8_t percent) = 0;
-    
-protected:
-    MotorControl() = default;
+
 };
 
 #endif // MOTOR_CONTROL_HPP
