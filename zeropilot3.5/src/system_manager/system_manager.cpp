@@ -7,6 +7,20 @@ SystemManager::~SystemManager() {}
 
 void SystemManager::SMUpdate() {
     // TODO: Implement this function
+    
+    // If no new data is recieved for 50 ticks, go to failsafe
+    if (!rc_driver_->is_data_new()) {
+        invalidRCCount_++;
+
+        if (invalidRCCount_ > 50) {
+            sendDisarmedToAttitudeManager();
+        }
+    } 
+
+    else {
+        invalidRCCount_ = 0;
+    }
+
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData) {
