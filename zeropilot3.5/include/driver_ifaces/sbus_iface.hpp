@@ -63,8 +63,5 @@ class RCReceiver{ // interface class
         };
         
         // get RCControl data that is parsed from sbus
-        RCControl GetRCData();
-        
-        //override variable
-        virtual void getRCData();
+        virtual RCControl getRCData();
 };
