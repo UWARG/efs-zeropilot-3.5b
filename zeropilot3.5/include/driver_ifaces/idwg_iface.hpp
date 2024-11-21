@@ -9,3 +9,7 @@ class IIndependentWatchdog{
         virtual ~IIndependentWatchdog() = default;
         virtual refreshWatchdog() = 0;
 }
+
+
+// Do we need file paths when importing hpp files?
+// What is idwg.h for
