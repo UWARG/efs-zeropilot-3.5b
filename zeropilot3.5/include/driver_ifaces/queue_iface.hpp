@@ -1,11 +1,11 @@
 #pragma once
 
 template <typename T>
-class MessageQueue {
+class IMessageQueue {
     protected: 
-        MessageQueue() = default;
+        IMessageQueue() = default;
     public: 
-        virtual ~MessageQueue() = default;
+        virtual ~IMessageQueue() = default;
         // retrieves the top of the queue
         virtual T get() = 0;
         // pushes template message to the back of the queue
