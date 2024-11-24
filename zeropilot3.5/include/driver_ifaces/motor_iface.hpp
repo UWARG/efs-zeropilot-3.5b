@@ -1,7 +1,7 @@
 #ifndef MOTOR_IFACE_HPP
 #define MOTOR_IFACE_HPP
 
-class PWMChannel {
+class MotorControl {
 public:
     virtual ~PWMChannel() = default;
 
