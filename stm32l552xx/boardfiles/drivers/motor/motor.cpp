@@ -1,6 +1,6 @@
 #include "motor.hpp"
 
-PWMChannel::PWMChannel(TIM_HandleTypeDef* timer,
+MotorChannel::MotorChannel(TIM_HandleTypeDef* timer,
                         uint16_t timerChannel) :
 						timer(timer),
                         TIMER_CHANNEL(timerChannel),
@@ -14,7 +14,7 @@ PWMChannel::PWMChannel(TIM_HandleTypeDef* timer,
 	HAL_TIM_PWM_Start(timer, TIMER_CHANNEL);
 }
 
-void PWMChannel::set(uint8_t percent) {
+void MotorChannel::set(uint8_t percent) {
 	/* Sets the duty cycle as a percent between 5 and 10%.
 	 *
 	 * Usage:
