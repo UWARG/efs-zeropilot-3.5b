@@ -3,7 +3,7 @@
 
 class MotorControl {
 public:
-    virtual ~PWMChannel() = default;
+    virtual ~MotorControl() = default;
 
     // Set the motor speed
     virtual void set(uint8_t percent) = 0;
