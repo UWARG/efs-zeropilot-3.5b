@@ -5,9 +5,9 @@
 
 #include "motor_iface.hpp"
 
-class PWMChannel : public MotorControl {
+class MotorChannel : public MotorControl {
     public:
-        PWMChannel(TIM_HandleTypeDef* timer,
+        MotorChannel(TIM_HandleTypeDef* timer,
 					uint16_t timerChannel);
 
         void set(uint_8 percent) override;
