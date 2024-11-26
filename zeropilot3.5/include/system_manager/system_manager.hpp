@@ -6,7 +6,7 @@
 
 class SystemManager {
     public:
-    SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver);
+    SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver, int16_t invalid_threshold=50);
     ~SystemManager();
 
     void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
@@ -14,6 +14,7 @@ class SystemManager {
     private:
         SBusIface *rc_driver_;
         QueueIface<RCMotorControlMessage_t> *queue_driver_;
+        int16_t invalid_threshold_;
 
         int16_t invalidRCCount_ = 0;
 
