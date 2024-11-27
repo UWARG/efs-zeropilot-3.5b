@@ -1,9 +1,11 @@
-#ifndef MOTOR_IFACE_HPP
-#define MOTOR_IFACE_HPP
+#pragma once
+#include <cstdint>
 
-class MotorControl {
+class IMotorControl {
+protected: 
+    MotorControl() = default;
 public:
-    virtual ~MotorControl() = default;
+    virtual ~IMotorControl() = default;
 
     // Set the motor speed
     virtual void set(uint8_t percent) = 0;
