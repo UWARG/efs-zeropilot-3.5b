@@ -1,7 +1,7 @@
 #pragma once
 
 #include "iwdg_ifaces.hpp"
-#include "iwdg.h" //what for
+#include "iwdg.h"
 
 class IndependentWatchdog : public IIndependentWatchdog{
     private:
