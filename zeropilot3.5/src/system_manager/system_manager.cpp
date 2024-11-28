@@ -6,8 +6,6 @@ SystemManager::SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMess
 SystemManager::~SystemManager() {}
 
 void SystemManager::SMUpdate() {
-    // TODO: Implement this function
-
     // If no new data is recieved for some time, go to failsafe
     if (!rc_driver_->is_data_new()) {
         invalidRCCount_++;
@@ -18,21 +16,19 @@ void SystemManager::SMUpdate() {
     } 
 
     else {
-        sendRCDataToAttitudeManager(rc_driver_);
+        RCControl rcData = rc_driver_->getRCData();
+        sendRCDataToAttitudeManager(rcData);
         invalidRCCount_ = 0;
     }
 }
 
-void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData) {
-    // TODO: Implement this function
-
-    RCControl control_data = rcData->getRCData();
+void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCControl &rcData) {
     RCMotorControlMessage_t rcDataMessage;
 
-    rcDataMessage.roll = control_data.roll;
-    rcDataMessage.pitch = control_data.pitch;
-    rcDataMessage.yaw = control_data.yaw;
-    rcDataMessage.throttle = control_data.throttle;
+    rcDataMessage.roll = rcData.roll;
+    rcDataMessage.pitch = rcData.pitch;
+    rcDataMessage.yaw = rcData.yaw;
+    rcDataMessage.throttle = rcData.throttle;
 
     queue_driver_->push(rcDataMessage);
 }
