@@ -18,6 +18,6 @@ class SystemManager {
 
         int16_t invalidRCCount_ = 0;
 
-        void sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData);
+        void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCControl &rcData);
         void sendDisarmedToAttitudeManager();
 };
