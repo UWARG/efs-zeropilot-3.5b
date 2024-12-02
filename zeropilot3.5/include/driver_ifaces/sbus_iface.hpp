@@ -1,13 +1,13 @@
 #include "rcreceiver_datatypes.hpp"
 
-class RCReceiver{ 
+class IRCReceiver{ 
     
     protected:
-        RCReceiver(); 
+        IRCReceiver() = default; 
 
     public:
-        virtual ~RCReceiver() = default;
+        virtual ~IRCReceiver() = default;
 
         // get RCControl data that is parsed from sbus
-        virtual RCControl getRCData();
+        virtual RCControl_t getRCData() = 0;
 };
