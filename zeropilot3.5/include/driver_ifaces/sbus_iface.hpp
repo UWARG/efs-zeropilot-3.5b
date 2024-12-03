@@ -1,4 +1,4 @@
-#include "rcreceiver_datatypes.hpp"
+#include "sbus_datatypes.hpp"
 
 class IRCReceiver{ 
     
