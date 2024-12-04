@@ -1,15 +1,15 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver, int16_t invalid_threshold)
+SystemManager::SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, int16_t invalid_threshold)
     : rc_driver_(rc_driver), queue_driver_(queue_driver), invalid_threshold_(invalid_threshold) {}
 
 SystemManager::~SystemManager() {}
 
 void SystemManager::SMUpdate() {
-    // TODO: Implement this function
+    RCControl_t rc_data = rc_driver_->getRCData();
     
     // If no new data is recieved for some time, go to failsafe
-    if (!rc_driver_->is_data_new()) {
+    if (!rc_data.isDataNew) {
         invalidRCCount_++;
 
         if (invalidRCCount_ > invalid_threshold_) {
@@ -23,7 +23,7 @@ void SystemManager::SMUpdate() {
 
 }
 
-void SystemManager::sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData) {
+void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
     // TODO: Implement this function
 }
 
