@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <algorithm>
 
@@ -5,7 +7,7 @@
 
 /*  a struct for control signal channel mapping and attribute values*/
 /*  for now, the value range is 0 to 100 float*/
-typedef struct{
+typedef struct {
     float ControlSignals[SBUS_INPUT_CHANNELS];
     bool isDataNew;
     
@@ -28,13 +30,13 @@ typedef struct{
 
     float &operator[] (int i) { return ControlSignals[i]; }
 
-    RCControl_t operator=(const RCControl_t& other){
+    RCControl_t operator=(const RCControl_t& other) {
         std::copy(other.ControlSignals, other.ControlSignals + SBUS_INPUT_CHANNELS, this->ControlSignals);
         return *(RCControl_t*)this;
     }
 
     /*  initial values*/
-    RCControl_t RCControl(){
+    RCControl_t RCControl() {
         bool isDataNew;
         roll = 50.0f;
         pitch = 50.0f;
