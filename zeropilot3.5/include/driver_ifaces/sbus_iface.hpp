@@ -1,12 +1,13 @@
+#pragma once
+
 #include "sbus_datatypes.hpp"
 
-class IRCReceiver{ 
-    
+class ISBUSReceiver { 
     protected:
-        IRCReceiver() = default; 
+        ISBUSReceiver() = default; 
 
     public:
-        virtual ~IRCReceiver() = default;
+        virtual ~ISBUSReceiver() = default;
 
         // get RCControl data that is parsed from sbus
         virtual RCControl_t getRCData() = 0;
