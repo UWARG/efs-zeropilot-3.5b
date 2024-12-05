@@ -27,8 +27,8 @@ struct RCControl {
     float &aux10    = ControlSignals[14];
     float &aux11    = ControlSignals[15];
 
-    float &operator[] (int i) {
-        return ControlSignals[i]; 
+    float& operator[](int i) {
+        return ControlSignals[i];
     }
 
     RCControl& operator=(const RCControl& other) {
