@@ -10,5 +10,5 @@ class ISBUSReceiver {
         virtual ~ISBUSReceiver() = default;
 
         // get RCControl data that is parsed from sbus
-        virtual RCControl_t getRCData() = 0;
+        virtual RCControl getRCData() = 0;
 };
