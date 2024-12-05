@@ -6,7 +6,7 @@
 
 /*  a struct for control signal channel mapping and attribute values */
 /*  all values are floats and range from 0 to 100 */
-struct RCControl{
+struct RCControl {
     float ControlSignals[SBUS_INPUT_CHANNELS];
     bool isDataNew;
     
