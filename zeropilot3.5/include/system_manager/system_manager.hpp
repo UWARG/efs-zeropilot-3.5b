@@ -6,17 +6,18 @@
 
 class SystemManager {
     public:
-    SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver);
-    ~SystemManager();
+        SystemManager() = delete;
+        SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, int32_t invalid_threshold);
 
-    void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
+        void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
-        SBusIface *rc_driver_;
-        QueueIface<RCMotorControlMessage_t> *queue_driver_;
+        ISBUSReceiver *rc_driver_;
+        IMessageQueue<RCMotorControlMessage_t> *queue_driver_;
+        int32_t invalid_threshold_;
 
-        int16_t invalidRCCount_ = 0;
+        int32_t invalidRCCount_ = 0;
 
-        void sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData);
+        void sendRCDataToAttitudeManager(const RCControl_t &rcData);
         void sendDisarmedToAttitudeManager();
 };
