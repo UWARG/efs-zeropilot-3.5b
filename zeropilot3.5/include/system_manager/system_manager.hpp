@@ -12,9 +12,9 @@ class SystemManager {
         void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
-        ISBUSReceiver *rc_driver_;
-        IMessageQueue<RCMotorControlMessage_t> *queue_driver_;
-        uint32_t invalid_threshold_;
+        ISBUSReceiver *rcDriver_;
+        IMessageQueue<RCMotorControlMessage_t> *queueDriver_;
+        uint32_t invalidThreshold_;
 
         uint32_t invalidRCCount_ = 0;
 
