@@ -7,7 +7,7 @@
 class SystemManager {
     public:
         SystemManager() = delete;
-        SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, uint32_t invalid_threshold);
+        SystemManager(ISBUSReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold);
 
         void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 

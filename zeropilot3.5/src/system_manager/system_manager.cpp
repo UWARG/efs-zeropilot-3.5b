@@ -1,13 +1,13 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, uint32_t invalid_threshold)
-    : rcDriver_(rc_driver), queueDriver_(queue_driver), invalidRCCount_(invalid_threshold) {}
+SystemManager::SystemManager(ISBUSReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold)
+    : rcDriver_(rcDriver), queueDriver_(queueDriver), invalidRCCount_(invalidThreshold) {}
 
 void SystemManager::SMUpdate() {
-    RCControl_t rc_data = rcDriver_->getRCData();
+    RCControl_t rcData = rcDriver_->getRCData();
     
     // If no new data is recieved for some time, go to failsafe
-    if (!rc_data.isDataNew) {
+    if (!rcData.isDataNew) {
         invalidRCCount_++;
         if (invalidRCCount_ > invalidRCCount_) {
             sendDisarmedToAttitudeManager();
