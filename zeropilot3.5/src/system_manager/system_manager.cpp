@@ -1,6 +1,6 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, int32_t invalid_threshold)
+SystemManager::SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, uint32_t invalid_threshold)
     : rc_driver_(rc_driver), queue_driver_(queue_driver), invalid_threshold_(invalid_threshold) {}
 
 void SystemManager::SMUpdate() {

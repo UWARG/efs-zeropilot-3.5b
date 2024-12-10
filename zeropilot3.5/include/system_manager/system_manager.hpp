@@ -7,16 +7,16 @@
 class SystemManager {
     public:
         SystemManager() = delete;
-        SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, int32_t invalid_threshold);
+        SystemManager(ISBUSReceiver *rc_driver, IMessageQueue<RCMotorControlMessage_t> *queue_driver, uint32_t invalid_threshold);
 
         void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
         ISBUSReceiver *rc_driver_;
         IMessageQueue<RCMotorControlMessage_t> *queue_driver_;
-        int32_t invalid_threshold_;
+        uint32_t invalid_threshold_;
 
-        int32_t invalidRCCount_ = 0;
+        uint32_t invalidRCCount_ = 0;
 
         void sendRCDataToAttitudeManager(const RCControl_t &rcData);
         void sendDisarmedToAttitudeManager();
