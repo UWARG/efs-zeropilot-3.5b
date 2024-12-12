@@ -40,7 +40,7 @@ class AttitudeManager {
 
     static struct AttitudeManagerInput control_inputs;
 
-    Flightmode *controlAlgorithm;
+    Flightmode *controlAlgorithm_;
     MotorGroup_t rollMotors;
     MotorGroup_t pitchMotors;
     MotorGroup_t yawMotors;
