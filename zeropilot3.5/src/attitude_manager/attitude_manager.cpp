@@ -47,11 +47,13 @@ void AttitudeManager::runControlLoopIteration() {
     if (control_inputs.roll == 0 && control_inputs.pitch == 0 && control_inputs.yaw == 0 && control_inputs.throttle == -1) {
         // Do something
     }
-    outputToMotor(yaw, control_inputs.yaw);
+
+    RCMotorControlMessage_t motor_outputs = controlAlgorithm_->run(control_inputs); // This is a placeholder for the actual control algorithm
+
+    outputToMotor(yaw, motor_outputs.yaw);
     outputToMotor(pitch, motor_outputs.pitch);
     outputToMotor(roll, motor_outputs.roll);
     outputToMotor(throttle, motor_outputs.throttle);
-
 }
 
 void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
