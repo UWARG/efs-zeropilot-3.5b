@@ -1,22 +1,18 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver, int16_t invalid_threshold)
-    : rc_driver_(rc_driver), queue_driver_(queue_driver), invalid_threshold_(invalid_threshold) {}
-
-SystemManager::~SystemManager() {}
+SystemManager::SystemManager(ISBUSReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold)
+    : rcDriver_(rcDriver), queueDriver_(queueDriver), invalidRCCount_(invalidThreshold) {}
 
 void SystemManager::SMUpdate() {
-     RCControl_t rcData = rcDriver_->getRCData();
-
+    RCControl_t rcData = rcDriver_->getRCData();
+    
     // If no new data is recieved for some time, go to failsafe
-    if (!rcData.is_data_new()) {
+    if (!rcData.isDataNew) {
         invalidRCCount_++;
-
-        if (invalidRCCount_ > invalid_threshold_) {
+        if (invalidRCCount_ > invalidRCCount_) {
             sendDisarmedToAttitudeManager();
         }
     } 
-
     else {
         // If disarmed, go to failsafe
         if (rcData.arm == 0.0) {
@@ -37,9 +33,16 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
     rcDataMessage.yaw = rcData.yaw;
     rcDataMessage.throttle = rcData.throttle;
 
-    queue_driver_->push(rcDataMessage);
+    queueDriver_->push(rcDataMessage);
 }
 
 void SystemManager::sendDisarmedToAttitudeManager() {
-    // TODO: Implement this function
+    RCMotorControlMessage_t disarmedMessage;
+
+    disarmedMessage.roll = 0.0f;
+    disarmedMessage.pitch = 0.0f;
+    disarmedMessage.yaw = 0.0f;
+    disarmedMessage.throttle = -1.0f;
+
+    queueDriver_->push(disarmedMessage);
 }
