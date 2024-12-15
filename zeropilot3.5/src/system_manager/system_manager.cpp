@@ -1,10 +1,10 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(ISBUSReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold)
+SystemManager::SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold)
     : rcDriver_(rcDriver), queueDriver_(queueDriver), invalidRCCount_(invalidThreshold) {}
 
 void SystemManager::SMUpdate() {
-    RCControl_t rcData = rcDriver_->getRCData();
+    RCControl rcData = rcDriver_->getRCData();
     
     // If no new data is recieved for some time, go to failsafe
     if (!rcData.isDataNew) {
@@ -18,7 +18,7 @@ void SystemManager::SMUpdate() {
     }
 }
 
-void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
+void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     // TODO: Implement this function
 }
 
