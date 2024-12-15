@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "queue_iface.hpp"
 #include "sbus_iface.hpp"
 #include "rc_motor_control.hpp"
@@ -18,6 +19,6 @@ class SystemManager {
 
         uint32_t invalidRCCount_ = 0;
 
-        void sendRCDataToAttitudeManager(const RCControl_t &rcData);
+        void sendRCDataToAttitudeManager(const RCControl &rcData);
         void sendDisarmedToAttitudeManager();
 };
