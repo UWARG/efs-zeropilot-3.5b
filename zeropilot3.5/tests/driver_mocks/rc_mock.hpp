@@ -4,7 +4,7 @@
 #include <gmock/gmock.h>
 
 
-class MockSBUSReceiver : public ISBUSReceiver{
+class MockRCReceiver : public IRCReceiver{
     public:
-       MOCK_METHOD(RCControl_t, getRCData, (), (override));
+       MOCK_METHOD(RCControl, getRCData, (), (override));
 };
