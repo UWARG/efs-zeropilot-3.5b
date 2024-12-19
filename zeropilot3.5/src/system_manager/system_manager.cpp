@@ -13,27 +13,27 @@ void SystemManager::SMUpdate() {
             sendDisarmedToAttitudeManager();
         }
     } 
-    else {
-        // If disarmed, go to failsafe
-        if (rcData.arm == 0.0) {
-            sendDisarmedToAttitudeManager();
-        }
-        else {
-            sendRCDataToAttitudeManager(rcData);
-            invalidRCCount_ = 0;
-        }
+    else {        
+        invalidRCCount_ = 0;
+        sendRCDataToAttitudeManager(rcData);
     }
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
-    RCMotorControlMessage_t rcDataMessage;
+    if (rcData.arm == 0.0) 
+    {
+        sendDisarmedToAttitudeManager();
+    }
+    else {
+        RCMotorControlMessage_t rcDataMessage;
 
-    rcDataMessage.roll = rcData.roll;
-    rcDataMessage.pitch = rcData.pitch;
-    rcDataMessage.yaw = rcData.yaw;
-    rcDataMessage.throttle = rcData.throttle;
+        rcDataMessage.roll = rcData.roll;
+        rcDataMessage.pitch = rcData.pitch;
+        rcDataMessage.yaw = rcData.yaw;
+        rcDataMessage.throttle = rcData.throttle;
 
-    queueDriver_->push(rcDataMessage);
+        queueDriver_->push(rcDataMessage);
+    }
 }
 
 void SystemManager::sendDisarmedToAttitudeManager() {
