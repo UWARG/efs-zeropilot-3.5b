@@ -20,8 +20,7 @@ void SystemManager::SMUpdate() {
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
-    if (rcData.arm == 0.0) 
-    {
+    if (rcData.arm == 0.0f) {
         sendDisarmedToAttitudeManager();
     }
     else {
