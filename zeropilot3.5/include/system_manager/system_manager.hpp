@@ -1,22 +1,24 @@
 #pragma once
 
+#include <cstdint>
 #include "queue_iface.hpp"
-#include "sbus_iface.hpp"
+#include "rc_iface.hpp"
 #include "rc_motor_control.hpp"
 
 class SystemManager {
     public:
-    SystemManager(SBusIface *rc_driver, QueueIface<RCMotorControlMessage_t> *queue_driver);
-    ~SystemManager();
+        SystemManager() = delete;
+        SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold);
 
-    void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
+        void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
-        SBusIface *rc_driver_;
-        QueueIface<RCMotorControlMessage_t> *queue_driver_;
+        IRCReceiver *rcDriver_;
+        IMessageQueue<RCMotorControlMessage_t> *queueDriver_;
+        uint32_t invalidThreshold_;
 
-        int16_t invalidRCCount_ = 0;
+        uint32_t invalidRCCount_ = 0;
 
-        void sendRCDataToAttitudeManager(const SBusIface::RCData_t &rcData);
+        void sendRCDataToAttitudeManager(const RCControl &rcData);
         void sendDisarmedToAttitudeManager();
 };
