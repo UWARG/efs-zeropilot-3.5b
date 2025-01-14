@@ -11,10 +11,8 @@ class IndependentWatchdog : public IIndependentWatchdog{
 		uint32_t reload_;
 
 		bool counterCalculation(uint32_t timeout, uint32_t &prescaler, uint32_t &counter);
-		bool windowCalculation(uint32_t timeout, uint32_t prescaler, uint32_t &window);
     public:
         IndependentWatchdog(uint32_t timeout);
-        IndependentWatchdog(uint32_t counter_timeout, uint32_t window_timeout);
 
         bool refreshWatchdog() override;
 }
