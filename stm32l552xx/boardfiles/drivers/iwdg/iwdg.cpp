@@ -1,8 +1,9 @@
 #include "iwdg.hpp"
+#include "stm32l552xx/Core/Inc/stm32l5xx_hal_conf.h"
 
 #define MAX_PR 			6
 #define RELOAD_LENGTH 	12
-#define LSI_SPEED 		32000
+#define LSI_SPEED 		LSI_VALUE
 #define PR_OFFSET		2
 #define MAX_TIMEOUT_MS		(((1 << RELOAD_LENGTH)*4*(1 << MAX_PR)*1000) / LSI_SPEED) // should be about 32768
 
