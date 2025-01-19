@@ -1,9 +1,10 @@
 #pragma once
-#include "stm32l5xx_hal_conf.h"
+
 #include <cstdint>
+#include "main.h"
 #include "motor_iface.hpp"
 
-class MotorControl : public IMotorControl {
+class MotorControl {
     public:
 		MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel);
 
