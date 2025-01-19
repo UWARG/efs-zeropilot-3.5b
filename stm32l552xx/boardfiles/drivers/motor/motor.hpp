@@ -1,14 +1,13 @@
 #pragma once
-#include "tim.h"
-
+#include "stm32l5xx_hal_conf.h"
+#include <cstdint>
 #include "motor_iface.hpp"
 
-class IMotorControl : public IMotorControl {
+class MotorControl : public IMotorControl {
     public:
-        MotorChannel(TIM_HandleTypeDef* timer,
-					uint16_t timerChannel);
+		MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel);
 
-        void set(uint_8 percent) override;
+        void set(uint8_t percent);
     private:
         TIM_HandleTypeDef *timer;
         const uint16_t TIMER_CHANNEL;
