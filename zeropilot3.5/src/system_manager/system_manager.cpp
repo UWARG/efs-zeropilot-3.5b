@@ -19,7 +19,7 @@ void SystemManager::SMUpdate() {
     }
 }
 
-void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
+void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     if (rcData.arm == 0.0f) {
         sendDisarmedToAttitudeManager();
     }
@@ -30,6 +30,7 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
         rcDataMessage.pitch = rcData.pitch;
         rcDataMessage.yaw = rcData.yaw;
         rcDataMessage.throttle = rcData.throttle;
+        rcDataMessage.arm = rcData.arm;
 
         queueDriver_->push(rcDataMessage);
     }
@@ -41,7 +42,8 @@ void SystemManager::sendDisarmedToAttitudeManager() {
     disarmedMessage.roll = 0.0f;
     disarmedMessage.pitch = 0.0f;
     disarmedMessage.yaw = 0.0f;
-    disarmedMessage.throttle = -1.0f;
+    disarmedMessage.throttle = 0.0f;
+    disarmedMessage.arm = 0.0f;
 
     queueDriver_->push(disarmedMessage);
 }
