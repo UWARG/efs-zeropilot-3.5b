@@ -8,5 +8,6 @@ class ISDCard {
         virtual ~ISDCard() = default;
 
         //log data to SD card
-        virtual int log() = 0;
+        virtual int log(char* message) = 0;
+        virtual int logMulti(char *message[], int num) = 0;
 };
