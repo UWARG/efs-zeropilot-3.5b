@@ -22,6 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
+#include "utils.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -48,7 +49,8 @@
 /* USER CODE BEGIN PV */
 /* Disk status */
 static volatile DSTATUS Stat = STA_NOINIT;
-static volatile uint8_t readStatus = 0, writeStatus = 0;
+static volatile uint8_t readStatus = 0;
+static volatile uint8_t writeStatus = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,7 +92,9 @@ DSTATUS SD_initialize(BYTE lun)
   /* USER CODE BEGIN SD_initialize */
   DRESULT res = RES_ERROR;
 
-  if (Stat & STA_NODISK) return Stat;
+  if (Stat & STA_NODISK) {
+    return Stat;
+  }
 
   res = HAL_SD_Init(&hsd1);
   if (res == RES_OK) {
@@ -125,12 +129,15 @@ DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
 {
   /* USER CODE BEGIN SD_read */
   DRESULT res = RES_ERROR;
-  uint32_t timeout;
 
   res = HAL_SD_ReadBlocks_DMA(&hsd1, buff, sector, count);
 
-  timeout = HAL_GetTick();
-  while (!readStatus && (HAL_GetTick() - timeout) < SD_TIMEOUT) {}
+  uint32_t start = osKernelGetTickCount();
+  uint32_t ticks = start;
+  while (!readStatus && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
+    ticks += timeToTicks(10);
+    osDelayUntil(ticks);
+  }
 
   if (readStatus) {
     readStatus = 0;
@@ -154,12 +161,15 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 {
   /* USER CODE BEGIN SD_write */
   DRESULT res = RES_ERROR;
-  uint32_t timeout;
 
   res = HAL_SD_WriteBlocks_DMA(&hsd1, buff, sector, count);
 
-  timeout = HAL_GetTick();
-  while (!writeStatus && (HAL_GetTick() - timeout) < SD_TIMEOUT) {}
+  uint32_t start = osKernelGetTickCount();
+  uint32_t ticks = start;
+  while (!readStatus && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
+    ticks += timeToTicks(10);
+    osDelayUntil(ticks);
+  }
 
   if (writeStatus) {
     writeStatus = 0;
@@ -220,10 +230,14 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
 
 /* USER CODE BEGIN UserCode */
 void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd) {
+  if (hsd->Instance == SDMMC1) {
     writeStatus = 1;
+  }
 }
 
 void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd) {
+  if (hsd->Instance == SDMMC1) {
     readStatus = 1;
+  }
 }
 /* USER CODE END UserCode */
