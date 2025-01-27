@@ -1,10 +1,9 @@
 #include "iwdg.hpp"
+#include "main.c" //MX_IDWG_INIT is initialized here, not declared in main.h
 
 IndependentWatchdog::IndependentWatchdog(uint32_t timeout){
 	this->watchdog_ = &hiwdg;
-	if (HAL_IWDG_Init(this->watchdog_) != HAL_OK){
-		Error_Handler();
-	}
+	MX_IWDG_Init();
 }
 
 bool IndependentWatchdog::refreshWatchdog() {
