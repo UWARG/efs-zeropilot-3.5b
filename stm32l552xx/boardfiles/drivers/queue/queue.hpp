@@ -4,12 +4,11 @@
 #include "cmsis_os2.h"
 
 template <typename T>
-class MessageQueue : public IMessageQueue{
-   protected:
+class MessageQueue : public IMessageQueue<T>{
+   private:
       osMessageQueueId_t *queue_id;
    public: 
       MessageQueue(osMessageQueueId_t *queue_id);
-      ~MessageQueue();
 
       // gets top element of queue
       T get() override;
@@ -17,4 +16,8 @@ class MessageQueue : public IMessageQueue{
       T push(T message) override;
       // pops the top of the queue
       T pop() override;
+      // counts the # of items in the queue
+      int count() override;
+      // counts remaining capacity of the queue
+      int remainingCapacity() override;
 };
