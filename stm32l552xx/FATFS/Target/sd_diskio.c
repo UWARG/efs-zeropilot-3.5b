@@ -130,13 +130,18 @@ DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
   /* USER CODE BEGIN SD_read */
   DRESULT res = RES_ERROR;
 
-  res = HAL_SD_ReadBlocks_DMA(&hsd1, buff, sector, count);
+  if (osKernelGetState() == osKernelRunning) {
+    HAL_SD_ReadBlocks_DMA(&hsd1, buff, sector, count);
 
-  uint32_t start = osKernelGetTickCount();
-  uint32_t ticks = start;
-  while (!readStatus && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
-    ticks += timeToTicks(10);
-    osDelayUntil(ticks);
+    uint32_t start = osKernelGetTickCount();
+    uint32_t ticks = start;
+    while (!readStatus && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
+      ticks += timeToTicks(10);
+      osDelayUntil(ticks);
+    }
+  } else {
+    HAL_SD_ReadBlocks(&hsd1, buff, sector, count);
+    readStatus = 1;
   }
 
   if (readStatus) {
@@ -162,13 +167,18 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
   /* USER CODE BEGIN SD_write */
   DRESULT res = RES_ERROR;
 
-  res = HAL_SD_WriteBlocks_DMA(&hsd1, buff, sector, count);
+  if (osKernelGetState() == osKernelRunning) {
+    HAL_SD_WriteBlocks_DMA(&hsd1, buff, sector, count);
 
-  uint32_t start = osKernelGetTickCount();
-  uint32_t ticks = start;
-  while (!readStatus && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
-    ticks += timeToTicks(10);
-    osDelayUntil(ticks);
+    uint32_t start = osKernelGetTickCount();
+    uint32_t ticks = start;
+    while (!writeStatus && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
+      ticks += timeToTicks(10);
+      osDelayUntil(ticks);
+    }
+  } else {
+    HAL_SD_WriteBlocks(&hsd1, buff, sector, count);
+    writeStatus = 1;
   }
 
   if (writeStatus) {
