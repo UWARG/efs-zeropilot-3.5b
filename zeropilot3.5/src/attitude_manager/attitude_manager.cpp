@@ -3,7 +3,6 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-namespace AM {
 
 AttitudeManagerInput AttitudeManager::control_inputs = {
     .roll = 0.0f,
@@ -86,4 +85,3 @@ void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
 
 }
 
-}  // namespace AM
