@@ -1,23 +1,20 @@
 #ifndef ZPSW3AM_HPP
 #define ZPSW3_AM_HPP
 
-#include "CommonDataTypes.hpp"
-#include "config_foundation.hpp"
-#include "FreeRTOS.h"
 #include "flightmode.hpp"
-#include "semphr.h"
 #include "queue_iface.hpp"
+#include "motor_iface.hpp"
 #include "rc_motor_control.hpp"
+#include <stdint.h>
 
-namespace AM {
 
 typedef struct {
-    MotorChannel motorInstance; 
+    IMotorControl *motorInstance; 
     bool isInverted;
 } MotorInstance_t;
 
 struct MotorGroup_t {
-    MotorInstance_tmotors;
+    MotorInstance_t motors;
     uint8_t motorCount;
 };
 
@@ -48,7 +45,5 @@ class AttitudeManager {
 
     IMessageQueue *queue_driver;
 };
-
-}  // namespace AM
 
 #endif  // ZPSW3_AM_HPP
