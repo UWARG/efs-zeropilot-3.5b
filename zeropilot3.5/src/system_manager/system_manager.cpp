@@ -36,7 +36,8 @@ void SystemManager::sendDisarmedToAttitudeManager() {
     disarmedMessage.roll = 0.0f;
     disarmedMessage.pitch = 0.0f;
     disarmedMessage.yaw = 0.0f;
-    disarmedMessage.throttle = -1.0f;
+    disarmedMessage.throttle = 0.0f;
+    disarmedMessage.arm = 0.0f;
 
     amQueueDriver_->push(disarmedMessage);
 }
