@@ -1,7 +1,7 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold)
-    : rcDriver_(rcDriver), queueDriver_(queueDriver), invalidRCCount_(invalidThreshold) {}
+SystemManager::SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, IMessageQueue<RCMotorControlMessage_t> *smQueueDriver, uint32_t invalidThreshold)
+    : rcDriver_(rcDriver), amQueueDriver_(amQueueDriver), smQueueDriver_(smQueueDriver), invalidRCCount_(invalidThreshold) {}
 
 void SystemManager::SMUpdate() {
     RCControl rcData = rcDriver_->getRCData();
@@ -19,20 +19,15 @@ void SystemManager::SMUpdate() {
     }
 }
 
-void SystemManager::sendRCDataToAttitudeManager(const RCControl_t &rcData) {
-    if (rcData.arm == 0.0f) {
-        sendDisarmedToAttitudeManager();
-    }
-    else {
-        RCMotorControlMessage_t rcDataMessage;
+void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
+    RCMotorControlMessage_t rcDataMessage;
 
-        rcDataMessage.roll = rcData.roll;
-        rcDataMessage.pitch = rcData.pitch;
-        rcDataMessage.yaw = rcData.yaw;
-        rcDataMessage.throttle = rcData.throttle;
+    rcDataMessage.roll = rcData.roll;
+    rcDataMessage.pitch = rcData.pitch;
+    rcDataMessage.yaw = rcData.yaw;
+    rcDataMessage.throttle = rcData.throttle;
 
-        queueDriver_->push(rcDataMessage);
-    }
+    amQueueDriver_->push(rcDataMessage);
 }
 
 void SystemManager::sendDisarmedToAttitudeManager() {
@@ -43,5 +38,5 @@ void SystemManager::sendDisarmedToAttitudeManager() {
     disarmedMessage.yaw = 0.0f;
     disarmedMessage.throttle = -1.0f;
 
-    queueDriver_->push(disarmedMessage);
+    amQueueDriver_->push(disarmedMessage);
 }

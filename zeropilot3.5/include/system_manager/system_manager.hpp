@@ -8,13 +8,14 @@
 class SystemManager {
     public:
         SystemManager() = delete;
-        SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *queueDriver, uint32_t invalidThreshold);
+        SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, IMessageQueue<RCMotorControlMessage_t> *smQueueDriver, uint32_t invalidThreshold);
 
         void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
         IRCReceiver *rcDriver_;
-        IMessageQueue<RCMotorControlMessage_t> *queueDriver_;
+        IMessageQueue<RCMotorControlMessage_t> *amQueueDriver_;
+        IMessageQueue<RCMotorControlMessage_t> *smQueueDriver_;
         uint32_t invalidThreshold_;
 
         uint32_t invalidRCCount_ = 0;
