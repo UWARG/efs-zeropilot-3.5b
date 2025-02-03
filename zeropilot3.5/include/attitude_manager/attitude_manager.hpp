@@ -33,9 +33,13 @@ class AttitudeManager {
 
    private:
     AttitudeManager();
+    //I guess controlaxis_T is another leftover from the previous design, I'll look up what it served for.
     void outputToMotor(ControlAxis_t axis, uint8_t percent);
 
     static struct AttitudeManagerInput control_inputs;
+
+    //what data type would you give to the flightmode/Imessagequeue? Would you like me to define or would you want to discuss about it
+    //Or already has it in mind, I just didn't see it. (We can use the previous one if you want, too.)
 
     Flightmode *controlAlgorithm_;
     MotorGroup_t rollMotors;
