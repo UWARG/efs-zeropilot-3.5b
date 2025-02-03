@@ -1,21 +1,13 @@
 //Need to update this cpp later
-#include "AM.hpp"
+#include "attitude_manager.hpp"
+#include "rc_motor_control.hpp"
 
 
-AttitudeManagerInput AttitudeManager::control_inputs = {
-    .roll = 0.0f,
-    .pitch = 0.0f,
-    .yaw = 0.0f,
-    .throttle = 0.0f
-};
+AttitudeManagerInput AttitudeManager::control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
+
 
 AttitudeManagerInput AttitudeManager::getControlInputs() {
-    RCMotorControlMessage_t control_inputs = {
-        .roll = 0,
-        .pitch = 0,
-        .yaw = 0,
-        .throttle = 0
-    };
+    RCMotorControlMessage_t control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
 
     // Get data from Queue
     if (queue_driver->count()==0) {
