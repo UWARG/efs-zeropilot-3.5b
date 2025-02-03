@@ -1,7 +1,5 @@
+//Need to update this cpp later
 #include "AM.hpp"
-
-#include "FreeRTOS.h"
-#include "semphr.h"
 
 
 AttitudeManagerInput AttitudeManager::control_inputs = {
