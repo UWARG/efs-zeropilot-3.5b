@@ -4,9 +4,11 @@ SystemManager::SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControl
     : rcDriver_(rcDriver), amQueueDriver_(amQueueDriver), smQueueDriver_(smQueueDriver) {}
 
 void SystemManager::SMUpdate() {
+    // Kick the watchdog
+    iwdg_->refreshWatchdog();
+
+    // Get RC data from the RC receiver and passthrough to AM if new
     RCControl rcData = rcDriver_->getRCData();
-    
-    // Only passthrough RC data if it is new
     if (rcData.isDataNew) {
         sendRCDataToAttitudeManager(rcData);
     }
