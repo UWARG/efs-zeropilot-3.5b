@@ -19,4 +19,7 @@ class IMessageQueue {
         
         // counts the # of items in the queue
         virtual int count() = 0;
+        
+        // counts remaining capacity
+        virtual int remainingCapacity() = 0;
 };
