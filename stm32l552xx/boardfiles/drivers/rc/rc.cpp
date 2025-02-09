@@ -18,28 +18,17 @@ RCControl RCReceiver::getRCData() {
 void RCReceiver::parse(bool isBufferStart) {
 	uint8_t *bufferOffset;
 
-<<<<<<< Updated upstream
 	if(isBufferStart) {
 		bufferOffset = rawSbus_;
 	}
     else {
 		bufferOffset = rawSbus_ + 25;
-=======
-void RCReceiver::parse(bool buffer_start){
-
-	uint8_t *buffer_offset_;
-
-	if(buffer_start == 0){
-		buffer_offset_ = raw_sbus_;
-	}else{
-		buffer_offset_ = full_buffer_; // do raw_sbus_ +25
->>>>>>> Stashed changes
 	}
 
-    if ((buffer_offset_[0] == HEADER_) && (buffer_offset_[24] == FOOTER_)) {
+    if ((bufferOffset[0] == HEADER_) && (bufferOffset[24] == FOOTER_)) {
         // no need for received_sbus_
         // tmp = static_cast(. . .)
-        // rcData_[. . .] = sbusToRCControl(tmp)
+        // rcData_.(. . .) = sbusToRCControl(tmp)
 
         received_sbus_.ch[0]  = static_cast<int16_t>((buffer_offset_ [1] | (buffer_offset_[2] << 8) ) & 0x07FF );
         received_sbus_.ch[1]  = static_cast<int16_t>(((buffer_offset_[2] >> 3) | (buffer_offset_[3] << 5)) & 0x07FF );
@@ -58,32 +47,13 @@ void RCReceiver::parse(bool buffer_start){
         received_sbus_.ch[14] = static_cast<int16_t>(((buffer_offset_[20] >> 2) | (buffer_offset_[21] << 6) ) & 0x07FF );
         received_sbus_.ch[15] = static_cast<int16_t>(((buffer_offset_[21] >> 5) | (buffer_offset_[22] << 3) ) & 0x07FF );
 
-        rc_data.isDataNew = true;
-<<<<<<< Updated upstream
-=======
-    }else{ //else is not needed
-
-        rc_data.isDataNew = false;
->>>>>>> Stashed changes
+        rcData_.isDataNew = true;
     }
 }
 
 
-<<<<<<< Updated upstream
 float RCReceiver::sbusToRCControl(uint16_t channelValue) {
     // use std::clamp
-=======
-float RCReceiver::sbus_to_rccontrol(uint16_t channel_value){
-    //use std::clamp
-    if(channel_value < SBUS_RANGE_MIN){
-        channel_value = SBUS_RANGE_MIN;
-    }else if(channel_value > SBUS_RANGE_MAX){
-        channel_value = SBUS_RANGE_MAX;
-    }
-    
-    return static_cast<float>((channel_value - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
-}
->>>>>>> Stashed changes
 
     return static_cast<float>((channelValue - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
 }

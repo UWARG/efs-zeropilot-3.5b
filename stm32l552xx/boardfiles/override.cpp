@@ -1,7 +1,7 @@
 #include "cmsis_os2.h"
 #include "main.h"
 #include "museq.hpp"
-#include "rc.hpp"
+#include "drivers.hpp"
 #include "utils.h"
 
 extern "C"
@@ -40,24 +40,14 @@ void HAL_Delay(uint32_t Delay) {
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == UART4){
-<<<<<<< Updated upstream
-		// insert driver handle
-    parse(true);
-=======
-		rcHandle->parse(0); //modify, true/false
->>>>>>> Stashed changes
+		rcHandle->parse(true);
 	}
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == UART4){
-<<<<<<< Updated upstream
-    // insert driver handle
-		parse(false);
-=======
-		rcHandle->parse(1); //modify; true/false
->>>>>>> Stashed changes
+		rcHandle->parse(false);
 	}
 }
 

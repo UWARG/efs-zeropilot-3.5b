@@ -2,6 +2,6 @@
 
 #include "rc.hpp"
 
-extern IRCReceiver *rcHandle;
+extern RCReceiver *rcHandle;
 
 void initDrivers();
