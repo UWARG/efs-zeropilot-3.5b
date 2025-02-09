@@ -9,13 +9,13 @@ class RCReceiver : public IRCReceiver {
         RCReceiver(UART_HandleTypeDef *uart);
 
         RCControl getRCData() override;
+
+        void parse(bool isBufferStart);
        
     private:
         UART_HandleTypeDef *uart_;
         RCControl rcData_;
         uint8_t rawSbus_[50];
-
-        void parse(bool isBufferStart);
 
         float sbusToRCControl(uint16_t channelValue);
 };

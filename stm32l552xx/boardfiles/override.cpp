@@ -1,6 +1,6 @@
 #include "main.h"
 #include "museq.hpp"
-#include "rc.hpp"
+#include "drivers.hpp"
 
 extern "C"
 {
@@ -23,24 +23,14 @@ int _write(int file, char *ptr, int len)
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == UART4){
-<<<<<<< Updated upstream
-		// insert driver handle
-    parse(true);
-=======
-		rcHandle->parse(0); //modify, true/false
->>>>>>> Stashed changes
+		rcHandle->parse(true);
 	}
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == UART4){
-<<<<<<< Updated upstream
-    // insert driver handle
-		parse(false);
-=======
-		rcHandle->parse(1); //modify; true/false
->>>>>>> Stashed changes
+		rcHandle->parse(false);
 	}
 }
 
