@@ -1,6 +1,7 @@
 #include "cmsis_os2.h"
 #include "main.h"
 #include "museq.hpp"
+#include "rc.hpp"
 #include "utils.h"
 
 extern "C"
@@ -35,4 +36,19 @@ void HAL_Delay(uint32_t Delay) {
 }
 
 /* interrupt callback functions */
+
+void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == UART4){
+		parse(0);
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == UART4){
+		parse(1);
+	}
+}
+
 }
