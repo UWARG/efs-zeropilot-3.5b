@@ -4,21 +4,18 @@
 #include "rc_iface.hpp"
 #include "rc_datatypes.hpp" 
 
-class RCReceiver : public IRCReceiver{
+class RCReceiver : public IRCReceiver {
     public:
-
-        RCReceiver(UART_HandleTypeDef* uart);
+        RCReceiver(UART_HandleTypeDef *uart);
 
         RCControl getRCData() override;
        
     private:
+        UART_HandleTypeDef *uart_;
+        RCControl rcData_;
+        uint8_t rawSbus_[50];
 
-        SBus_t received_sbus_;
-        RCControl rc_data;
-        uint8_t raw_sbus_[50];
-        uint8_t *full_buffer_;
+        void parse(bool isBufferStart);
 
-        void parse();
-        float sbus_to_rccontrol(uint16_t channel_value);
-
+        float sbusToRCControl(uint16_t channelValue);
 };

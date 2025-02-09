@@ -40,14 +40,16 @@ void HAL_Delay(uint32_t Delay) {
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == UART4){
-		parse(0);
+		// insert driver handle
+    parse(true);
 	}
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == UART4){
-		parse(1);
+    // insert driver handle
+		parse(false);
 	}
 }
 

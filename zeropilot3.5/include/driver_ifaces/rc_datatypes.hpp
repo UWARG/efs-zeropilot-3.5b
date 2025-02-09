@@ -59,10 +59,3 @@ class RCControl {
             aux11     = 0.0f;
         }
 };
-
-typedef struct{
-    uint16_t ch[SBUS_INPUT_CHANNELS]; // value from 192 - 1792, can be little off
-    bool lost_frame;
-    bool failsafe;
-    bool ch17, ch18;
-} SBus_t;
