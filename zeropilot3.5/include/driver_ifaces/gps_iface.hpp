@@ -1,7 +1,8 @@
 #pragma once
 
-#ifdef __cplusplus
+#include "gps_datatypes.hpp"
 
+#ifdef __cplusplus
 #include <cstdint>
 #endif
 
@@ -13,5 +14,5 @@ protected:
 public:
 	virtual ~IGPS() = default;
 
-	virtual int read() = 0;
+	virtual gps_data_t readData() = 0;
 };

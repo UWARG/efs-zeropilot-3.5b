@@ -1,28 +1,35 @@
-//#include "stm32l5xx_hal.h"
+#include "stm32l5xx_hal.h"
+#include "stm32l5xx_hal_dma.h"
 
 #include "gps.hpp"
 
 
-GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
+GPS::GPS(UART_HandleTypeDef* huart, DMA_HandleTypeDef *hdma) : huart(huart), hdma(hdma) {}
 
-int GPS::read() {
-
-	HAL_StatusTypeDef read_success = HAL_UART_Receive(
+int GPS::init() {
+	HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
 			huart,
 			rx_buffer,
-			MAX_NMEA_DATA_LENGTH,
-			DELAY
+			MAX_NMEA_DATA_LENGTH
 	);
 
-	if (read_success != HAL_OK) {
-		return 0;
-	}
+	__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 
-	bool success = parseRMC() && parseGGA();
-
-	return success;
+	return success == HAL_OK;
 }
 
+gps_data_t GPS::readData() {
+	__HAL_DMA_DISABLE_IT(hdma, DMA_IT_TC);
+	gps_data_t data = gps_data;
+	__HAL_DMA_ENABLE_IT(hdma, DMA_IT_TC);
+
+	return data;
+}
+
+int GPS::processGPSData() {
+	bool success = parseRMC() && parseGGA();
+	return success;
+}
 
 int GPS::parseRMC() {
 	int idx = 0;
