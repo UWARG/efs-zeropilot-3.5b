@@ -1,15 +1,18 @@
 #pragma once
 
-#include "iwdg_ifaces.hpp"
-#include "iwdg.h"
+#include "iwdg_iface.hpp"
+#include "main.h"
 
 class IndependentWatchdog : public IIndependentWatchdog{
     private:
-		IWDG_HandleTypeDef* watchdog_;
+		    IWDG_HandleTypeDef* watchdog_;
     public:
-        IndependentWatchdog();
+        IndependentWatchdog(IWDG_HandleTypeDef *hiwdg);
 
+        /**
+         * @brief reset watchdog timer
+         */
         bool refreshWatchdog() override;
-}
+};
 
 
