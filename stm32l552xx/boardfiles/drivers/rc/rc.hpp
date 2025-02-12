@@ -8,6 +8,8 @@ class RCReceiver : public IRCReceiver {
     public:
         RCReceiver(UART_HandleTypeDef *uart);
 
+        void startDMA();
+
         RCControl getRCData() override;
 
         void parse(bool isBufferStart);
