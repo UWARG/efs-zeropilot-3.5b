@@ -2,6 +2,9 @@
 
 #include "sd_card_iface.hpp"
 #include "app_fatfs.h"
+#include "cmsis_os.h"
+#include <string.h>
+#include <stdio.h>
 
 class SDCard : public ISDCard {
     private:
