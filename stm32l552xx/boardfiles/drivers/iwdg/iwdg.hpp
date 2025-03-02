@@ -1,7 +1,6 @@
 #pragma once
 
 #include "iwdg_iface.hpp"
-#include "main.h"
 
 class IndependentWatchdog : public IIndependentWatchdog{
     private:
