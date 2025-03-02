@@ -5,7 +5,8 @@
 
 class IndependentWatchdog : public IIndependentWatchdog{
     private:
-		    IWDG_HandleTypeDef* watchdog_;
+        IWDG_HandleTypeDef * const watchdog_;
+        
     public:
         IndependentWatchdog(IWDG_HandleTypeDef *hiwdg);
 
@@ -14,5 +15,3 @@ class IndependentWatchdog : public IIndependentWatchdog{
          */
         bool refreshWatchdog() override;
 };
-
-
