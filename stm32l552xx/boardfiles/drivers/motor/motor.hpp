@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cstdint>
-#include "main.h"
 #include "motor_iface.hpp"
+#include "stm32l5xx_hal_tim.h"
 
 class MotorControl : IMotorControl {
     public:
-		MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel);
+        MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel);
 
         /**
          * @brief Sets the duty cycle as a percent between 5 and 10%

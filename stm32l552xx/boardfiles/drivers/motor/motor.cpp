@@ -1,7 +1,6 @@
 #include "motor.hpp"
 
-MotorControl::MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel) : timer(timer), TIMER_CHANNEL(timerChannel), MIN_SIGNAL(timer->Init.Period * 0.05), MAX_SIGNAL(timer->Init.Period * 0.10)  // sets counts for 5% duty cycleMAX_SIGNAL(timer->Init.Period * 0.10)  // sets counts for 10% duty cycle
-{
+MotorControl::MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel) : timer(timer), TIMER_CHANNEL(timerChannel), MIN_SIGNAL(timer->Init.Period * 0.05), MAX_SIGNAL(timer->Init.Period * 0.10) {
 	HAL_TIM_PWM_Start(timer, TIMER_CHANNEL);
 }
 
