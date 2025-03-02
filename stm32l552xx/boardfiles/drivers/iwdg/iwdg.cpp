@@ -5,9 +5,9 @@ IndependentWatchdog::IndependentWatchdog(IWDG_HandleTypeDef *hiwdg) : watchdog_(
 }
 
 bool IndependentWatchdog::refreshWatchdog() {
-        if (this->watchdog_ == nullptr) {
-            return false;
-        }
+    if (this->watchdog_ == nullptr) {
+        return false;
+    }
 
-        return (HAL_IWDG_Refresh(this->watchdog_) == HAL_OK);
+    return (HAL_IWDG_Refresh(this->watchdog_) == HAL_OK);
 }
