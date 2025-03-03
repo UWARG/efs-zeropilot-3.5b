@@ -24,7 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ff.h"
 #include "ff_gen_drv.h"
-#include "sd_diskio.h" /* defines SD_Driver as external */
+#include "user_diskio.h" /* defines USER_Driver as external */
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -60,9 +60,9 @@ int32_t MX_FATFS_Process(void);
 #define APP_SD_UNPLUGGED           -2
 /* USER CODE END Private defines */
 
-extern FATFS SDFatFS;    /* File system object for SD logical drive */
-extern FIL SDFile;       /* File object for SD */
-extern char SDPath[4];   /* SD logical drive path */
+extern FATFS USERFatFs;    /* File system object for USER logical drive */
+extern FIL USERFile;       /* File  object for USER */
+extern char USERPath[4];   /* USER logical drive path */
 
 #endif /*__APP_FATFS_H */
 

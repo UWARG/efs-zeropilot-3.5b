@@ -1,11 +1,11 @@
 #pragma once
 
-class ISDCard {
+class ILogger {
     protected:
-        ISDCard() = default;
+        ILogger() = default;
     
     public:
-        virtual ~ISDCard() = default;
+        virtual ~ILogger() = default;
 
         virtual int log(char* message) = 0;
         virtual int log(char message[][100], int count) = 0;
