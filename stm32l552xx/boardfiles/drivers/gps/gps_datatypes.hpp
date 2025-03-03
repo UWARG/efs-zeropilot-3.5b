@@ -1,5 +1,4 @@
 #pragma once
-
 #ifdef __cplusplus
 #include <cstdint>
 #endif
@@ -15,4 +14,5 @@ typedef struct {
 	float ground_speed;
 	uint8_t num_satellites;
 	float track_angle;
+	bool valid;
 } gps_data_t;
