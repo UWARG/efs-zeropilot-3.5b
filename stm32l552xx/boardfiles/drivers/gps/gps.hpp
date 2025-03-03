@@ -15,7 +15,7 @@ class GPS : public IGPS {
 public:
 	gps_data_t readData() override;
 
-	GPS(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+	GPS(UART_HandleTypeDef *huart);
 
 	int init();
 
@@ -27,7 +27,6 @@ private:
 	gps_data_t gps_data;
 	uint8_t rx_buffer[MAX_NMEA_DATA_LENGTH];
 	UART_HandleTypeDef *huart;
-	DMA_HandleTypeDef *hdma;
 
 	int parseRMC();
 	int parseGGA();

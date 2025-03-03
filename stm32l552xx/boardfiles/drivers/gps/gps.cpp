@@ -1,10 +1,9 @@
 #include "stm32l5xx_hal.h"
-#include "stm32l5xx_hal_dma.h"
 
 #include "gps.hpp"
 
 
-GPS::GPS(UART_HandleTypeDef* huart, DMA_HandleTypeDef *hdma) : huart(huart), hdma(hdma) {}
+GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
 
 int GPS::init() {
 	HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
@@ -19,15 +18,19 @@ int GPS::init() {
 }
 
 gps_data_t GPS::readData() {
-	__HAL_DMA_DISABLE_IT(hdma, DMA_IT_TC);
+	__HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
 	gps_data_t data = gps_data;
-	__HAL_DMA_ENABLE_IT(hdma, DMA_IT_TC);
+	__HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
 	return data;
 }
 
 int GPS::processGPSData() {
+	__HAL_DMA_DISABLE(huart->hdmarx);
 	bool success = parseRMC() && parseGGA();
+	gps_data.valid = success;
+	__HAL_DMA_ENABLE(huart->hdmarx);
+
 	return success;
 }
 
@@ -160,7 +163,7 @@ int GPS::parseRMC() {
 	// Begin Course over Ground
 	while (rx_buffer[idx] != ',') idx++;
 	idx++;
-	float cog = -99;
+	float cog = 0;
 	// Check if cog was calculated
 	if (rx_buffer[idx] != ',') {
 		while (rx_buffer[idx] != '.') {
@@ -175,6 +178,9 @@ int GPS::parseRMC() {
 			idx++;
 			mult *= 10;
 		}
+	}
+	else {
+		cog = -1;
 	}
 
 	gps_data.track_angle = cog;
