@@ -5,14 +5,14 @@
 
 typedef struct {
 	uint8_t year, month, day, hour, minute, second;
-} gps_time_t;
+} gpsTime_t;
 
 
 typedef struct {
-	gps_time_t time;
+	gpsTime_t time;
 	float latitude, longitude; // Positive lat -> N else S; Positive lon -> E else W;
-	float ground_speed;
-	uint8_t num_satellites;
-	float track_angle;
+	float groundSpeed;
+	uint8_t numSatellites;
+	float trackAngle;
 	bool valid;
-} gps_data_t;
+} gpsData_t;

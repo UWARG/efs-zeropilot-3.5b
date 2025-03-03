@@ -14,5 +14,5 @@ protected:
 public:
 	virtual ~IGPS() = default;
 
-	virtual gps_data_t readData() = 0;
+	virtual gpsData_t readData() = 0;
 };
