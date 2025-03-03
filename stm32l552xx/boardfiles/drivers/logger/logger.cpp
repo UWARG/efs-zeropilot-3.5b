@@ -1,8 +1,9 @@
-#include "sd_card.hpp"
-#include <stdio.h>
+#include "logger.hpp"
 
-int SDCard::init() {
+int Logger::init() {
+#if defined(SD_CARD_LOGGING)
     HAL_Delay(1000);
+
     FRESULT res;
 
     res = f_mount(&FatFs, "", 1);
@@ -21,9 +22,11 @@ int SDCard::init() {
     }
 
     return res;
+#endif
 }
 
-int SDCard::log(char* message) {
+int Logger::log(char* message) {
+#if defined(SD_CARD_LOGGING)
     FRESULT res;
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
     int tsStrLen;
@@ -40,9 +43,11 @@ int SDCard::log(char* message) {
     res = f_close(&fil);
 
     return res;
+#endif
 }
 
-int SDCard::log(char message[][100], int count) {
+int Logger::log(char message[][100], int count) {
+#if defined(SD_CARD_LOGGING)
     FRESULT res;
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
     int tsStrLen;
@@ -61,4 +66,5 @@ int SDCard::log(char message[][100], int count) {
     res = f_close(&fil);
 
     return res;
+#endif
 }
