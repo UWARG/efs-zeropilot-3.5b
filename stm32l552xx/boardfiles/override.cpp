@@ -12,15 +12,13 @@ extern "C" {
 /* overriding _write to redirect puts()/printf() to SWO */
 int _write(int file, char *ptr, int len)
 {
-  if( osMutexAcquire(itmMutex, osWaitForever) == osOK )
-  {
-    for (int DataIdx = 0; DataIdx < len; DataIdx++)
-    {
-      ITM_SendChar(ptr[DataIdx]);
+    if (osMutexAcquire(itmMutex, osWaitForever) == osOK) {
+        for (int DataIdx = 0; DataIdx < len; DataIdx++) {
+            ITM_SendChar(ptr[DataIdx]);
+        }
+        osMutexRelease(itmMutex);
     }
-    osMutexRelease(itmMutex);
-  }
-  return len;
+    return len;
 }
 
 void HAL_Delay(uint32_t Delay) {
@@ -51,6 +49,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
         rcHandle->startDMA();
     } else if (RFD::instance && RFD::instance->getHuart() == huart) {
       RFD::instance->receiveCallback(Size);
+    }
+    // GPS dma callback
+    else if (huart->Instance == USART2) {
+      gpsHandle->processGPSData();
     }
 }
 

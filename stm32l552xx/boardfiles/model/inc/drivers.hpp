@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gps.hpp"
 #include "iwdg.hpp"
 #include "logger.hpp"
 #include "motor.hpp"
@@ -21,6 +22,7 @@ extern MotorControl *rightFlapMotorHandle;
 extern MotorControl *steeringMotorHandle;
 
 extern RCReceiver *rcHandle;
+extern GPS *gpsHandle;
 
 extern MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle;
 extern MessageQueue<char[100]> *smLoggerQueueHandle;
