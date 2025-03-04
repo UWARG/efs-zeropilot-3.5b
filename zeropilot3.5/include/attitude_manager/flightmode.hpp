@@ -18,11 +18,9 @@ class Flightmode {
     virtual IMessageQueue<T>& run(const T& input) = 0;
 
     //Are we redesigning those functions? I recall the implementation is quite complex s.t you want to redesign it simpler.
-    virtual void updatePid() = 0;
-    virtual void updatePidGains() = 0;
-    virtual void updateControlLimits(ControlLimits_t limits) = 0; 
-
+    // virtual void updatePid() = 0;
+    // virtual void updatePidGains() = 0;
+    // virtual void updateControlLimits(ControlLimits_t limits) = 0; 
 };
-
 
 #endif  

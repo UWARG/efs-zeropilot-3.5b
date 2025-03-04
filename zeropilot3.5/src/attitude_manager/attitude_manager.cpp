@@ -2,15 +2,17 @@
 #include "attitude_manager.hpp"
 #include "rc_motor_control.hpp"
 
-
+//This possibly belongs to AM
 AttitudeManagerInput AttitudeManager::control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
 
 
 AttitudeManagerInput AttitudeManager::getControlInputs() {
-    RCMotorControlMessage_t control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
+    //This looks from SM
+    RCMotorControlMessage_t control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; //Now it holds arm data as well
 
     // Get data from Queue
     if (queue_driver->count()==0) {
+        //Why are we returning RCMotorControlMessage_t? Can we convert it to AM's control inputs struct?
         return control_inputs;
     }
     control_inputs = queue_driver->get();
@@ -66,7 +68,7 @@ void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
     }
 
     for (uint8_t count = 0; count < motorGroup->motorCount; count++) {
-        if (motorGroup_t->motors[motorCount].isInverted) {
+        if (motorGroup->motors[motorCount].isInverted) {
             motorGroup->motors[motorCount].motorInstance->set(100 - percent);
         } else {
             motorGroup->motors[motorCount].motorInstance->set(percent);
