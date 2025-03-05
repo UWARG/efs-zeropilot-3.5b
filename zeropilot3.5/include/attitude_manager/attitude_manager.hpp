@@ -7,11 +7,17 @@
 #include "rc_motor_control.hpp"
 #include <stdint.h>
 
-
 typedef struct {
     IMotorControl *motorInstance; 
     bool isInverted;
 } MotorInstance_t;
+
+typedef struct {
+    float roll;
+    float pitch;
+    float yaw;
+    float throttle;
+} AttitudeManagerInput;
 
 struct MotorGroup_t {
     MotorInstance_t motors;
@@ -24,28 +30,33 @@ class AttitudeManager {
     static constexpr float INPUT_MAX = 100;
     static constexpr float INPUT_MIN = -100;
 
-     
     //Are we going to use <T> or a definite variabe type? Using a template here causes imcomplete data type issue in cpp
-    AttitudeManager(Flightmode<AttitudeManagerInput>* controlAlgorithm,  MotorGroup_t rollMotors, MotorGroup_t pitchMotors, MotorGroup_t yawMotors, MotorGroup_t throttleMotors, IMessageQueue<int> *queue_driver);
+    AttitudeManager(Flightmode* controlAlgorithm,  MotorGroup_t rollMotors, MotorGroup_t pitchMotors, MotorGroup_t yawMotors, MotorGroup_t throttleMotors, IMessageQueue<RCMotorControlMessage_t> *queue_driver);
     ~AttitudeManager();
 
     void runControlLoopIteration();
 
    private:
+
+    enum ControlAxis_e {
+        yaw,
+        pitch,
+        roll,
+        throttle
+    };
+    
+    static AttitudeManagerInput am_control_inputs;
+    RCMotorControlMessage_t getControlInputs();
+
     AttitudeManager();
-  
-    void outputToMotor(ControlAxis_t axis, uint8_t percent);
-
-    static struct AttitudeManagerInput control_inputs;
-    static struct AttitudeManagerInput getControlInputs();
-
+    void outputToMotor(ControlAxis_e axis, uint8_t percent);
     //What should go into template? AttitudeManagerInput?
-    Flightmode<AttitudeManagerInput> *controlAlgorithm_;
+    Flightmode*controlAlgorithm_;
     MotorGroup_t rollMotors;
     MotorGroup_t pitchMotors;
     MotorGroup_t yawMotors;
     MotorGroup_t throttleMotors;
-    IMessageQueue<int> *queue_driver;
+    IMessageQueue<RCMotorControlMessage_t> *queue_driver;
 };
 
 #endif  // ZPSW3_AM_HPP

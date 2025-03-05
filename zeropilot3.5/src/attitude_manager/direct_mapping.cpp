@@ -1,7 +1,15 @@
 #include "direct_mapping.hpp"
-#include "queue_iface.hpp"
+#include "rc_motor_control.hpp"
 
-template <typename T>
-IMessageQueue<T>& DirectMapping<T>::run(const T& input) {
-    return input; //directly outputs the given inputs to the motor
+AttitudeManagerInput run_control(RCMotorControlMessage_t control_inputs){
+    AttitudeManagerInput am_control_inputs_placeholder;
+
+        am_control_inputs_placeholder = {
+        control_inputs.roll, 
+        control_inputs.pitch, 
+        control_inputs.yaw, 
+        control_inputs.throttle 
+    };  
+
+    return am_control_inputs_placeholder;
 }

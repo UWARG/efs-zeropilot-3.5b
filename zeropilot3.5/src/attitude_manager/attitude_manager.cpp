@@ -1,32 +1,35 @@
 //Need to update this cpp later
 #include "attitude_manager.hpp"
 #include "rc_motor_control.hpp"
+#include "direct_mapping.hpp"
 
-//This possibly belongs to AM
-AttitudeManagerInput AttitudeManager::control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
+AttitudeManagerInput AttitudeManager::am_control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
 
 
-AttitudeManagerInput AttitudeManager::getControlInputs() {
-    //This looks from SM
-    RCMotorControlMessage_t control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; //Now it holds arm data as well
+RCMotorControlMessage_t AttitudeManager::getControlInputs() {
+
+    RCMotorControlMessage_t sm_control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; //Now it holds arm data as well
 
     // Get data from Queue
     if (queue_driver->count()==0) {
         //Why are we returning RCMotorControlMessage_t? Can we convert it to AM's control inputs struct?
-        return control_inputs;
+         return { sm_control_inputs.roll, sm_control_inputs.pitch, sm_control_inputs.yaw, sm_control_inputs.throttle, sm_control_inputs.arm };
     }
-    control_inputs = queue_driver->get();
+    sm_control_inputs = queue_driver->get();
     queue_driver->pop();
-    return control_inputs;
+    
+    return sm_control_inputs;
 }
 
-AttitudeManager::AttitudeManager(Flightmode* controlAlgorithm, MotorGroup_t rollMotors, MotorGroup_t pitchMotors, MotorGroup_t yawMotors, MotorGroup_t throttleMotors) :
+AttitudeManager::AttitudeManager(Flightmode* controlAlgorithm,  MotorGroup_t rollMotors, MotorGroup_t pitchMotors, MotorGroup_t yawMotors, MotorGroup_t throttleMotors, IMessageQueue<RCMotorControlMessage_t> *queue_driver)
+:
     controlAlgorithm_(controlAlgorithm),
     rollMotors_(rollMotors),
     pitchMotors_(pitchMotors),
     yawMotors_(yawMotors),
     throttleMotors_(throttleMotors)
-{};
+{}   
+
 
 AttitudeManager::~AttitudeManager()
 {}
@@ -39,7 +42,7 @@ void AttitudeManager::runControlLoopIteration() {
         // Do something
     }
 
-    RCMotorControlMessage_t motor_outputs = controlAlgorithm_->run(control_inputs); // This is a placeholder for the actual control algorithm
+    AttitudeManagerInput motor_outputs = controlAlgorithm_->run_control(control_inputs); // This is a placeholder for the actual control algorithm
 
     outputToMotor(yaw, motor_outputs.yaw);
     outputToMotor(pitch, motor_outputs.pitch);
@@ -47,12 +50,14 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(throttle, motor_outputs.throttle);
 }
 
-void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
+
+
+void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {
     MotorGroup_t* motorGroup = nullptr;
 
     switch (axis) {
         case roll:
-            motorGroup = &rollMotors_;
+            motorGroup = &rollMotors_; //those &Motors is a motor group with multiple motors movements- details undecided
             break;
         case pitch:
             motorGroup = &pitchMotors_;
