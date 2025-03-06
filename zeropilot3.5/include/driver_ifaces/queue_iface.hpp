@@ -8,15 +8,8 @@ class IMessageQueue {
     public: 
         virtual ~IMessageQueue() = default;
         
-        // retrieves the top of the queue
-        virtual T get() = 0;
-        
-        // pushes template message to the back of the queue
-        virtual void push(T message) = 0;
-        
-        // counts the # of items in the queue
+        virtual int get(T message) = 0;
+        virtual int push(T message) = 0;
         virtual int count() = 0;
-        
-        // counts remaining capacity
         virtual int remainingCapacity() = 0;
 };
