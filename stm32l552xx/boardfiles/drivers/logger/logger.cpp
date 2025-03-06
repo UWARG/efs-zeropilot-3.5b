@@ -22,18 +22,20 @@ int Logger::init() {
     }
 
     return res;
+#elif defined(SWO_LOGGING)
+    return 0;
 #endif
+
 }
 
 int Logger::log(char* message) {
-#if defined(SD_CARD_LOGGING)
-    FRESULT res;
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
-    int tsStrLen;
 
     uint32_t ts = (uint32_t)(osKernelGetTickCount() * 1.0 / osKernelGetTickFreq());
-    tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
+    int tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
 
+#if defined(SD_CARD_LOGGING)
+    FRESULT res;
     res = f_open(&fil, file, FA_WRITE | FA_OPEN_APPEND);
 
     snprintf(msgToSend + tsStrLen, 100, message);
@@ -43,18 +45,22 @@ int Logger::log(char* message) {
     res = f_close(&fil);
 
     return res;
+#elif defined(SWO_LOGGING)
+    snprintf(msgToSend + tsStrLen, 100, message);
+    snprintf(msgToSend + tsStrLen + strlen(message), 3, "\r\n");
+    printf("%s", msgToSend);
+    return 0;
 #endif
 }
 
 int Logger::log(char message[][100], int count) {
-#if defined(SD_CARD_LOGGING)
-    FRESULT res;
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
-    int tsStrLen;
 
     uint32_t ts = (uint32_t)(osKernelGetTickCount() * 1.0 / osKernelGetTickFreq());
-    tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
+    int tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
 
+#if defined(SD_CARD_LOGGING)
+    FRESULT res;
     res = f_open(&fil, file, FA_WRITE | FA_OPEN_APPEND);
 
     for (int i = 0; i < count; i++) {
@@ -66,5 +72,20 @@ int Logger::log(char message[][100], int count) {
     res = f_close(&fil);
 
     return res;
+#elif defined(SWO_LOGGING)
+    for (int i = 0; i < count; i++) {
+      snprintf(msgToSend + tsStrLen, 100, message[i]);
+      snprintf(msgToSend + tsStrLen + strlen(message[i]), 3, "\r\n");
+      printf("%s", msgToSend);
+    }
+    return 0;
 #endif
 }
+
+#if defined(SWO_LOGGING)
+extern "C" {
+  int __io_putchar(int ch) {
+    return ITM_SendChar(ch);
+  }
+}
+#endif
