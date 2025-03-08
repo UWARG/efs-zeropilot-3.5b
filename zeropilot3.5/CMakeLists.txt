@@ -3,7 +3,8 @@ project(zeropilot3.5)
 
 include(${CMAKE_SOURCE_DIR}/common.cmake)
 
-set(RELATIVE_ZP_SRC)
+set(RELATIVE_ZP_SRC
+        src/telemetry_manager/telemetry_manager.cpp)
 foreach(SRC_FILE IN LISTS ZP_SRC)
     string(PREPEND SRC_FILE "${CMAKE_SOURCE_DIR}/")
     list(APPEND RELATIVE_ZP_SRC ${SRC_FILE})
