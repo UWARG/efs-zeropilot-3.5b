@@ -5,8 +5,11 @@
 .settings/
 .vscode/
 /.project
+/.idea
 
 # build and debug artifacts
 build/
 Debug/
 *.launch
+/zeropilot3.5/cmake-build-debug/
+
