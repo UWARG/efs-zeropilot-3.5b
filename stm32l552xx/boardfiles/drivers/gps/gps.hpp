@@ -16,7 +16,7 @@ public:
     int processGPSData();
 
 private:
-    GpsData_t data;
+    GpsData_t validData;
     GpsData_t tempData;
     
     uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];

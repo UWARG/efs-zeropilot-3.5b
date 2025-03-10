@@ -18,9 +18,10 @@ int GPS::init() {
 
 GpsData_t GPS::readData() {
 	__HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
-	GpsData_t data = data;
-
+	
+	GpsData_t data = validData;
 	data.isNew = false;
+	
 	__HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
 	return data;
@@ -31,7 +32,7 @@ int GPS::processGPSData() {
 	bool success = parseRMC() && parseGGA();
 	tempData.isNew = success;
 
-	data = tempData;
+	validData = tempData;
 	__HAL_DMA_ENABLE(huart->hdmarx);
 
 	return success;
