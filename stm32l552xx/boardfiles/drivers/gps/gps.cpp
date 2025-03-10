@@ -16,9 +16,9 @@ int GPS::init() {
 	return success == HAL_OK;
 }
 
-gpsData_t GPS::readData() {
+GpsData_t GPS::readData() {
 	__HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
-	gpsData_t data = data;
+	GpsData_t data = data;
 	__HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
 	return data;
@@ -179,7 +179,7 @@ int GPS::parseRMC() {
 		}
 	}
 	else {
-		cog = -1;
+		cog = INVALID_TRACK_ANGLE;
 	}
 
 	data.trackAngle = cog;

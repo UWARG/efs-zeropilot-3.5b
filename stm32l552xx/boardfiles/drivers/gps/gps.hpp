@@ -8,20 +8,18 @@
 class GPS : public IGPS {
 
 public:
-	gpsData_t readData() override;
+    GpsData_t readData() override;
 
-	GPS(UART_HandleTypeDef *huart);
+    GPS(UART_HandleTypeDef *huart);
 
-	int init();
-	int processGPSData();
-
+    int init();
+    int processGPSData();
 
 private:
-	gpsData_t data;
-	uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
-	UART_HandleTypeDef *huart;
+    GpsData_t data;
+    uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
+    UART_HandleTypeDef *huart;
 
-	int parseRMC();
-	int parseGGA();
-
+    int parseRMC();
+    int parseGGA();
 };
