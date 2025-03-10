@@ -2,9 +2,7 @@
 
 #include "gps_datatypes.hpp"
 
-#ifdef __cplusplus
 #include <cstdint>
-#endif
 
 
 class IGPS {
