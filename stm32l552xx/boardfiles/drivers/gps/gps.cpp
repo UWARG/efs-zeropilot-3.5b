@@ -252,12 +252,24 @@ bool GPS::parseRMC() {
 		return 0;
 	}
 
-
-
 	return true;
 }
 
 
+bool GPS::getNumSatellitesGGA(int &idx) {
+	// Begin numSatellites
+	int numSats = 0;
+	while (rxBuffer[idx] != ',') {
+		numSats *= 10;
+		numSats += rxBuffer[idx] - '0';
+		idx++;
+	}
+
+	tempData.numSatellites = numSats;
+	// End numSatellites
+
+	return true;
+}
 
 bool GPS::parseGGA() {
 	int idx = 0;
@@ -277,16 +289,9 @@ bool GPS::parseGGA() {
 		while (rxBuffer[idx] != ',') idx++;
 	}
 
-	// Begin numSatellites
-	int numSats = 0;
-	while (rxBuffer[idx] != ',') {
-		numSats *= 10;
-		numSats += rxBuffer[idx] - '0';
-		idx++;
+	if (getNumSatellitesGGA(idx) == false) {
+		return 0;
 	}
-
-	tempData.numSatellites = numSats;
-	// End numSatellites
 
 	return 1;
 }

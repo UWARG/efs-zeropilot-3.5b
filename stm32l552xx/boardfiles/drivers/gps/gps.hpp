@@ -33,4 +33,6 @@ private:
     bool getTrackAngleRMC(int &idx);
     bool getDateRMC(int &idx);
 
+    // GGA helper functions
+    bool getNumSatellitesGGA(int &idx);
 };
