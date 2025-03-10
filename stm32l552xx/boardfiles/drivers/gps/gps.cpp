@@ -29,10 +29,11 @@ GpsData_t GPS::readData() {
 
 bool GPS::processGPSData() {
 	__HAL_DMA_DISABLE(huart->hdmarx);
+	
 	bool success = parseRMC() && parseGGA();
 	tempData.isNew = success;
-
 	validData = tempData;
+
 	__HAL_DMA_ENABLE(huart->hdmarx);
 
 	return success;
@@ -86,12 +87,14 @@ bool GPS::parseRMC() {
 
 	while (rxBuffer[idx] != ',') idx++;
 	idx++;
+
 	if (getTrackAngleRMC(idx) == false) {
 		return 0;
 	}
 
 	while (rxBuffer[idx] != ',') idx++;
 	while (rxBuffer[idx] == ',') idx++;
+
 	if (getDateRMC(idx) == false) {
 		return 0;
 	}
@@ -125,15 +128,15 @@ bool GPS::parseGGA() {
 }
 
 bool GPS::getTimeRMC(int &idx) {
-	uint8_t hour = (rxBuffer[idx]-'0')*10 + (rxBuffer[idx+1]-'0');
+	uint8_t hour = (rxBuffer[idx] - '0') * 10 + (rxBuffer[idx + 1] - '0');
 	idx += 2;
-	uint8_t minute = (rxBuffer[idx]-'0')*10 + (rxBuffer[idx+1]-'0');
+	uint8_t minute = (rxBuffer[idx] - '0') * 10 + (rxBuffer[idx + 1] - '0');
 	idx += 2;
-	uint8_t second = (rxBuffer[idx]-'0')*10 + (rxBuffer[idx+1]-'0');
+	uint8_t second = (rxBuffer[idx] - '0') * 10 + (rxBuffer[idx + 1] - '0');
 
 	tempData.time.hour = hour;
 	tempData.time.minute = minute;
-	tempData.time.second= second;
+	tempData.time.second = second;
 
 	return true;
 }
@@ -156,7 +159,7 @@ bool GPS::getLatitudeRMC(int &idx) {
 	// Including two digits of minutes
 	uint32_t mult = 10;
 	while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
-		lat_minutes += ((float)(rxBuffer[idx] - '0'))/mult;
+		lat_minutes += ((float)(rxBuffer[idx] - '0')) / mult;
 		idx++;
 		mult *= 10;
 	}
@@ -177,13 +180,13 @@ bool GPS::getLongitudeRMC(int &idx) {
 	float lon = 0;
 	for (int i = 0; i < 3; i++, idx++) {
 		lon *= 10;
-		lon += ((float)(rxBuffer[idx]-'0'));
+		lon += ((float)(rxBuffer[idx] - '0'));
 	}
 
 	float lon_minutes = 0;
 	while (rxBuffer[idx] != '.') {
 		lon_minutes *= 10;
-		lon_minutes += ((float)(rxBuffer[idx]-'0'));
+		lon_minutes += ((float)(rxBuffer[idx] - '0'));
 		idx++;
 	}
 
@@ -192,7 +195,7 @@ bool GPS::getLongitudeRMC(int &idx) {
 	// Including two digits of minutes
 	uint32_t mult = 10;
 	while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
-		lon_minutes += ((float)(rxBuffer[idx]-'0'))/mult;
+		lon_minutes += ((float)(rxBuffer[idx] - '0')) / mult;
 		idx++;
 		mult *= 10;
 	}
@@ -211,13 +214,13 @@ bool GPS::getSpeedRMC(int &idx) {
 	float spd = 0;
 	while (rxBuffer[idx] != '.') {
 		spd *= 10;
-		spd += rxBuffer[idx]-'0';
+		spd += rxBuffer[idx] - '0';
 		idx++;
 	}
 	idx++; // Decimal char
 	int mult = 10;
 	while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
-		spd += ((float)(rxBuffer[idx]-'0'))/mult;
+		spd += ((float)(rxBuffer[idx] - '0')) / mult;
 		idx++;
 		mult *= 10;
 	}
@@ -233,13 +236,13 @@ bool GPS::getTrackAngleRMC(int &idx) {
 	if (rxBuffer[idx] != ',') {
 		while (rxBuffer[idx] != '.') {
 			cog *= 10;
-			cog += rxBuffer[idx]-'0';
+			cog += rxBuffer[idx] - '0';
 			idx++;
 		}
 		idx++; // Decimal char
 		int mult = 10;
 		while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
-			cog += ((float)(rxBuffer[idx]-'0'))/mult;
+			cog += ((float)(rxBuffer[idx] - '0')) / mult;
 			idx++;
 			mult *= 10;
 		}
