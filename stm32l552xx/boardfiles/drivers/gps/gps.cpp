@@ -19,6 +19,8 @@ int GPS::init() {
 GpsData_t GPS::readData() {
 	__HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
 	GpsData_t data = data;
+
+	data.isNew = false;
 	__HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
 	return data;
@@ -27,7 +29,9 @@ GpsData_t GPS::readData() {
 int GPS::processGPSData() {
 	__HAL_DMA_DISABLE(huart->hdmarx);
 	bool success = parseRMC() && parseGGA();
-	data.valid = success;
+	tempData.isNew = success;
+
+	data = tempData;
 	__HAL_DMA_ENABLE(huart->hdmarx);
 
 	return success;
@@ -55,9 +59,9 @@ int GPS::parseRMC() {
 	idx += 2;
 	uint8_t second = (rxBuffer[idx]-'0')*10 + (rxBuffer[idx+1]-'0');
 
-	data.time.hour = hour;
-	data.time.minute = minute;
-	data.time.second= second;
+	tempData.time.hour = hour;
+	tempData.time.minute = minute;
+	tempData.time.second= second;
 	// End time
 
 	// Skip to status
@@ -98,12 +102,12 @@ int GPS::parseRMC() {
 
 	lat += lat_minutes/60;
 
-	data.latitude = lat;
+	tempData.latitude = lat;
 
 	// Skip to NS char indicator
 	while (rxBuffer[idx] != ',') idx++;
 	idx++; // Skip over comma
-	data.latitude *= (rxBuffer[idx] == 'N') ? 1 : -1;
+	tempData.latitude *= (rxBuffer[idx] == 'N') ? 1 : -1;
 	// End latitude
 
 	// Begin longitude
@@ -133,10 +137,10 @@ int GPS::parseRMC() {
 
 	lon += lon_minutes / 60;
 
-	data.longitude = lon;
+	tempData.longitude = lon;
 	while (rxBuffer[idx] != ',') idx++;
 	idx++;
-	data.longitude *= (rxBuffer[idx] == 'E') ? 1 : -1;;
+	tempData.longitude *= (rxBuffer[idx] == 'E') ? 1 : -1;;
 
 	idx += 2;
 	// End longitude
@@ -156,7 +160,7 @@ int GPS::parseRMC() {
 		mult *= 10;
 	}
 
-	data.groundSpeed = spd;
+	tempData.groundSpeed = spd;
 	// End speed
 
 	// Begin Course over Ground
@@ -182,7 +186,7 @@ int GPS::parseRMC() {
 		cog = INVALID_TRACK_ANGLE;
 	}
 
-	data.trackAngle = cog;
+	tempData.trackAngle = cog;
 	// End Course over Ground
 
 
@@ -196,9 +200,9 @@ int GPS::parseRMC() {
 	idx += 2;
 	int year = (rxBuffer[idx] - '0') * 10 + rxBuffer[idx + 1] - '0';
 
-	data.time.day = day;
-	data.time.month= month;
-	data.time.year = year;
+	tempData.time.day = day;
+	tempData.time.month= month;
+	tempData.time.year = year;
 	// End date
 
 	return 1;
@@ -231,7 +235,7 @@ int GPS::parseGGA() {
 		idx++;
 	}
 
-	data.numSatellites = numSats;
+	tempData.numSatellites = numSats;
 	// End numSatellites
 
 	return 1;

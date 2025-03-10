@@ -15,5 +15,5 @@ typedef struct {
 	float groundSpeed;
 	uint8_t numSatellites;
 	float trackAngle;
-	bool valid;
+	bool isNew;
 } GpsData_t;
