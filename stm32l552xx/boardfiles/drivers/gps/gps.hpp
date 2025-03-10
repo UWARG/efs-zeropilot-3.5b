@@ -24,4 +24,13 @@ private:
 
     bool parseRMC();
     bool parseGGA();
+
+    // RMC helper functions
+    bool getTimeRMC(int &idx);
+    bool getLatitudeRMC(int &idx);
+    bool getLongitudeRMC(int &idx);
+    bool getSpeedRMC(int &idx);
+    bool getTrackAngleRMC(int &idx);
+    bool getDateRMC(int &idx);
+
 };
