@@ -5,11 +5,6 @@
 #include "gps_datatypes.hpp"
 #include "gps_defines.hpp"
 
-#ifdef __cplusplus
-#include <cstdint>
-#endif
-
-
 class GPS : public IGPS {
 
 public:

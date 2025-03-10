@@ -1,7 +1,6 @@
 #pragma once
-#ifdef __cplusplus
+
 #include <cstdint>
-#endif
 
 typedef struct {
 	uint8_t year, month, day, hour, minute, second;

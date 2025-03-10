@@ -2,7 +2,6 @@
 
 #include "gps.hpp"
 
-
 GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
 
 int GPS::init() {

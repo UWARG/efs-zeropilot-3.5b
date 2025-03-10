@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef __cplusplus
 #include <cstdint>
-#endif
 
 static constexpr uint8_t MAX_NMEA_DATA_LENGTH_PER_LINE = 82;
 static constexpr uint8_t NUM_NMEA_DATA_LINES = 8;
