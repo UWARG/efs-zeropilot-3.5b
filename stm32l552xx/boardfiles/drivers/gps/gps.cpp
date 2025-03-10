@@ -38,13 +38,93 @@ bool GPS::processGPSData() {
 	return success;
 }
 
-bool GPS::getTimeRMC(int &idx) {
+bool GPS::parseRMC() {
+	int idx = 0;
+	while (!(rxBuffer[idx] == 'R' && rxBuffer[idx+1] == 'M' && rxBuffer[idx+2] == 'C')) {
+		idx++;
+		if (idx == MAX_NMEA_DATA_LENGTH) return 0;
+	}
+
+	idx += 4;
+
 	// Check if data exists
 	if (rxBuffer[idx] == ',') {
 		return 0;
 	}
 
-	// Begin time
+	if (getTimeRMC(idx) == false) {
+		return 0;
+	}
+
+	// Skip to status
+	while (rxBuffer[idx] != ',') idx++;
+
+	// Begin status
+	idx++;
+
+	// Check if data valid
+	if (rxBuffer[idx] == 'V') return 0;
+	// End status
+
+	idx += 2;
+
+	if (getLatitudeRMC(idx) == false) {
+		return 0;
+	}
+	
+	idx += 2;
+	
+	if (getLongitudeRMC(idx) == false) {
+		return 0;
+	}
+	
+	idx += 2;
+	
+	if (getSpeedRMC(idx) == false) {
+		return 0;
+	}
+
+	while (rxBuffer[idx] != ',') idx++;
+	idx++;
+	if (getTrackAngleRMC(idx) == false) {
+		return 0;
+	}
+
+	while (rxBuffer[idx] != ',') idx++;
+	while (rxBuffer[idx] == ',') idx++;
+	if (getDateRMC(idx) == false) {
+		return 0;
+	}
+
+	return true;
+}
+
+bool GPS::parseGGA() {
+	int idx = 0;
+	while (!(rxBuffer[idx] == 'G' && rxBuffer[idx + 1] == 'G' && rxBuffer[idx + 2] == 'A')) {
+		idx++;
+		if (idx == MAX_NMEA_DATA_LENGTH) return 0;
+	}
+	idx+=4; // Skip to data
+
+	// Check if data exists
+	if (rxBuffer[idx] == ',') {
+		return 0;
+	}
+
+	// Skip 7 sections of data
+	for (int i = 0; i < 6; i++, idx++) {
+		while (rxBuffer[idx] != ',') idx++;
+	}
+
+	if (getNumSatellitesGGA(idx) == false) {
+		return 0;
+	}
+
+	return 1;
+}
+
+bool GPS::getTimeRMC(int &idx) {
 	uint8_t hour = (rxBuffer[idx]-'0')*10 + (rxBuffer[idx+1]-'0');
 	idx += 2;
 	uint8_t minute = (rxBuffer[idx]-'0')*10 + (rxBuffer[idx+1]-'0');
@@ -54,13 +134,11 @@ bool GPS::getTimeRMC(int &idx) {
 	tempData.time.hour = hour;
 	tempData.time.minute = minute;
 	tempData.time.second= second;
-	// End time
 
 	return true;
 }
 
 bool GPS::getLatitudeRMC(int &idx) {
-	// Begin latitude
 	float lat = 0;
 	for (int i = 0; i < 2; i++, idx++) {
 		lat *= 10;
@@ -91,7 +169,6 @@ bool GPS::getLatitudeRMC(int &idx) {
 	while (rxBuffer[idx] != ',') idx++;
 	idx++; // Skip over comma
 	tempData.latitude *= (rxBuffer[idx] == 'N') ? 1 : -1;
-	// End latitude
 
 	return true;
 }
@@ -109,6 +186,7 @@ bool GPS::getLongitudeRMC(int &idx) {
 		lon_minutes += ((float)(rxBuffer[idx]-'0'));
 		idx++;
 	}
+
 	idx++; // Skip decimal char
 
 	// Including two digits of minutes
@@ -130,7 +208,6 @@ bool GPS::getLongitudeRMC(int &idx) {
 }
 
 bool GPS::getSpeedRMC(int &idx) {
-	// Begin speed
 	float spd = 0;
 	while (rxBuffer[idx] != '.') {
 		spd *= 10;
@@ -146,13 +223,11 @@ bool GPS::getSpeedRMC(int &idx) {
 	}
 
 	tempData.groundSpeed = spd;
-	// End speed
 
 	return true;
 }
 
 bool GPS::getTrackAngleRMC(int &idx) {
-	// Begin Course over Ground
 	float cog = 0;
 	// Check if cog was calculated
 	if (rxBuffer[idx] != ',') {
@@ -174,13 +249,11 @@ bool GPS::getTrackAngleRMC(int &idx) {
 	}
 
 	tempData.trackAngle = cog;
-	// End Course over Ground
 
 	return true;
 }
 
 bool GPS::getDateRMC(int &idx) {
-	// Start date
 	int day = (rxBuffer[idx] - '0') * 10 + rxBuffer[idx + 1] - '0';
 	idx += 2;
 	int month = (rxBuffer[idx] - '0') * 10 + rxBuffer[idx + 1] - '0';
@@ -190,74 +263,11 @@ bool GPS::getDateRMC(int &idx) {
 	tempData.time.day = day;
 	tempData.time.month= month;
 	tempData.time.year = year;
-	// End date
 
 	return true;
 }
-
-bool GPS::parseRMC() {
-	int idx = 0;
-	while (!(rxBuffer[idx] == 'R' && rxBuffer[idx+1] == 'M' && rxBuffer[idx+2] == 'C')) {
-		idx++;
-		if (idx == MAX_NMEA_DATA_LENGTH) return 0;
-	}
-
-	// Skip to time
-	idx += 4;
-
-	if (getTimeRMC(idx) == false) {
-		return 0;
-	}
-
-	// Skip to status
-	while (rxBuffer[idx] != ',') idx++;
-
-	// Begin status
-	idx++;
-
-	// Check if data valid
-	if (rxBuffer[idx] == 'V') return 0;
-	// End status
-
-	// Skip to latitude
-	idx += 2;
-
-	if (getLatitudeRMC(idx) == false) {
-		return 0;
-	}
-	
-	// Begin longitude
-	idx += 2;
-	
-	if (getLongitudeRMC(idx) == false) {
-		return 0;
-	}
-	
-	idx += 2;
-	// End longitude
-	
-	if (getSpeedRMC(idx) == false) {
-		return 0;
-	}
-
-	while (rxBuffer[idx] != ',') idx++;
-	idx++;
-	if (getTrackAngleRMC(idx) == false) {
-		return 0;
-	}
-
-	while (rxBuffer[idx] != ',') idx++;
-	while (rxBuffer[idx] == ',') idx++;
-	if (getDateRMC(idx) == false) {
-		return 0;
-	}
-
-	return true;
-}
-
 
 bool GPS::getNumSatellitesGGA(int &idx) {
-	// Begin numSatellites
 	int numSats = 0;
 	while (rxBuffer[idx] != ',') {
 		numSats *= 10;
@@ -266,32 +276,6 @@ bool GPS::getNumSatellitesGGA(int &idx) {
 	}
 
 	tempData.numSatellites = numSats;
-	// End numSatellites
 
 	return true;
-}
-
-bool GPS::parseGGA() {
-	int idx = 0;
-	while (!(rxBuffer[idx] == 'G' && rxBuffer[idx + 1] == 'G' && rxBuffer[idx + 2] == 'A')) {
-		idx++;
-		if (idx == MAX_NMEA_DATA_LENGTH) return 0;
-	}
-	idx+=4; // Skip to data
-
-	// Check if data exists
-	if (rxBuffer[idx] == ',') {
-		return 0;
-	}
-
-	// Skip 7 sections of data
-	for (int i = 0; i < 6; i++, idx++) {
-		while (rxBuffer[idx] != ',') idx++;
-	}
-
-	if (getNumSatellitesGGA(idx) == false) {
-		return 0;
-	}
-
-	return 1;
 }
