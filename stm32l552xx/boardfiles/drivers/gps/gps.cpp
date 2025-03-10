@@ -4,7 +4,7 @@
 
 GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
 
-int GPS::init() {
+bool GPS::init() {
 	HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
 			huart,
 			rxBuffer,
@@ -27,7 +27,7 @@ GpsData_t GPS::readData() {
 	return data;
 }
 
-int GPS::processGPSData() {
+bool GPS::processGPSData() {
 	__HAL_DMA_DISABLE(huart->hdmarx);
 	bool success = parseRMC() && parseGGA();
 	tempData.isNew = success;
@@ -38,7 +38,7 @@ int GPS::processGPSData() {
 	return success;
 }
 
-int GPS::parseRMC() {
+bool GPS::parseRMC() {
 	int idx = 0;
 	while (!(rxBuffer[idx] == 'R' && rxBuffer[idx+1] == 'M' && rxBuffer[idx+2] == 'C')) {
 		idx++;
@@ -210,7 +210,7 @@ int GPS::parseRMC() {
 }
 
 
-int GPS::parseGGA() {
+bool GPS::parseGGA() {
 	int idx = 0;
 	while (!(rxBuffer[idx] == 'G' && rxBuffer[idx + 1] == 'G' && rxBuffer[idx + 2] == 'A')) {
 		idx++;

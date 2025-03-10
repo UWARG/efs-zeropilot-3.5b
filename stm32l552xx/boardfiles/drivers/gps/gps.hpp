@@ -12,8 +12,8 @@ public:
 
     GPS(UART_HandleTypeDef *huart);
 
-    int init();
-    int processGPSData();
+    bool init();
+    bool processGPSData();
 
 private:
     GpsData_t validData;
@@ -22,6 +22,6 @@ private:
     uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
     UART_HandleTypeDef *huart;
 
-    int parseRMC();
-    int parseGGA();
+    bool parseRMC();
+    bool parseGGA();
 };
