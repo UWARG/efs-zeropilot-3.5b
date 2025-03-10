@@ -1,19 +1,19 @@
 #pragma once
 
 #include "motor_iface.hpp"
+
 #include "main.h"
 
 class MotorControl{
     public:
-        MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel);
+        MotorControl(TIM_HandleTypeDef* timer, uint16_t timerChannel, uint32_t min_percent, uint32_t max_percent);
 
         /**
          * @brief Sets the duty cycle as a percent between 5 and 10%
          * @param percent: number between 1-100
          */
+        void init();
         void set(uint8_t percent);
-        bool setDutyCycleLimits(uint8_t minPercentage, uint8_t maxPercentage);
-        void start();
     private:
         TIM_HandleTypeDef *const timer;
         const uint16_t TIMER_CHANNEL;
