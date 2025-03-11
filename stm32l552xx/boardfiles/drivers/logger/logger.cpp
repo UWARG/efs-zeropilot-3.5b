@@ -28,7 +28,7 @@ int Logger::init() {
 
 }
 
-int Logger::log(char* message) {
+int Logger::log(char message[100]) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
     uint32_t ts = (uint32_t)(osKernelGetTickCount() * 1.0 / osKernelGetTickFreq());
