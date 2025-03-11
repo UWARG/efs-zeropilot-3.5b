@@ -1,7 +1,7 @@
 #pragma once
 
 #include <gmock/gmock.h>
-#include <iwdg_iface.hpp>
+#include "iwdg_iface.hpp"
 
 class MockWatchdog : public IIndependentWatchdog {
     public:

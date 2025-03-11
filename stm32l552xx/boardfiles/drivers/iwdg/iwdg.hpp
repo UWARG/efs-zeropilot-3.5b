@@ -1,7 +1,7 @@
 #pragma once
 
 #include "iwdg_iface.hpp"
-#include "stm32l5xx_hal_iwdg.h"
+#include "stm32l5xx_hal.h"
 
 class IndependentWatchdog : public IIndependentWatchdog{
     private:
