@@ -4,13 +4,11 @@ MotorControl::MotorControl(TIM_HandleTypeDef *timer, uint32_t timerChannel, uint
     timer(timer), 
     timerChannel(timerChannel), 
     minCCR(minDutyCycle / 100.0 * timer->Init.Period), 
-    maxCCR(maxDutyCycle / 100.0 * timer->Init.Period)
-{
+    maxCCR(maxDutyCycle / 100.0 * timer->Init.Period) {
     // blank
 }
 
-void MotorControl::init()
-{
+void MotorControl::init() {
     __HAL_TIM_SET_COMPARE(timer, timerChannel, minCCR);
     HAL_TIM_PWM_Start(timer, timerChannel);
 }
