@@ -2,11 +2,12 @@
 
 #include "queue_iface.hpp"
 #include "cmsis_os2.h"
+#include "utils.h"
 
 template <typename T>
-class MessageQueue : IMessageQueue<T>{
+class MessageQueue : IMessageQueue<T> {
    private:
-      osMessageQueueId_t * const queue_id;
+      osMessageQueueId_t const * queue_id;
    public: 
       MessageQueue(osMessageQueueId_t *queue_id);
 

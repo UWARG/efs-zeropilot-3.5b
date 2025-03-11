@@ -16,19 +16,11 @@ int MessageQueue<T>::remainingCapacity() {
 // gets top element of queue
 template <typename T>
 int MessageQueue<T>::get(T* message) {
-  if (count() > 0) {
-    return osMessageQueueGet(*queue_id, message, 0, osWaitForever);
-  }
-
-  return osError;
+  return osMessageQueueGet(*queue_id, message, 0, timeToTicks(100));
 }
 
 // pushes template message to the back of the queue
 template <typename T>
 int MessageQueue<T>::push(T* message) {
-  if (remainingCapacity() > 0) {
-    return osMessageQueuePut(queue_id, message, 0, osWaitForever);
-  }
-
-  return osError;
+  return osMessageQueuePut(*queue_id, message, 0, timeToTicks(100));
 }
