@@ -24,7 +24,7 @@ class Logger : ILogger {
          * @param message: data to be written
          * @retval DRESULT: Operation result
          */
-        int log(char* message);
+        int log(char message[100]);
 
         /**
          * @brief logs multiple messages to the SD card
