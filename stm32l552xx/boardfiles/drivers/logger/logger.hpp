@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 
-class Logger : ILogger {
+class Logger : public ILogger {
     private:
         FATFS FatFs;
         FIL fil;
