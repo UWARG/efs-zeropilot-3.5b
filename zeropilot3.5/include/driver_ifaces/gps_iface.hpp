@@ -7,10 +7,10 @@
 
 class IGPS {
 protected:
-	IGPS() = default;
+    IGPS() = default;
 
 public:
-	virtual ~IGPS() = default;
+    virtual ~IGPS() = default;
 
-	virtual GpsData_t readData() = 0;
+    virtual GpsData_t readData() = 0;
 };
