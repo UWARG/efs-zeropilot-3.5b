@@ -10,4 +10,4 @@ class MockMessageQueue : public IMessageQueue<T> {
         MOCK_METHOD(int, push, (T *message), override);
         MOCK_METHOD(int, count, (), override);
         MOCK_METHOD(int, remainingCapacity, (), override);
-}
+};

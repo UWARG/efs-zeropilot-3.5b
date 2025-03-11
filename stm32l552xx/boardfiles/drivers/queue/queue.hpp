@@ -8,6 +8,7 @@ template <typename T>
 class MessageQueue : public IMessageQueue<T> {
    private:
       osMessageQueueId_t * const queueId;
+      
    public: 
       MessageQueue(osMessageQueueId_t *queueId) : queueId{queueId} {
         // blank
