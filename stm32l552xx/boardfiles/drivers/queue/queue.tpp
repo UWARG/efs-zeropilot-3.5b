@@ -1,37 +1,34 @@
 template <typename T>
-MessageQueue<T>::MessageQueue(osMessageQueueId_t* id) : queue_id{*id} {}
+MessageQueue<T>::MessageQueue(osMessageQueueId_t *id) : queue_id{id} {}
 
 // counts the # of items in the queue
 template <typename T>
 int MessageQueue<T>::count() {
-  return osMessageQueueGetCount(queue_id);
+  return osMessageQueueGetCount(*queue_id);
 }
 
 // counts remaining capacity of the queue
 template <typename T>
 int MessageQueue<T>::remainingCapacity() {
-  return osMessageQueueGetSpace(queue_id);
+  return osMessageQueueGetSpace(*queue_id);
 }
 
 // gets top element of queue
 template <typename T>
-int MessageQueue<T>::get(T message) {
-  osStatus_t status = osError;
-
+int MessageQueue<T>::get(T* message) {
   if (count() > 0) {
-     status = osMessageQueueGet(queue_id, message, nullptr, osWaitForever);
+    return osMessageQueueGet(*queue_id, message, 0, osWaitForever);
   }
 
-  return status;
+  return osError;
 }
 
 // pushes template message to the back of the queue
 template <typename T>
-int MessageQueue<T>::push(T message) {
-  osStatus_t status = osError;
+int MessageQueue<T>::push(T* message) {
   if (remainingCapacity() > 0) {
-    status = osMessageQueuePut(queue_id, message, 0, osWaitForever);
+    return osMessageQueuePut(queue_id, message, 0, osWaitForever);
   }
 
-  return status;
+  return osError;
 }

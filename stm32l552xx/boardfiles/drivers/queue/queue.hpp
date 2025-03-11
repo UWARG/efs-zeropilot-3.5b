@@ -4,25 +4,25 @@
 #include "cmsis_os2.h"
 
 template <typename T>
-class MessageQueue {
+class MessageQueue : IMessageQueue<T>{
    private:
-      osMessageQueueId_t queue_id;
+      osMessageQueueId_t * const queue_id;
    public: 
-      MessageQueue(osMessageQueueId_t* queue_id);
+      MessageQueue(osMessageQueueId_t *queue_id);
 
       /**
        * @brief Gets top element of queue
        * @param message:
        * @retval status code
        */
-      int get(T message);
+      int get(T *message);
 
       /**
        * @brief pushes message to the back of the queue
        * @param message: data to be transmitted
        * @retval status code
        */
-      int push(T message);
+      int push(T *message);
 
       /**
        * @brief returns the number of messages in the queue
