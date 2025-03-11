@@ -3,13 +3,13 @@
 #include "motor_iface.hpp"
 #include "stm32l5xx_hal.h"
 
-class MotorControl{
+class MotorControl : public IMotorControl {
     public:
         MotorControl(TIM_HandleTypeDef *timer, uint32_t timerChannel, uint32_t minDutyCycle, uint32_t maxDutyCycle);
+        
+        void set(uint32_t percent) override;
 
         void init();
-        
-        void set(uint32_t percent);
 
     private:
         TIM_HandleTypeDef * const timer;

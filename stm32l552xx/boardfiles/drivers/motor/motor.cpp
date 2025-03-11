@@ -8,13 +8,13 @@ MotorControl::MotorControl(TIM_HandleTypeDef *timer, uint32_t timerChannel, uint
     // blank
 }
 
-void MotorControl::init() {
-    __HAL_TIM_SET_COMPARE(timer, timerChannel, minCCR);
-    HAL_TIM_PWM_Start(timer, timerChannel);
-}
-
 void MotorControl::set(uint32_t percent) {
     percent = percent > 100 ? 100 : percent;
     uint32_t ticks = ((percent / 100.0) * (maxCCR - minCCR)) + minCCR;
     __HAL_TIM_SET_COMPARE(timer, timerChannel, ticks);
+}
+
+void MotorControl::init() {
+    __HAL_TIM_SET_COMPARE(timer, timerChannel, minCCR);
+    HAL_TIM_PWM_Start(timer, timerChannel);
 }
