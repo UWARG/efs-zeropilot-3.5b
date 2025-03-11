@@ -1,7 +1,7 @@
 #pragma once
 
 #include "motor_iface.hpp"
-#include "stm32l5xx_hal_tim.h"
+#include "stm32l5xx_hal.h"
 
 class MotorControl{
     public:
