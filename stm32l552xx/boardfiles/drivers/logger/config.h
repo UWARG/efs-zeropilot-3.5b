@@ -13,6 +13,8 @@
 
 #if defined(SD_CARD_LOGGING) && defined(SWO_LOGGING)
   #error Only one can be defined
+#elif !defined(SD_CARD_LOGGING) && !defined(SWO_LOGGING)
+  #error Define a Logging interface
 #endif
 
 #endif /* INC_CONFIG_H_ */

@@ -32,11 +32,18 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+
+#ifdef SD_CARD_LOGGING
+
 #define SDMMC_INTERFACE
 //#define SPI_INTERFACE
 
 #if defined(SPI_INTERFACE) && defined(SDMMC_INTERFACE)
   #error Only one can be defined
+#elif !defined(SPI_INTERFACE) && !defined(SDMMC_INTERFACE)
+  #error Define a SD Card interface
+#endif
+
 #endif
 extern Diskio_drvTypeDef  USER_Driver;
 
