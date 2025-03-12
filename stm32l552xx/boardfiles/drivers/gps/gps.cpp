@@ -20,7 +20,7 @@ GpsData_t GPS::readData() {
     __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
     
     GpsData_t data = validData;
-    data.isNew = false;
+    validData.isNew = false;
     
     __HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
