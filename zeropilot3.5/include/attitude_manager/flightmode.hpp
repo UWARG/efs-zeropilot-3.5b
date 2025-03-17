@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef ZPSW3_AM_FLIGHTMODE_HPP
-#define ZPSW3_AM_FLIGHTMODE_HPP
-
 #include "attitude_manager.hpp"
 
 class Flightmode {
@@ -12,9 +9,7 @@ class Flightmode {
    public:
     virtual ~Flightmode() = default;
 
-    virtual AttitudeManagerInput run_control(RCMotorControlMessage_t control_input);
+    virtual RCMotorControlMessage_t run_control(RCMotorControlMessage_t control_input) = 0;
     //conversion happens here
     //run flightmode, get those computed inputs, put it into outputtomotor
 };
-
-#endif  

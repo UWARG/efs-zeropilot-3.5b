@@ -3,8 +3,6 @@
 #include "rc_motor_control.hpp"
 #include "direct_mapping.hpp"
 
-AttitudeManagerInput AttitudeManager::am_control_inputs = { 0.0f, 0.0f, 0.0f, 0.0f};
-
 
 RCMotorControlMessage_t AttitudeManager::getControlInputs() {
 
@@ -42,7 +40,7 @@ void AttitudeManager::runControlLoopIteration() {
         // Do something
     }
 
-    AttitudeManagerInput motor_outputs = controlAlgorithm_->run_control(control_inputs); // This is a placeholder for the actual control algorithm
+    RCMotorControlMessage_t motor_outputs = controlAlgorithm_->run_control(control_inputs); // This is a placeholder for the actual control algorithm
 
     outputToMotor(yaw, motor_outputs.yaw);
     outputToMotor(pitch, motor_outputs.pitch);
