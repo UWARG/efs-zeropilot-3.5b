@@ -4,6 +4,12 @@
 #include "rc_iface.hpp"
 #include "rc_datatypes.hpp" 
 
+typedef struct {
+    uint8_t rawDataByte;
+    uint8_t mask;
+    int bitshift;
+} DataChunk_t;
+
 class RCReceiver : public IRCReceiver {
     public:
         RCReceiver(UART_HandleTypeDef *uart);
@@ -19,5 +25,5 @@ class RCReceiver : public IRCReceiver {
         RCControl rcData_;
         uint8_t rawSbus_[50];
 
-        float sbusToRCControl(uint16_t channelValue);
+        float sbusToRCControl(DataChunk_t *chunks, int length);
 };
