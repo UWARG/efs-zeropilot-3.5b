@@ -27,5 +27,5 @@ class BatteryManager {
         IBatteryReciever *bDriver_; // Battery Driver Not defined yet change if name is different when defined 
         IMessageQueue<RCMotorControlMessage_t> *smQueueDriver_; // same  RCMotorControlMessage_t is a placeholder until the actual message type is defined.
 
-        void sendRCDataToAttitudeManager(const RCControl &rcData);
+        void sendRCDataToAttitudeManager(const BatteryCntr &batteryData);
 };
