@@ -5,7 +5,6 @@
 #include "rc_datatypes.hpp"
 #include "stm32l5xx_hal_uart.h"
 
-#include <algorithm>
 
 uint8_t *bufferOffset;
 
@@ -100,7 +99,7 @@ RCReceiver::RCReceiver(UART_HandleTypeDef* uart) : uart_(uart) {
 void RCReceiver::startDMA() {
     // start circular DMA 
     rcData_.isDataNew = false;
-    HAL_UART_Receive_DMA(uart_, rawSbus_, 25);
+    HAL_UART_Receive_DMA(uart_, rawSbus_, 50);
 }
 
 RCControl RCReceiver::getRCData() {
@@ -120,7 +119,7 @@ float RCReceiver::sbusToRCControl(DataChunk_t *chunks, int length) {
         res |= tmp;
     }
     
-    res = std::clamp(res, SBUS_RANGE_MIN, SBUS_RANGE_MAX);
+    res = (res < SBUS_RANGE_MIN) ? SBUS_RANGE_MIN : (res > SBUS_RANGE_MAX) ? SBUS_RANGE_MAX : res;
     return static_cast<float>((res - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
 }
 
