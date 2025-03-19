@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <cstring>
 #include "logger.hpp"
 
 int Logger::init() {
@@ -25,7 +27,6 @@ int Logger::init() {
 #elif defined(SWO_LOGGING)
     return 0;
 #endif
-
 }
 
 int Logger::log(char message[100]) {
@@ -81,11 +82,3 @@ int Logger::log(char message[][100], int count) {
     return 0;
 #endif
 }
-
-#if defined(SWO_LOGGING)
-extern "C" {
-  int __io_putchar(int ch) {
-    return ITM_SendChar(ch);
-  }
-}
-#endif
