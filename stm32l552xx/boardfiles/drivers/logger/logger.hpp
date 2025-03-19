@@ -1,14 +1,8 @@
-#ifndef INC_LOGGER_HPP_
-#define INC_LOGGER_HPP_
-
 #pragma once
 
 #include "logger_iface.hpp"
 #include "app_fatfs.h"
-#include "cmsis_os.h"
-#include "config.h"
-#include <string.h>
-#include <stdio.h>
+#include "logger_config.h"
 
 class Logger : public ILogger {
     private:
@@ -39,5 +33,3 @@ class Logger : public ILogger {
         int init();
 
 };
-
-#endif /* INC_LOGGER_HPP_ */

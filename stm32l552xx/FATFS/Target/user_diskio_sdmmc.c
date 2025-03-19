@@ -1,20 +1,16 @@
-/*
- * user_diskio_sdmmc.c
- *
- *  Created on: Feb 28, 2025
- *      Author: arigu
- */
-
-#include "user_diskio_sdmmc.h"
-
 #include "stm32l5xx_hal.h"
+#include "user_diskio_sdmmc.h"
 #include "utils.h"
 
 #ifdef SDMMC_INTERFACE
 
 extern SD_HandleTypeDef hsd1;
 
-inline DSTATUS USER_SDMMC_initialize (BYTE lun) {
+static volatile DSTATUS Stat = STA_NOINIT;
+static volatile uint8_t readStatus = 0;
+static volatile uint8_t writeStatus = 0;
+
+DSTATUS USER_SDMMC_initialize (BYTE lun) {
   DRESULT res = RES_ERROR;
 
   if (Stat & STA_NODISK) return Stat;
@@ -27,11 +23,11 @@ inline DSTATUS USER_SDMMC_initialize (BYTE lun) {
   return res;
 }
 
-inline DSTATUS USER_SDMMC_status (BYTE lun) {
+DSTATUS USER_SDMMC_status (BYTE lun) {
   return Stat;
 }
 
-inline DRESULT USER_SDMMC_read (BYTE lun, BYTE *buff, DWORD sector, UINT count) {
+DRESULT USER_SDMMC_read (BYTE lun, BYTE *buff, DWORD sector, UINT count) {
   DRESULT res = RES_ERROR;
 
   if (osKernelGetState() == osKernelRunning) {
@@ -56,7 +52,7 @@ inline DRESULT USER_SDMMC_read (BYTE lun, BYTE *buff, DWORD sector, UINT count) 
   return res;
 }
 
-inline DRESULT USER_SDMMC_write (BYTE lun, const BYTE *buff, DWORD sector, UINT count) {
+DRESULT USER_SDMMC_write (BYTE lun, const BYTE *buff, DWORD sector, UINT count) {
   DRESULT res = RES_ERROR;
 
   if (osKernelGetState() == osKernelRunning) {
@@ -81,7 +77,7 @@ inline DRESULT USER_SDMMC_write (BYTE lun, const BYTE *buff, DWORD sector, UINT 
   return res;
 }
 
-inline DRESULT USER_SDMMC_ioctl (BYTE lun, BYTE cmd, void *buff) {
+DRESULT USER_SDMMC_ioctl (BYTE lun, BYTE cmd, void *buff) {
   DRESULT res = RES_ERROR;
   HAL_SD_CardInfoTypeDef CardInfo;
 
