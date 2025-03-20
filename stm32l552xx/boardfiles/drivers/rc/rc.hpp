@@ -1,11 +1,11 @@
 #pragma once
 
-#include "stm32l5xx_hal_uart.h"
 #include "rc_iface.hpp"
-#include "rc_datatypes.hpp" 
+#include "stm32l5xx_hal.h"
+
 
 typedef struct {
-    uint8_t rawDataByte;
+    int dataOffset;
     uint8_t mask;
     int bitshift;
 } DataChunk_t;
