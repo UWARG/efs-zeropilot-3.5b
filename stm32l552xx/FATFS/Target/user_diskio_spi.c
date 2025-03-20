@@ -61,6 +61,14 @@ extern SPI_HandleTypeDef hspi1;
 static volatile DSTATUS Stat = STA_NOINIT;
 static volatile uint8_t spiTxFlag = 0;
 static BYTE CardType;
+uint8_t blankTxBuf[512] = {0};
+
+/* Exchange a byte */
+static BYTE xchg_spi (BYTE dat) {
+    BYTE rxDat;
+    HAL_SPI_TransmitReceive(&hspi1, &dat, &rxDat, 1, timeToTicks(SD_TIMEOUT));
+    return rxDat;
+}
 
 /*-----------------------------------------------------------------------*/
 /* Delay helpers                                                         */
@@ -102,16 +110,8 @@ static int wait_ready (UINT wt) {
 /* SPI controls (Platform dependent)                                     */
 /*-----------------------------------------------------------------------*/
 
-/* Exchange a byte */
-static BYTE xchg_spi (BYTE dat) {
-    BYTE rxDat;
-    HAL_SPI_TransmitReceive(&hspi1, &dat, &rxDat, 1, timeToTicks(SD_TIMEOUT));
-    return rxDat;
-}
-
 /* Receive multiple byte */
 static void rcvr_spi_multi (BYTE *buff, UINT btr) {
-    uint8_t blankTxBuf[512] = {0};
     
     if (osKernelGetState() == osKernelRunning) {
         HAL_SPI_TransmitReceive_DMA(&hspi1, blankTxBuf, buff, btr);
@@ -465,6 +465,12 @@ DRESULT USER_SPI_ioctl (BYTE drv, BYTE cmd, void *buff) {
 #endif
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+    if (hspi->Instance == SPI1) {
+        spiTxFlag = 1;
+    }
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
     if (hspi->Instance == SPI1) {
         spiTxFlag = 1;
     }
