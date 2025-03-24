@@ -25,5 +25,5 @@ class RCReceiver : public IRCReceiver {
         RCControl rcData_;
         uint8_t rawSbus_[50];
 
-        float sbusToRCControl(DataChunk_t *chunks, int length);
+        float sbusToRCControl(int channelNum, int length);
 };
