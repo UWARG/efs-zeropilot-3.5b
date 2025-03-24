@@ -1,71 +1,53 @@
 
 #include "tm_circular_buffer.hpp"
 
-TMCircularBuffer::TMCircularBuffer(uint8_t* buf, uint16_t size) : CircularBuffer(buf, size) {
-    // Constructor
-}
-
-TMCircularBuffer::TMCircularBuffer(CircularBuffer* buf) : CircularBuffer(*buf) {
-    // Constructor
-}
+TMCircularBuffer::TMCircularBuffer() = default;
 
 TMCircularBuffer::~TMCircularBuffer() {
     // Destructor
 }
 
-TMCircularBuffer::MAVLinkByte TMCircularBuffer::dequeue(bool* success) {
-    MAVLinkByte res = 0;
-    if (read(&res, 1)) {
-        if (success != nullptr) {
-            *success = true;
-        }
-        return res;
+bool TMCircularBuffer::dequeue(mavlink_message_t &message) {
+	bool success{false};
+    if(!isEmpty()){
+    	message =  buf_[readPtr_];
+        success = true;
+        readPtr_ = (readPtr_ + 1) % MAVLINK_MSG_LIMIT;
+        messagesInQueue--;
     }
-    if (success != nullptr) {
-        *success = false;
-    }
-    return 0;
+    return success;
 }
 
-bool TMCircularBuffer::enqueue(MAVLinkByte byte) {
-    // Enqueue the byte
-    if (write(byte)) {
-        return true;
+bool TMCircularBuffer::enqueue(mavlink_message_t &message){
+	bool success{false};
+    if(isFull()){
+    	buf_[writePtr_] = message;
+        success = true;
+        writePtr_ = (writePtr_ + 1) % MAVLINK_MSG_LIMIT;
+        messagesInQueue++;
     }
-    return false;
+    return success;
 }
 
-bool TMCircularBuffer::enqueue(MAVLinkByte* bytes, uint16_t size) {
-    for (uint16_t i = 0; i < size; i++) {
-        if (!enqueue(bytes[i])) {
-            return false;
-        }
+bool TMCircularBuffer::peek(mavlink_message_t &message, uint8_t index) {
+    bool success = true;
+
+    if (index > messagesInQueue) {
+        success = false;
+    } else {
+        message = buf_[(readPtr_ + index) % messagesInQueue];
     }
-    return true;
+
+    return success;
 }
 
-int TMCircularBuffer::bytesUntilMessageEnd(bool* success) {
-    int index = 0;
-    uint8_t byte = 0;
-    uint16_t size = writePtr_ - readPtr_;
+bool TMCircularBuffer::isFull() {
 
-    while (index < size) {
-        if (peek(byte, index)) {
-            if (byte == 0xFD) {  // 0xFD is the start flag for a MAVLink message
-                if (success != nullptr) {
-                    *success = true;
-                }
-                if (index != 0) {
-                    return index;
-                }
-            }
-        }
-        index++;
-    }
-    if (success != nullptr) {
-        *success = false;
-    }
-    return index;
+    return (messagesInQueue >= MAVLINK_MSG_LIMIT);
 }
 
-uint16_t TMCircularBuffer::currentIndex() { return readPtr_; }
+bool TMCircularBuffer::isEmpty(){
+	return messagesInQueue == 0;
+}
+
+

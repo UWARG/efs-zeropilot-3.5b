@@ -2,16 +2,21 @@
 
 #include <mavlink2/common/mavlink.h>
 #include "tm_circular_buffer.hpp"
+#include "queue_iface.hpp"
+#include "tm_queue.hpp"
+#include "rfd900_iface.hpp"
 class TelemetryManager {
   private:
-    TMCircularBuffer highPriorityTxBuffer_; // GPOS, Attitude and Heartbeat/Connection Messages
-    TMCircularBuffer lowPriorityTxBuffer_;  // Everything Else
+    TMCircularBuffer highPriorityTxBuffer_ = TMCircularBuffer(); // GPOS, Attitude and Heartbeat/Connection Messages
+    TMCircularBuffer lowPriorityTxBuffer_ = TMCircularBuffer();  // Everything Else (to be defined)
+    IMessageQueue<TMMessage_t> *tmQueueDriver_;                   // Driver that receives messages from other managers
+    IRFD900 *rfdDriver_;                                         // Driver used to actually send mavlink messages
 
-    bool addMavlinkMsgToTxBuffer(mavlink_message_t &msg, TMCircularBuffer &txBuffer);
   public:
-    TelemetryManager();
+    TelemetryManager(IRFD900 *rfdDriver, IMessageQueue<TMMessage_t>  *tmQueueDriver);
     ~TelemetryManager();
 
-
-    void heartBeatMSGTx(); //temporary implementation
+    void processMsgQueue();
+    void heartBeatMsg(); //temporary implementation
+    void transmit();
 };

@@ -1,78 +1,49 @@
 #pragma once
 #define MAX_MAVLINK_MSG_SIZE 280 // This includes Authentication, could be smaller
+#define MAVLINK_MSG_LIMIT 40     // Value based on previous system, look into changing?
 
-#include "circular_buffer.hpp"
+#include <cstdint>
+#include <mavlink2/common/mavlink.h>
 
-class TMCircularBuffer : public CircularBuffer {
-   public:
-    using MAVLinkByte = unsigned char;
-    long messagesInQueue = 0;
-    /**
-     * @brief Construct a new Circular Buffer object. Do whatever needs to be done here.
-     * @param buf The uint8_t buffer to be used by the TMCircularBuffer
-     * @param size The size of the buffer
-     */
-    TMCircularBuffer(uint8_t* buf, uint16_t size);
-
-    /**
-     * @brief Construct a new Circular Buffer object. Do whatever needs to be done here.
-     * @param buf The CircularBuffer base class object to be used by the TMCircularBuffer
-     *
-     */
-    TMCircularBuffer(CircularBuffer* buf);
-
-    /**
-     * @brief Destroy and cleanup memory (everything should be static anyways). Do whatever
-     * needs to be done here.
-     *
-     */
+class TMCircularBuffer{
+private:
+    mavlink_message_t buf_[MAVLINK_MSG_LIMIT];
+    uint8_t writePtr_ = 0;
+    uint8_t readPtr_ = 0;
+    uint8_t messagesInQueue = 0;
+public:
+    TMCircularBuffer();
     ~TMCircularBuffer();
 
     /**
-     * @brief Dequeue a byte from the queue
+     * @brief Dequeue a Mavlink message from the queue
      *
-     * @param success A pointer to a boolean that will be set to true if the dequeue was successful
-     * @return MAVLinkByte The byte that was dequeued
+     * @param message Mavlink message alias that will have the value of the message written to it
+     * @return bool True if message was dequeued, false if queue is empty
      */
-    MAVLinkByte dequeue(bool* success = nullptr);
+    bool dequeue(mavlink_message_t &message);
 
     /**
-     * @brief Enqueue a byte into the queue
+     * @brief Enqueue a Mavlink message into the queue
      *
-     * @param byte The byte to be enqueued
+     * @param message The message to be enqueued
      *
-     * @return bool True if the byte was enqueued successfully, false otherwise
+     * @return bool True if the message was enqueued successfully, false otherwise
      */
-    bool enqueue(MAVLinkByte byte);
+    bool enqueue(mavlink_message_t &message);
 
     /**
-     * @brief
+     * @brief Read a Mavlink message without dequeueing it
      *
-     * @param bytes The bytes to be enqueued
-     * @param size The number of bytes to be enqueued
-     * @return bool True if the bytes were enqueued successfully, false otherwise
+     * @param message Mavlink message alias that will have the value of the message written to it
+     *
+     * @param index Index to be read, default value is zero
+     * @return bool True if the message was read successfully, false otherwise
      */
-    bool enqueue(MAVLinkByte* bytes, uint16_t size);
 
-    /**
-     * @brief Get the number of bytes until the end of the first full message in the queue
-     * determined by the end flag in the MAVLink message. This is used to make sure we only
-     * send full messages.
-     *
-     * @param success A pointer to a boolean that will be set to true if the operation was successful
-     * and false if it was not.
-     *
-     * @return int The number of bytes until the end of the first full message in the queue.
-     * in the MAVLink message.
-     *
-     */
-    int bytesUntilMessageEnd(bool* success = nullptr);
+    bool peek(mavlink_message_t &message, uint8_t index=0);
 
-    /**
-     * @brief Returns the index of the current byte in the queue.
-     *
-     * @return int The index of the current byte in the queue.
-     */
-    uint16_t currentIndex();
+    bool isFull();
+    bool isEmpty();
 };
 
