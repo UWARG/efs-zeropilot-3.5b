@@ -1,5 +1,6 @@
 #include "main.h"
 #include "museq.hpp"
+#include "rfd.hpp"
 
 extern "C"
 {
@@ -18,4 +19,13 @@ int _write(int file, char *ptr, int len)
 }
 
 /* interrupt callback functions */
+
+// make call back logic into own function then just call it here TODO
+  void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
+
+    if (RFD::instance && RFD::instance->getHuart() == huart) {
+      RFD::instance->receiveCallback(size);
+    }
+    
+  }
 }
