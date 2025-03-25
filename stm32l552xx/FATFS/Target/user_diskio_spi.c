@@ -63,12 +63,6 @@
   static uint8_t blankTxBuf[512] = {0};
   static BYTE CardType;
   
-  static uint32_t getTick() {
-    return (osKernelGetState() == osKernelRunning) ?
-        osKernelGetTickCount() :
-        HAL_GetTick();
-  }
-  
   static BYTE xchg_spi (BYTE dat) {
       BYTE rxDat;
       if (osKernelGetState() == osKernelRunning) {
@@ -88,14 +82,12 @@
   static uint32_t spiTimerTickDelay;
   
   static void SPI_Timer_On(uint32_t waitTicks) {
-      spiTimerTickStart = getTick();
-      spiTimerTickDelay = (osKernelGetState() == osKernelRunning) ?
-          timeToTicks(waitTicks) :
-          waitTicks;
+      spiTimerTickStart = HAL_GetTick();
+      spiTimerTickDelay = waitTicks;
   }
   
   static uint8_t SPI_Timer_Status() {
-      return ((getTick() - spiTimerTickStart) < spiTimerTickDelay);
+      return ((HAL_GetTick() - spiTimerTickStart) < spiTimerTickDelay);
   }
   
   static int wait_ready (UINT wt) {
@@ -104,15 +96,13 @@
       uint32_t waitSpiTimerTickStart;
       uint32_t waitSpiTimerTickDelay;
   
-      waitSpiTimerTickStart = getTick();
-      waitSpiTimerTickDelay = osKernelGetState() == osKernelRunning ?
-          timeToTicks(wt):
-          (uint32_t)wt;
+      waitSpiTimerTickStart = HAL_GetTick();
+      waitSpiTimerTickDelay = (uint32_t)wt;
   
       do {
           d = xchg_spi(0xFF);
           /* This loop takes a time. Insert rot_rdq() here for multitask envilonment. */
-      } while (d != 0xFF && ((getTick() - waitSpiTimerTickStart) < waitSpiTimerTickDelay));    /* Wait for card goes ready or timeout */
+      } while (d != 0xFF && ((HAL_GetTick() - waitSpiTimerTickStart) < waitSpiTimerTickDelay));    /* Wait for card goes ready or timeout */
   
       return (d == 0xFF) ? 1 : 0;
   }
@@ -127,12 +117,10 @@
       if (osKernelGetState() == osKernelRunning) {
           HAL_SPI_TransmitReceive_DMA(&hspi1, blankTxBuf, buff, btr);
   
-          uint32_t start = osKernelGetTickCount();
-          uint32_t nextRunTime = start;
+          uint32_t start = HAL_GetTick();
   
-          while(!spiTxFlag && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
-              nextRunTime += timeToTicks(10);
-              osDelayUntil(nextRunTime);
+          while(!spiTxFlag && (HAL_GetTick() - start) < SD_TIMEOUT) {
+              HAL_Delay(10);
           }
   
           spiTxFlag = 0;
@@ -148,12 +136,10 @@
       if (osKernelGetState() == osKernelRunning) {
           HAL_SPI_Transmit_DMA(&hspi1, buff, btx);
   
-          uint32_t start = osKernelGetTickCount();
-          uint32_t nextRunTime = start;
+          uint32_t start = HAL_GetTick();
   
-          while(!spiTxFlag && (osKernelGetTickCount() - start) < timeToTicks(SD_TIMEOUT)) {
-              nextRunTime += timeToTicks(10);
-              osDelayUntil(nextRunTime);
+          while(!spiTxFlag && (HAL_GetTick() - start) < SD_TIMEOUT) {
+              HAL_Delay(10);
           }
   
           spiTxFlag = 0;
