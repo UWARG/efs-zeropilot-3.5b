@@ -3,9 +3,7 @@
 #include "rc_defines.hpp"
 #include "rc.hpp"
 
-uint8_t *bufferOffset;
-
-DataChunk_t channelList[16][3] = {
+DataChunk_t channelMappings[SBUS_CHANNEL_COUNT][SBUS_MAX_BTYES_PER_CHANNEL] = {
     { //channel 1
         {1, 0xFF, 0}, {2, 0x07, 8}, {0, 0, 0}
     },
@@ -57,13 +55,7 @@ DataChunk_t channelList[16][3] = {
 };
 
 RCReceiver::RCReceiver(UART_HandleTypeDef* uart) : uart_(uart) {
-    memset(rawSbus_, 0, 50);
-}
-
-void RCReceiver::startDMA() {
-    // start circular DMA
-    rcData_.isDataNew = false;
-    HAL_UART_Receive_DMA(uart_, rawSbus_, 50);
+    memset(rawSbus_, 0, 2 * SBUS_BYTE_COUNT);
 }
 
 RCControl RCReceiver::getRCData() {
@@ -72,31 +64,48 @@ RCControl RCReceiver::getRCData() {
     return tmp;
 }
 
-float RCReceiver::sbusToRCControl(int channelNum, int length) {
-    uint16_t res = 0;
-
-    for (int i = 0; i < length; i++) {
-        DataChunk_t dC = channelList[channelNum-1][i];
-        uint16_t tmp = dC.bitshift >= 0 ?
-            (bufferOffset[dC.dataOffset] & dC.mask) << dC.bitshift :
-            (bufferOffset[dC.dataOffset] & dC.mask) >> abs(dC.bitshift);
-        res |= tmp;
-    }
-
-    res = (res < SBUS_RANGE_MIN) ? SBUS_RANGE_MIN : (res > SBUS_RANGE_MAX) ? SBUS_RANGE_MAX : res;
-    return static_cast<float>((res - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
+void RCReceiver::init() {
+    // start circular DMA
+    rcData_.isDataNew = false;
+    HAL_UART_Receive_DMA(uart_, rawSbus_, 2 * SBUS_BYTE_COUNT);
 }
 
-void RCReceiver::parse(bool isBufferStart) {
+void RCReceiver::parse(ParseStartLocation_e start) {
 
-    bufferOffset = isBufferStart ? rawSbus_ : rawSbus_ + 25;
+    uint8_t *buf = start == BEGINNING ? rawSbus_ : rawSbus_ + SBUS_BYTE_COUNT;
 
-    if ((bufferOffset[0] == HEADER_) && (bufferOffset[24] == FOOTER_)) {
+    if ((buf[0] == HEADER_) && (buf[24] == FOOTER_)) {
 
-        for (int i = 0; i < 16; i++) {
-          rcData_.ControlSignals[i] = sbusToRCControl(i+1, 3);
+        for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
+            rcData_.ControlSignals[i] = sbusToRCControl(buf, i);
         }
 
         rcData_.isDataNew = true;
     }
+}
+
+float RCReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx) {
+    uint16_t res = 0;
+
+    for (int i = 0; i < SBUS_MAX_BTYES_PER_CHANNEL; i++) {
+        DataChunk_t d = channelMappings[channelMappingIdx][i];
+        
+        uint16_t tmp = d.bitshift >= 0 ?
+            (buf[d.dataOffset] & d.mask) << d.bitshift :
+            (buf[d.dataOffset] & d.mask) >> abs(d.bitshift);
+        
+        res |= tmp;
+    }
+
+    if(res < SBUS_RANGE_MIN) {
+        res = SBUS_RANGE_MIN;
+    }
+    else if(res > SBUS_RANGE_MAX) {
+        res = SBUS_RANGE_MAX;
+    }
+    else {
+        // continue
+    }
+
+    return static_cast<float>((res - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
 }
