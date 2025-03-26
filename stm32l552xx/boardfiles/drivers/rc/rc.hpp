@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rc_defines.hpp"
 #include "rc_iface.hpp"
 #include "stm32l5xx_hal.h"
 
