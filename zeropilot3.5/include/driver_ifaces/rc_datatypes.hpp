@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #define SBUS_INPUT_CHANNELS 16
 
 /*  control signal channel mapping and attribute values */
@@ -26,7 +28,12 @@ class RCControl {
         float &aux9     = ControlSignals[13];
         float &aux10    = ControlSignals[14];
         float &aux11    = ControlSignals[15];
-
+    
+        RCControl operator=(const RCControl& other){
+            std::copy(other.ControlSignals, other.ControlSignals + SBUS_INPUT_CHANNELS, this->ControlSignals);
+            this->isDataNew = other.isDataNew; // Add this line to copy the isDataNew flag
+            return *this;
+        }
 
         RCControl() {
             isDataNew = false;
