@@ -20,6 +20,7 @@ set(TM_SRC
 )
 set(TM_INC
     "include/telemetry_manager"
+    "include/thread_msgs"
 )
 # combined files
 set(ZP_SRC
