@@ -15,8 +15,7 @@ class SystemManager {
             IIndependentWatchdog *iwdgDriver,
             ILogger *loggerDriver,
             IRCReceiver *rcDriver, 
-            IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, 
-            IMessageQueue<RCMotorControlMessage_t> *smQueueDriver, 
+            IMessageQueue<RCMotorControlMessage_t> *amRCQueueDriver,
             IMessageQueue<char[100]> *loggerQueueDriver
         );
 
@@ -27,7 +26,7 @@ class SystemManager {
         ILogger *loggerDriver_;
         IRCReceiver *rcDriver_; // RC receiver driver
         
-        IMessageQueue<RCMotorControlMessage_t> *amQueueDriver_; // Queue driver for communication to the Attitude Manager
+        IMessageQueue<RCMotorControlMessage_t> *amRCQueueDriver_; // Queue driver for communication to the Attitude Manager
         IMessageQueue<RCMotorControlMessage_t> *smQueueDriver_; // RCMotorControlMessage_t is a placeholder until the actual message type is defined.
         IMessageQueue<char[100]> *loggerQueueDriver_;
 

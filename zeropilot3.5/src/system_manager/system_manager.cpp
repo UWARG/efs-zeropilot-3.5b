@@ -4,14 +4,12 @@ SystemManager::SystemManager(
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
     IRCReceiver *rcDriver, 
-    IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, 
-    IMessageQueue<RCMotorControlMessage_t> *smQueueDriver, 
+    IMessageQueue<RCMotorControlMessage_t> *amRCQueueDriver, 
     IMessageQueue<char[100]> *loggerQueueDriver) : 
         iwdgDriver_(iwdgDriver),
         loggerDriver_(loggerDriver),
         rcDriver_(rcDriver), 
-        amQueueDriver_(amQueueDriver), 
-        smQueueDriver_(smQueueDriver), 
+        amRCQueueDriver_(amRCQueueDriver),
         loggerQueueDriver_(loggerQueueDriver) {}
 
 void SystemManager::SMUpdate() {
@@ -48,7 +46,7 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.throttle = rcData.throttle;
     rcDataMessage.arm = rcData.arm;
 
-    amQueueDriver_->push(&rcDataMessage);
+    amRCQueueDriver_->push(&rcDataMessage);
 }
 
 void SystemManager::sendMessageToLogger() {
