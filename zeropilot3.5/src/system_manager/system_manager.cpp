@@ -1,16 +1,41 @@
 #include "system_manager.hpp"
 
-SystemManager::SystemManager(IRCReceiver *rcDriver, IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, IMessageQueue<RCMotorControlMessage_t> *smQueueDriver)
-    : rcDriver_(rcDriver), amQueueDriver_(amQueueDriver), smQueueDriver_(smQueueDriver) {}
+SystemManager::SystemManager(
+    IIndependentWatchdog *iwdgDriver,
+    ILogger *loggerDriver,
+    IRCReceiver *rcDriver, 
+    IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, 
+    IMessageQueue<RCMotorControlMessage_t> *smQueueDriver, 
+    IMessageQueue<char[100]> *loggerQueueDriver) : 
+        iwdgDriver_(iwdgDriver),
+        loggerDriver_(loggerDriver),
+        rcDriver_(rcDriver), 
+        amQueueDriver_(amQueueDriver), 
+        smQueueDriver_(smQueueDriver), 
+        loggerQueueDriver_(loggerQueueDriver) {}
 
 void SystemManager::SMUpdate() {
     // Kick the watchdog
-    iwdg_->refreshWatchdog();
+    iwdgDriver_->refreshWatchdog();
 
     // Get RC data from the RC receiver and passthrough to AM if new
+    static int oldDataCount = 0;
+
     RCControl rcData = rcDriver_->getRCData();
     if (rcData.isDataNew) {
+        oldDataCount = 0;
         sendRCDataToAttitudeManager(rcData);
+    } else {
+        oldDataCount += 1;
+
+        if ((oldDataCount / mainLoopFreq) > 5) {
+            loggerDriver_->log("RC Disconnect");
+        }
+    }
+
+    // Log if new messages
+    if (loggerQueueDriver_->count() > 0) {
+        sendMessageToLogger();
     }
 }
 
@@ -23,5 +48,12 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.throttle = rcData.throttle;
     rcDataMessage.arm = rcData.arm;
 
-    amQueueDriver_->push(rcDataMessage);
+    amQueueDriver_->push(&rcDataMessage);
+}
+
+void SystemManager::sendMessageToLogger() {
+    char message[100];
+    loggerQueueDriver_->get(&message);
+
+    loggerDriver_->log(message);
 }
