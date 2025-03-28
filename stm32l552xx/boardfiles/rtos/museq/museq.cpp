@@ -1,8 +1,11 @@
 #include "museq.hpp"
+#include "rc_motor_control.hpp"
 
 /* --- mutexes --- */
 /* define mutexes begin */
 osMutexId_t itmMutex;
+osMessageQueueId_t amQueueId;
+osMessageQueueId_t smLoggerQueueId;
 
 static const osMutexAttr_t itmMutexAttr = {
   "itmMutex",
@@ -32,5 +35,6 @@ void initSemphrs()
 
 void initQueues()
 {
-
+  amQueueId = osMessageQueueNew(16, sizeof(RCMotorControlMessage_t), NULL);
+  smLoggerQueueId = osMessageQueueNew(16, sizeof(char[100]), NULL);
 }

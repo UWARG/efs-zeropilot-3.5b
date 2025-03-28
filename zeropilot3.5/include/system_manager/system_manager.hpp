@@ -4,7 +4,7 @@
 #include "queue_iface.hpp"
 #include "rc_iface.hpp"
 #include "rc_motor_control.hpp"
-#include "idwg_iface.hpp"
+#include "iwdg_iface.hpp"
 
 class SystemManager {
     public:
