@@ -21,6 +21,7 @@ MotorControl *rightFlapMotorHandle = nullptr;
 MotorControl *steeringMotorHandle = nullptr;
 
 RCReceiver *rcHandle = nullptr;
+GPS *gpsHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
@@ -75,6 +76,7 @@ void initDrivers()
     steeringMotorHandle->init();
 
     rcHandle->init();
+    gpsHandle->init();
 
     rollLeftMotorInstance = {leftAileronMotorHandle, true};
     rollRightMotorInstance = {rightAileronMotorHandle, true};
