@@ -27,11 +27,11 @@ void TelemetryManager::processMsgQueue() {
                 mavlink_msg_attitude_pack(SYSTEM_ID, COMPONENT_ID, &mavlink_message, tmq_message.time_boot_ms,
                     AMData.roll, AMData.pitch, AMData.yaw, AMData.rollspeed, AMData.pitchspeed, AMData.yawspeed);
                 break;
-            case TMMessage_t::BM_DATA: //Basically a placeholder, Check in with BM team later
+            case TMMessage_t::BM_DATA:
                 auto BMData = tmq_message.tm_message_data.BMData_t;
                 mavlink_msg_battery_status_pack(SYSTEM_ID, COMPONENT_ID, &mavlink_message, 255, MAV_BATTERY_FUNCTION_UNKNOWN, MAV_BATTERY_TYPE_LIPO,
                  BMData.temperature, BMData.voltages, BMData.current_battery, BMData.current_consumed, BMData.energy_consumed, BMData.battery_remaining,
-                 BMData.time_remaining, BMData.charge_state, BMData.voltages_ext, 0, 0);
+                 BMData.time_remaining, BMData.charge_state, {}, 0, 0);
             case default:
                 //WHOOPS
         }
