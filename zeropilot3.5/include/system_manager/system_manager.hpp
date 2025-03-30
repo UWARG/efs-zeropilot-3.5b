@@ -7,7 +7,7 @@
 #include "rc_motor_control.hpp"
 #include "iwdg_iface.hpp"
 
-#define mainLoopFreq 50
+#define SM_MAIN_DELAY 50
 
 class SystemManager {
     public:
@@ -15,8 +15,8 @@ class SystemManager {
             IIndependentWatchdog *iwdgDriver,
             ILogger *loggerDriver,
             IRCReceiver *rcDriver, 
-            IMessageQueue<RCMotorControlMessage_t> *amRCQueueDriver,
-            IMessageQueue<char[100]> *loggerQueueDriver
+            IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
+            IMessageQueue<char[100]> *smloggerQueue
         );
 
         void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
@@ -26,10 +26,9 @@ class SystemManager {
         ILogger *loggerDriver_;
         IRCReceiver *rcDriver_; // RC receiver driver
         
-        IMessageQueue<RCMotorControlMessage_t> *amRCQueueDriver_; // Queue driver for communication to the Attitude Manager
-        IMessageQueue<RCMotorControlMessage_t> *smQueueDriver_; // RCMotorControlMessage_t is a placeholder until the actual message type is defined.
-        IMessageQueue<char[100]> *loggerQueueDriver_;
+        IMessageQueue<RCMotorControlMessage_t> *amRCQueue_; // Queue driver for communication to the Attitude Manager
+        IMessageQueue<char[100]> *smloggerQueue_;
 
         void sendRCDataToAttitudeManager(const RCControl &rcData);
-        void sendMessageToLogger();
+        void sendMessagesToLogger();
 };

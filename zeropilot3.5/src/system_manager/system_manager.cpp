@@ -4,13 +4,13 @@ SystemManager::SystemManager(
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
     IRCReceiver *rcDriver, 
-    IMessageQueue<RCMotorControlMessage_t> *amRCQueueDriver, 
-    IMessageQueue<char[100]> *loggerQueueDriver) : 
+    IMessageQueue<RCMotorControlMessage_t> *amRCQueue, 
+    IMessageQueue<char[100]> *smloggerQueue) : 
         iwdgDriver_(iwdgDriver),
         loggerDriver_(loggerDriver),
         rcDriver_(rcDriver), 
-        amRCQueueDriver_(amRCQueueDriver),
-        loggerQueueDriver_(loggerQueueDriver) {}
+        amRCQueue_(amRCQueue),
+        smloggerQueue_(smloggerQueue) {}
 
 void SystemManager::SMUpdate() {
     // Kick the watchdog
@@ -18,22 +18,29 @@ void SystemManager::SMUpdate() {
 
     // Get RC data from the RC receiver and passthrough to AM if new
     static int oldDataCount = 0;
+    static bool rcConnected = true;
 
     RCControl rcData = rcDriver_->getRCData();
     if (rcData.isDataNew) {
         oldDataCount = 0;
         sendRCDataToAttitudeManager(rcData);
+
+        if (!rcConnected) {
+            loggerDriver_->log("RC Reconnected");
+            rcConnected = true;
+        }
     } else {
         oldDataCount += 1;
 
-        if ((oldDataCount / mainLoopFreq) > 5) {
-            loggerDriver_->log("RC Disconnect");
+        if ((oldDataCount / SM_MAIN_DELAY > 5) && rcConnected) {
+            loggerDriver_->log("RC Disconnected");
+            rcConnected = false;
         }
     }
 
     // Log if new messages
-    if (loggerQueueDriver_->count() > 0) {
-        sendMessageToLogger();
+    if (smloggerQueue_->count() > 0) {
+        sendMessagesToLogger();
     }
 }
 
@@ -46,12 +53,17 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.throttle = rcData.throttle;
     rcDataMessage.arm = rcData.arm;
 
-    amRCQueueDriver_->push(&rcDataMessage);
+    amRCQueue_->push(&rcDataMessage);
 }
 
-void SystemManager::sendMessageToLogger() {
-    char message[100];
-    loggerQueueDriver_->get(&message);
+void SystemManager::sendMessagesToLogger() {
+    char messages[16][100];
+    int msgCount = 0;
 
-    loggerDriver_->log(message);
+    while (smloggerQueue_->count() > 0) {
+        smloggerQueue_->get(&messages[msgCount]);
+        msgCount++;
+    }
+
+    loggerDriver_->log(messages, msgCount);
 }
