@@ -55,8 +55,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_uart4_rx;
 extern SD_HandleTypeDef hsd1;
+extern DMA_HandleTypeDef hdma_uart4_rx;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */

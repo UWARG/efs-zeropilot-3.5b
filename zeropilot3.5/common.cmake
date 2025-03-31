@@ -1,6 +1,7 @@
 # attitude manager files
 set(AM_SRC
     "src/attitude_manager/attitude_manager.cpp"
+    "src/attitude_manager/direct_mapping.cpp"
 )
 set(AM_INC
     "include/attitude_manager/"

@@ -18,7 +18,7 @@ MotorControl *throttleMotorHandle = nullptr;
 
 RCReceiver *rcHandle = nullptr;
 
-MessageQueue<RCMotorControlMessage_t> *amQueueHandle = nullptr;
+MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
 
 void initDrivers()
@@ -34,6 +34,6 @@ void initDrivers()
     
     rcHandle = new RCReceiver(&huart4);
 
-    amQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
+    amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
 }

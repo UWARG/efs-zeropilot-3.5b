@@ -34,7 +34,6 @@ DRESULT USER_SDMMC_read (BYTE lun, BYTE *buff, DWORD sector, UINT count) {
     HAL_SD_ReadBlocks_DMA(&hsd1, buff, sector, count);
 
     uint32_t start = HAL_GetTick();
-    uint32_t ticks = start;
     while (!readStatus && (HAL_GetTick() - start) < SD_TIMEOUT) {
       HAL_Delay(10);
     }
@@ -58,7 +57,6 @@ DRESULT USER_SDMMC_write (BYTE lun, const BYTE *buff, DWORD sector, UINT count) 
     HAL_SD_WriteBlocks_DMA(&hsd1, buff, sector, count);
 
     uint32_t start = HAL_GetTick();
-    uint32_t ticks = start;
     while (!writeStatus && (HAL_GetTick() - start) < SD_TIMEOUT) {
       HAL_Delay(10);
     }
