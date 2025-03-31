@@ -43,14 +43,18 @@
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
 int32_t MX_FATFS_Init(void);
 int32_t MX_FATFS_Process(void);
 /* USER CODE BEGIN EFP */
-
+#ifdef __cplusplus
+}
+#endif
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

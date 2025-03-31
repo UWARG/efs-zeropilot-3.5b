@@ -54,8 +54,7 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
         return false;
     }
 
-    *pControlMsg = amQueue->get();
-    amQueue->pop();
+    amQueue->get(pControlMsg);
     return true;
 }
 
