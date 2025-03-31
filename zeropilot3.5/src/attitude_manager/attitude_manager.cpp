@@ -53,26 +53,7 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
     return true;
 }
 
-void AttitudeManager::disarmToMotor() {
-    // Get data from Queue and motor outputs
-    bool res = getControlInputs(&controlMsg);
-
-    int noDataCount = 0;
-
-    // Failsafe logic
-    if (res != true) {
-        ++noDataCount;
-
-        if (noDataCount == 10) {
-            outputToMotor(YAW, 0);
-            outputToMotor(PITCH, 0);
-            outputToMotor(ROLL, 0);
-            outputToMotor(THROTTLE, 0);
-        }
-
-        return;
-    }
-
+void AttitudeManager::disarmToMotor(RCMotorControlMessage_t controlMsg) {
     RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
 
     outputToMotor(YAW, motorOutputs.yaw);
