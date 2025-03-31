@@ -19,8 +19,19 @@ void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
     bool res = getControlInputs(&controlMsg);
 
-    if (res != true){
-        // no data in the queue
+    int noDataCount = 0;
+
+    // Failsafe logic
+    if (res != true) {
+        ++noDataCount;
+
+        if (noDataCount == 10) {
+            outputToMotor(YAW, 0);
+            outputToMotor(PITCH, 0);
+            outputToMotor(ROLL, 0);
+            outputToMotor(THROTTLE, 0);
+        }
+
         return;
     }
 
