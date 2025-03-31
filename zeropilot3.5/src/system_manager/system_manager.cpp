@@ -32,7 +32,7 @@ void SystemManager::SMUpdate() {
     } else {
         oldDataCount += 1;
 
-        if ((oldDataCount / SM_MAIN_DELAY > 5) && rcConnected) {
+        if ((oldDataCount * SM_MAIN_DELAY > 500) && rcConnected) {
             loggerDriver_->log("RC Disconnected");
             rcConnected = false;
         }
@@ -57,7 +57,7 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
 }
 
 void SystemManager::sendMessagesToLogger() {
-    char messages[16][100];
+    static char messages[16][100];
     int msgCount = 0;
 
     while (smloggerQueue_->count() > 0) {
