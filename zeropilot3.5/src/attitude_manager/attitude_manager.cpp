@@ -35,6 +35,12 @@ void AttitudeManager::runControlLoopIteration() {
         return;
     }
 
+    // Disarm
+    if (controlMsg.arm == 0) {
+        disarmToMotor(controlMsg);
+        return;
+    }
+
     RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
 
     outputToMotor(YAW, motorOutputs.yaw);
