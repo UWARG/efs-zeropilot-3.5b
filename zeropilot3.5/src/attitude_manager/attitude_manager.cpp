@@ -1,12 +1,13 @@
 #include "attitude_manager.hpp"
+#include "rc_motor_control.hpp"
 
 AttitudeManager::AttitudeManager(
     IMessageQueue<RCMotorControlMessage_t> *amQueue, 
     Flightmode *controlAlgorithm,  
-    MotorGroupInstance_t rollMotors, 
-    MotorGroupInstance_t pitchMotors, 
-    MotorGroupInstance_t yawMotors, 
-    MotorGroupInstance_t throttleMotors
+    MotorGroupInstance_t *rollMotors,
+    MotorGroupInstance_t *pitchMotors,
+    MotorGroupInstance_t *yawMotors,
+    MotorGroupInstance_t *throttleMotors
 ) : 
     amQueue(amQueue),
     controlAlgorithm(controlAlgorithm),
@@ -63,16 +64,16 @@ void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {
 
     switch (axis) {
         case ROLL:
-            motorGroup = &rollMotors;
+            motorGroup = rollMotors;
             break;
         case PITCH:
-            motorGroup = &pitchMotors;
+            motorGroup = pitchMotors;
             break;
         case YAW:
-            motorGroup = &yawMotors;
+            motorGroup = yawMotors;
             break;
         case THROTTLE:
-            motorGroup = &throttleMotors;
+            motorGroup = throttleMotors;
             break;
         default:
             return;

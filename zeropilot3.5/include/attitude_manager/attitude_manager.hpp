@@ -20,10 +20,10 @@ class AttitudeManager {
         AttitudeManager(
             IMessageQueue<RCMotorControlMessage_t> *amQueue, 
             Flightmode *controlAlgorithm,  
-            MotorGroupInstance_t rollMotors, 
-            MotorGroupInstance_t pitchMotors, 
-            MotorGroupInstance_t yawMotors, 
-            MotorGroupInstance_t throttleMotors
+            MotorGroupInstance_t *rollMotors,
+            MotorGroupInstance_t *pitchMotors,
+            MotorGroupInstance_t *yawMotors,
+            MotorGroupInstance_t *throttleMotors
         );
 
         void runControlLoopIteration();
@@ -35,10 +35,10 @@ class AttitudeManager {
         RCMotorControlMessage_t controlMsg;
         int noDataCount = 0;
 
-        MotorGroupInstance_t rollMotors;
-        MotorGroupInstance_t pitchMotors;
-        MotorGroupInstance_t yawMotors;
-        MotorGroupInstance_t throttleMotors;
+        MotorGroupInstance_t *rollMotors;
+        MotorGroupInstance_t *pitchMotors;
+        MotorGroupInstance_t *yawMotors;
+        MotorGroupInstance_t *throttleMotors;
 
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 

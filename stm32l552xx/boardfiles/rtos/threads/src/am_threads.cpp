@@ -5,15 +5,9 @@
 osThreadId_t amMainHandle;
 
 static const osThreadAttr_t amMainLoopAttr = {
-    "amMain",
-    osThreadDetached,
-    nullptr,
-    0U,
-    nullptr,
-    0U,
-    osPriorityNormal,
-    0U,
-    0U
+    .name = "amMain",
+    .stack_size = 1024,
+    .priority = (osPriority_t) osPriorityNormal
 };
 
 void amMainLoopWrapper(void *arg)
@@ -21,11 +15,11 @@ void amMainLoopWrapper(void *arg)
   while(true)
   {
     amHandle->runControlLoopIteration();
-    osDelay(timeToTicks(1000));
+    osDelay(timeToTicks(50));
   }
 }
 
 void amInitThreads()
 {
-    amMainHandle = osThreadNew(amMainLoopWrapper, nullptr, &amMainLoopAttr);
+    amMainHandle = osThreadNew(amMainLoopWrapper, NULL, &amMainLoopAttr);
 }

@@ -5,15 +5,9 @@
 osThreadId_t smMainHandle;
 
 static const osThreadAttr_t smMainLoopAttr = {
-    "smMain",
-    osThreadDetached,
-    nullptr,
-    0U,
-    nullptr,
-    0U,
-    osPriorityNormal,
-    0U,
-    0U
+    .name = "smMain",
+    .stack_size = 1024,
+    .priority = (osPriority_t) osPriorityNormal
 };
 
 void smMainLoopWrapper(void *arg)
@@ -21,11 +15,11 @@ void smMainLoopWrapper(void *arg)
   while(true)
   {
     smHandle->SMUpdate();
-    osDelay(timeToTicks(1000));
+    osDelay(timeToTicks(50));
   }
 }
 
 void smInitThreads()
 {
-    smMainHandle = osThreadNew(smMainLoopWrapper, nullptr, &smMainLoopAttr);
+    smMainHandle = osThreadNew(smMainLoopWrapper, NULL, &smMainLoopAttr);
 }

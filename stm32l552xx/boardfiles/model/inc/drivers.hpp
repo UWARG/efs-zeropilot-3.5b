@@ -8,7 +8,7 @@
 #include "rc_motor_control.hpp"
 #include "queue.hpp"
 
-extern IndependentWatchdog *iwdgHandle;
+//extern IndependentWatchdog *iwdgHandle;
 extern Logger *loggerHandle;
 
 extern MotorControl *leftAileronMotorHandle;
@@ -21,5 +21,10 @@ extern RCReceiver *rcHandle;
 
 extern MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle;
 extern MessageQueue<char[100]> *smLoggerQueueHandle;
+
+extern MotorGroupInstance_t rollMotors;
+extern MotorGroupInstance_t pitchMotors;
+extern MotorGroupInstance_t yawMotors;
+extern MotorGroupInstance_t throttleMotors;
 
 void initDrivers();

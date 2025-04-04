@@ -4,8 +4,10 @@
 #include "drivers.hpp"
 #include "utils.h"
 
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* overriding _write to redirect puts()/printf() to SWO */
 int _write(int file, char *ptr, int len)
 {
@@ -35,20 +37,23 @@ void HAL_Delay(uint32_t Delay) {
   }
 }
 
+#ifdef __cplusplus
+}
+#endif
+
 /* interrupt callback functions */
 
-void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance == UART4){
-		rcHandle->parse(BEGINNING);
-	}
-}
+//void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+//{
+//    if(huart->Instance == UART4){
+//        rcHandle->parse(BEGINNING);
+//    }
+//}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart->Instance == UART4){
-		rcHandle->parse(MIDDLE);
-	}
-}
-
+    if(huart->Instance == UART4){
+        rcHandle->parse(BEGINNING);
+        rcHandle->startDMA();
+    }
 }

@@ -1,20 +1,20 @@
 #include "system_manager.hpp"
 
 SystemManager::SystemManager(
-    IIndependentWatchdog *iwdgDriver,
+    //IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
     IRCReceiver *rcDriver, 
     IMessageQueue<RCMotorControlMessage_t> *amRCQueue, 
-    IMessageQueue<char[100]> *smloggerQueue) : 
-        iwdgDriver_(iwdgDriver),
+    IMessageQueue<char[100]> *smLoggerQueue) : 
+        //iwdgDriver_(iwdgDriver),
         loggerDriver_(loggerDriver),
         rcDriver_(rcDriver), 
         amRCQueue_(amRCQueue),
-        smloggerQueue_(smloggerQueue) {}
+        smLoggerQueue_(smLoggerQueue) {}
 
 void SystemManager::SMUpdate() {
     // Kick the watchdog
-    iwdgDriver_->refreshWatchdog();
+    //iwdgDriver_->refreshWatchdog();
 
     // Get RC data from the RC receiver and passthrough to AM if new
     static int oldDataCount = 0;
@@ -39,7 +39,7 @@ void SystemManager::SMUpdate() {
     }
 
     // Log if new messages
-    if (smloggerQueue_->count() > 0) {
+    if (smLoggerQueue_->count() > 0) {
         sendMessagesToLogger();
     }
 }
@@ -60,8 +60,8 @@ void SystemManager::sendMessagesToLogger() {
     static char messages[16][100];
     int msgCount = 0;
 
-    while (smloggerQueue_->count() > 0) {
-        smloggerQueue_->get(&messages[msgCount]);
+    while (smLoggerQueue_->count() > 0) {
+        smLoggerQueue_->get(&messages[msgCount]);
         msgCount++;
     }
 

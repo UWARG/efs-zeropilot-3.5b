@@ -55,7 +55,7 @@ DataChunk_t channelMappings[SBUS_CHANNEL_COUNT][SBUS_MAX_BTYES_PER_CHANNEL] = {
 };
 
 RCReceiver::RCReceiver(UART_HandleTypeDef* uart) : uart_(uart) {
-    memset(rawSbus_, 0, 2 * SBUS_BYTE_COUNT);
+    memset(rawSbus_, 0, SBUS_BYTE_COUNT);
 }
 
 RCControl RCReceiver::getRCData() {
@@ -67,7 +67,12 @@ RCControl RCReceiver::getRCData() {
 void RCReceiver::init() {
     // start circular DMA
     rcData_.isDataNew = false;
-    HAL_UART_Receive_DMA(uart_, rawSbus_, 2 * SBUS_BYTE_COUNT);
+    HAL_UART_Receive_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+}
+
+void RCReceiver::startDMA() {
+    // start circular DMA
+    HAL_UART_Receive_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
 }
 
 void RCReceiver::parse(ParseStartLocation_e start) {
