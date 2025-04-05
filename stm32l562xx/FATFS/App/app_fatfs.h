@@ -1,13 +1,12 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
+  * @file   app_fatfs.h
+  * @brief  Header for fatfs applications
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,15 +18,13 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef __APP_FATFS_H
+#define __APP_FATFS_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32l5xx_hal.h"
+#include "ff.h"
+#include "ff_gen_drv.h"
+#include "user_diskio.h" /* defines USER_Driver as external */
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,23 +46,23 @@ extern "C" {
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
-
+int32_t MX_FATFS_Init(void);
+int32_t MX_FATFS_Process(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN Private defines */
-
+#define APP_OK                      0
+#define APP_ERROR                  -1
+#define APP_SD_UNPLUGGED           -2
 /* USER CODE END Private defines */
 
-#ifdef __cplusplus
-}
-#endif
+extern FATFS USERFatFs;    /* File system object for USER logical drive */
+extern FIL USERFile;       /* File  object for USER */
+extern char USERPath[4];   /* USER logical drive path */
 
-#endif /* __MAIN_H */
+#endif /*__APP_FATFS_H */
+
