@@ -9,7 +9,8 @@ set(AM_TSRC
 
 # system manager test files
 set(SM_TSRC
-    "${CMAKE_SOURCE_DIR}/system_manager/21001_baz.cpp"
+    "${CMAKE_SOURCE_DIR}/system_manager/21001_Default.cpp"
+    "${CMAKE_SOURCE_DIR}/system_manager/21002_Logger.cpp"
 )
 
 # all test files

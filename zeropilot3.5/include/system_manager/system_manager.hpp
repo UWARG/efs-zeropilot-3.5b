@@ -8,11 +8,12 @@
 #include "iwdg_iface.hpp"
 
 #define SM_MAIN_DELAY 250
+#define MAX_MSG_COUNT 16
 
 class SystemManager {
     public:
         SystemManager(
-            // IIndependentWatchdog *iwdgDriver,
+            IIndependentWatchdog *iwdgDriver,
             ILogger *loggerDriver,
             IRCReceiver *rcDriver, 
             IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
@@ -22,7 +23,7 @@ class SystemManager {
         void SMUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
-        // IIndependentWatchdog *iwdgDriver_; // Independent Watchdog driver
+        IIndependentWatchdog *iwdgDriver_; // Independent Watchdog driver
         ILogger *loggerDriver_; // Logger driver
         IRCReceiver *rcDriver_; // RC receiver driver
         
