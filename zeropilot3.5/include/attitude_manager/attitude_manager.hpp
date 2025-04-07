@@ -6,6 +6,8 @@
 #include "motor_iface.hpp"
 #include "motor_datatype.hpp"
 
+#define AM_MAIN_DELAY 250
+
 typedef enum {
     YAW = 0,
     PITCH,
@@ -31,6 +33,7 @@ class AttitudeManager {
 
         Flightmode *controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
+        int noDataCount = 0;
 
         MotorGroupInstance_t rollMotors;
         MotorGroupInstance_t pitchMotors;
