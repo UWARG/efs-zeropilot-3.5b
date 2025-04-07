@@ -8,7 +8,7 @@
 #include "rc_motor_control.hpp"
 #include "iwdg_iface.hpp"
 
-#define SM_MAIN_DELAY 250
+#define SM_MAIN_DELAY 50
 
 class SystemManager {
     public:

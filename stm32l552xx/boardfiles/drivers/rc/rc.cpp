@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <cstdio>
 #include "rc_defines.hpp"
 #include "rc.hpp"
 
@@ -67,17 +68,17 @@ RCControl RCReceiver::getRCData() {
 void RCReceiver::init() {
     // start circular DMA
     rcData_.isDataNew = false;
-    HAL_UART_Receive_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+    HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
 }
 
 void RCReceiver::startDMA() {
     // start circular DMA
-    HAL_UART_Receive_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+    HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
 }
 
 void RCReceiver::parse(ParseStartLocation_e start) {
 
-    uint8_t *buf = start == BEGINNING ? rawSbus_ : rawSbus_ + SBUS_BYTE_COUNT;
+    uint8_t *buf = rawSbus_;
 
     if ((buf[0] == HEADER_) && (buf[24] == FOOTER_)) {
 
