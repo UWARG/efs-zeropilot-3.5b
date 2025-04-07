@@ -40,5 +40,4 @@ class AttitudeManager {
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
         void outputToMotor(ControlAxis_e axis, uint8_t percent);
-        void disarmToMotor(RCMotorControlMessage_t controlMsg);
 };

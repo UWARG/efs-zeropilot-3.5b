@@ -26,9 +26,9 @@ void AttitudeManager::runControlLoopIteration() {
         ++noDataCount;
 
         if (noDataCount == 10) {
-            outputToMotor(YAW, 0);
-            outputToMotor(PITCH, 0);
-            outputToMotor(ROLL, 0);
+            outputToMotor(YAW, 50);
+            outputToMotor(PITCH, 50);
+            outputToMotor(ROLL, 50);
             outputToMotor(THROTTLE, 0);
         }
 
@@ -37,7 +37,7 @@ void AttitudeManager::runControlLoopIteration() {
 
     // Disarm
     if (controlMsg.arm == 0) {
-        disarmToMotor(controlMsg);
+        outputToMotor(THROTTLE, 0);
         return;
     }
 
@@ -57,15 +57,6 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
     *pControlMsg = amQueue->get();
     amQueue->pop();
     return true;
-}
-
-void AttitudeManager::disarmToMotor(RCMotorControlMessage_t controlMsg) {
-    RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
-
-    outputToMotor(YAW, motorOutputs.yaw);
-    outputToMotor(PITCH, motorOutputs.pitch);
-    outputToMotor(ROLL, motorOutputs.roll);
-    outputToMotor(THROTTLE, 0);
 }
 
 void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {
