@@ -23,7 +23,7 @@ void AttitudeManager::runControlLoopIteration() {
     if (res != true) {
         ++noDataCount;
 
-        if (noDataCount * AM_MAIN_DELAY > 10 * AM_MAIN_DELAY) {
+        if (noDataCount * AM_MAIN_DELAY > 500) {
             outputToMotor(YAW, 50);
             outputToMotor(PITCH, 50);
             outputToMotor(ROLL, 50);
