@@ -60,7 +60,7 @@ void SystemManager::sendMessagesToLogger() {
     static char messages[MAX_MSG_COUNT][100];
     int msgIdx = 0;
 
-    while (smLoggerQueue_->count() > 0 && msgIdx < 16) {
+    while (smLoggerQueue_->count() > 0 && msgIdx < MAX_MSG_COUNT) {
         smLoggerQueue_->get(&messages[msgIdx]);
         msgIdx++;
     }

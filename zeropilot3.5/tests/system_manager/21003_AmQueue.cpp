@@ -8,30 +8,23 @@
 using ::testing::_;
 using ::testing::NiceMock;
 
-TEST(SMTest, 21002_Logger) 
+TEST(SMTest, 21003_AmQueue) 
 {  
     NiceMock<MockWatchdog> mockIWDG;
     NiceMock<MockLogger> mockLogger;
     NiceMock<MockRCReceiver> mockRC;
-    NiceMock<MockMessageQueue<RCMotorControlMessage_t>> mockAmQueue;
+    MockMessageQueue<RCMotorControlMessage_t> mockAmQueue;
     NiceMock<MockMessageQueue<char[100]>> mockSmLoggerQueue;
 
     SystemManager sm(&mockIWDG, &mockLogger, &mockRC, &mockAmQueue, &mockSmLoggerQueue);
 
-    mockSmLoggerQueue.delegateToFake();
+    mockRC.delegateToFake();
+    mockAmQueue.delegateToFake();
 
-    char msg[100] = {};
-    
-    for (int i = 0; i < 17; i++) {
-        snprintf(msg, 100, "test %d", i);
-        mockSmLoggerQueue.push(&msg);
-    }
-
-    EXPECT_EQ(mockSmLoggerQueue.count(), 17);
-    EXPECT_CALL(mockLogger, log(_, 16));
+    EXPECT_CALL(mockAmQueue, push);
 
     sm.SMUpdate();
 
-    EXPECT_CALL(mockLogger, log(_, 1));
-    sm.SMUpdate();
+    EXPECT_CALL(mockAmQueue, count());
+    EXPECT_EQ(mockAmQueue.count(), 1);
 }
