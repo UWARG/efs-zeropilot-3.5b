@@ -6,7 +6,7 @@
 #include "motor_iface.hpp"
 #include "motor_datatype.hpp"
 
-#define AM_MAIN_DELAY 250
+#define AM_MAIN_DELAY 50
 
 typedef enum {
     YAW = 0,
