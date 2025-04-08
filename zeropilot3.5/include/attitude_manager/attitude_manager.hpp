@@ -18,7 +18,8 @@ typedef enum {
 class AttitudeManager {
     public:
         AttitudeManager(
-            IMessageQueue<RCMotorControlMessage_t> *amQueue, 
+            IMessageQueue<RCMotorControlMessage_t> *amQueue,
+            IMessageQueue<char[100]> *smLoggerQueue,
             Flightmode *controlAlgorithm,  
             MotorGroupInstance_t *rollMotors,
             MotorGroupInstance_t *pitchMotors,
@@ -30,6 +31,7 @@ class AttitudeManager {
 
     private:
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
+        IMessageQueue<char[100]> *smLoggerQueue;
 
         Flightmode *controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
