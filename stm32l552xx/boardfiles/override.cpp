@@ -43,17 +43,10 @@ void HAL_Delay(uint32_t Delay) {
 
 /* interrupt callback functions */
 
-//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-//{
-//    if(huart->Instance == UART4){
-//        rcHandle->parse(BEGINNING);
-//        rcHandle->startDMA();
-//    }
-//}
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     if(huart->Instance == UART4){
-        rcHandle->parse(BEGINNING);
+        rcHandle->parse();
         rcHandle->startDMA();
     }
 }

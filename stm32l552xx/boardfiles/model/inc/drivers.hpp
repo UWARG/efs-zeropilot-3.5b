@@ -8,7 +8,7 @@
 #include "rc_motor_control.hpp"
 #include "queue.hpp"
 
-//extern IndependentWatchdog *iwdgHandle;
+extern IndependentWatchdog *iwdgHandle;
 extern Logger *loggerHandle;
 
 extern MotorControl *leftAileronMotorHandle;

@@ -76,7 +76,7 @@ void RCReceiver::startDMA() {
     HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
 }
 
-void RCReceiver::parse(ParseStartLocation_e start) {
+void RCReceiver::parse() {
 
     uint8_t *buf = rawSbus_;
 

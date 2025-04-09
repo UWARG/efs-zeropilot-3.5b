@@ -10,11 +10,6 @@ typedef struct {
     int bitshift;
 } DataChunk_t;
 
-typedef enum {
-    BEGINNING = 0,
-    MIDDLE
-} ParseStartLocation_e;
-
 class RCReceiver : public IRCReceiver {
     public:
         RCReceiver(UART_HandleTypeDef *uart);
@@ -24,7 +19,7 @@ class RCReceiver : public IRCReceiver {
         void init();
         void startDMA();
 
-        void parse(ParseStartLocation_e start);
+        void parse();
        
     private:
         UART_HandleTypeDef *uart_;

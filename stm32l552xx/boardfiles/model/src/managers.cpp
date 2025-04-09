@@ -15,5 +15,5 @@ void initManagers()
     amHandle = new AttitudeManager(amRCQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors);
 
     // SM initialization
-    smHandle = new SystemManager(loggerHandle, rcHandle, amRCQueueHandle, smLoggerQueueHandle);
+    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, smLoggerQueueHandle);
 }

@@ -2,12 +2,12 @@
 #include "museq.hpp"
 #include "stm32l5xx_hal.h"
 
-//extern IWDG_HandleTypeDef hiwdg;
+extern IWDG_HandleTypeDef hiwdg;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart4;
 
-//IndependentWatchdog *iwdgHandle = nullptr;
+IndependentWatchdog *iwdgHandle = nullptr;
 Logger *loggerHandle = nullptr;
 
 MotorControl *leftAileronMotorHandle = nullptr;
@@ -36,7 +36,7 @@ MotorGroupInstance_t throttleMotors;
 
 void initDrivers()
 {
-    //iwdgHandle = new IndependentWatchdog(&hiwdg);
+    iwdgHandle = new IndependentWatchdog(&hiwdg);
     loggerHandle = new Logger();
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
