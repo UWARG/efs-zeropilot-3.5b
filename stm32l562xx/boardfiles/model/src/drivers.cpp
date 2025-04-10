@@ -36,14 +36,14 @@ MotorGroupInstance_t throttleMotors;
 
 void initDrivers()
 {
-    //iwdgHandle = new IndependentWatchdog(&hiwdg);
+//    iwdgHandle = new IndependentWatchdog(&hiwdg);
     loggerHandle = new Logger();
 
-    leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
-    rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
-    elevatorMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_3, 5, 10);
-    rudderMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_4, 5, 10);
-    throttleMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
+    leftAileronMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
+    rightAileronMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_2, 5, 10);
+    elevatorMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_3, 5, 10);
+    rudderMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_4, 5, 10);
+    throttleMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
     
     rcHandle = new RCReceiver(&huart4);
 

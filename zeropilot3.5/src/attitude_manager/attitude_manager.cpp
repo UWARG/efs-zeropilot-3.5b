@@ -1,14 +1,17 @@
 #include "attitude_manager.hpp"
+#include "rc_motor_control.hpp"
 
 AttitudeManager::AttitudeManager(
-    IMessageQueue<RCMotorControlMessage_t> *amQueue, 
+    IMessageQueue<RCMotorControlMessage_t> *amQueue,
+    IMessageQueue<char[100]> *smLoggerQueue,
     Flightmode *controlAlgorithm,  
-    MotorGroupInstance_t *rollMotors, 
-    MotorGroupInstance_t *pitchMotors, 
-    MotorGroupInstance_t *yawMotors, 
+    MotorGroupInstance_t *rollMotors,
+    MotorGroupInstance_t *pitchMotors,
+    MotorGroupInstance_t *yawMotors,
     MotorGroupInstance_t *throttleMotors
 ) : 
     amQueue(amQueue),
+    smLoggerQueue(smLoggerQueue),
     controlAlgorithm(controlAlgorithm),
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
@@ -20,20 +23,33 @@ void AttitudeManager::runControlLoopIteration() {
     bool res = getControlInputs(&controlMsg);
 
     // Failsafe
+    static bool failsafeTriggered = false;
+
     if (res != true) {
         ++noDataCount;
 
-        if (noDataCount * AM_MAIN_DELAY > 500) {
+        if (noDataCount * AM_MAIN_DELAY > 1000) {
             outputToMotor(YAW, 50);
             outputToMotor(PITCH, 50);
             outputToMotor(ROLL, 50);
             outputToMotor(THROTTLE, 0);
+
+            if (!failsafeTriggered) {
+              char errorMsg[100] = "Failsafe triggered";
+              smLoggerQueue->push(&errorMsg);
+              failsafeTriggered = true;
+            }
         }
 
         return;
-    }
-    else {
+    } else {
         noDataCount = 0;
+
+        if (failsafeTriggered) {
+          char errorMsg[100] = "Motor control restored";
+          smLoggerQueue->push(&errorMsg);
+          failsafeTriggered = false;
+        }
     }
 
     // Disarm
