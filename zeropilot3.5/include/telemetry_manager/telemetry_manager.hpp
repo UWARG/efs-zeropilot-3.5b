@@ -17,4 +17,5 @@ class TelemetryManager {
     void processMsgQueue();
     void heartBeatMsg(); //temporary implementation
     void transmit();
+    void reconstructMessage();
 };

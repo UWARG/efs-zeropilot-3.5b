@@ -60,4 +60,33 @@ void TelemetryManager::transmit() {
         }
 }
 
+void TelemetryManager::reconstructMessage() {
+    mavlink_status_t status;
+    mavlink_message_t mavlink_message = {};
+    int chan = 0; //Not sure if this is the right channel to use for mavlink_parse_char
+    //Keep receiving from the queue until it's empty
+    while (tmQueueDriver_->count > 0) {
+        TMMessage_t tmq_message = tmQueueDriver_->pop();
 
+        //Figure out which type of data we're receiving
+        TMMessageData_t messageTypeToParse;
+        switch (tmq_message.DataType) {
+            case GPOS_DATA:
+                messageTypeToParse = tmq_message.tm_message_data.GPOSData_t;
+            case AM_DATA:
+                messageTypeToParse = tmq_message.tm_message_data.AMData_t;
+            default:
+                messageTypeToParse = tmq_message.tm_message_data.BMData_t;
+        }
+
+        //Process the data
+        //Not sure what exactly we're parsing ik messageTypeToParse isnt a uint8_t
+        if (mavlink_parse_char(chan, messageTypeToParse, &mavlink_message, &status)) {
+            printf("Received message with ID %d, sequence: %d from component %d of system %d", 
+                mavlink_message.msgid, mavlink_message.seq, mavlink_message.compid, mavlink_message.sysid);
+        }
+        else {
+            return;
+        }
+    }
+}
