@@ -52,6 +52,7 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.yaw = rcData.yaw;
     rcDataMessage.throttle = rcData.throttle;
     rcDataMessage.arm = rcData.arm;
+    rcDataMessage.flapAngle = rcData.aux2;
 
     amRCQueue_->push(&rcDataMessage);
 }

@@ -6,4 +6,5 @@ typedef struct {
     float yaw;
     float throttle;
     float arm;
+    float flapAngle;
 } RCMotorControlMessage_t;

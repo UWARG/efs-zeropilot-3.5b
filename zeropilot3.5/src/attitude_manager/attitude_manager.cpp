@@ -8,7 +8,9 @@ AttitudeManager::AttitudeManager(
     MotorGroupInstance_t *rollMotors,
     MotorGroupInstance_t *pitchMotors,
     MotorGroupInstance_t *yawMotors,
-    MotorGroupInstance_t *throttleMotors
+    MotorGroupInstance_t *throttleMotors,
+    MotorGroupInstance_t *flapMotors,
+    MotorGroupInstance_t *steeringMotors
 ) : 
     amQueue(amQueue),
     smLoggerQueue(smLoggerQueue),
@@ -16,7 +18,9 @@ AttitudeManager::AttitudeManager(
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
     yawMotors(yawMotors),
-    throttleMotors(throttleMotors) {} 
+    throttleMotors(throttleMotors),
+    flapMotors(flapMotors),
+    steeringMotors(steeringMotors) {}
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
@@ -33,6 +37,8 @@ void AttitudeManager::runControlLoopIteration() {
             outputToMotor(PITCH, 50);
             outputToMotor(ROLL, 50);
             outputToMotor(THROTTLE, 0);
+            outputToMotor(FLAP_ANGLE, 0);
+            outputToMotor(STEERING, 50);
 
             if (!failsafeTriggered) {
               char errorMsg[100] = "Failsafe triggered";
@@ -63,6 +69,8 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(PITCH, motorOutputs.pitch);
     outputToMotor(ROLL, motorOutputs.roll);
     outputToMotor(THROTTLE, motorOutputs.throttle);
+    outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
+    outputToMotor(STEERING, motorOutputs.yaw);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -89,6 +97,12 @@ void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {
             break;
         case THROTTLE:
             motorGroup = throttleMotors;
+            break;
+        case FLAP_ANGLE:
+            motorGroup = flapMotors;
+            break;
+        case STEERING:
+            motorGroup = steeringMotors;
             break;
         default:
             return;
