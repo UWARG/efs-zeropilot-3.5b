@@ -26,8 +26,8 @@
   #define FCLK_SLOW() { MODIFY_REG(hspi1.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_128); }    /* Set SCLK = slow, approx 280 KBits/s*/
   #define FCLK_FAST() { MODIFY_REG(hspi1.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_8); }    /* Set SCLK = fast, approx 4.5 MBits/s */
   
-  #define CS_HIGH() {HAL_GPIO_WritePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin, GPIO_PIN_SET);}
-  #define CS_LOW()  {HAL_GPIO_WritePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin, GPIO_PIN_RESET);}
+  #define CS_HIGH() {HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);}
+  #define CS_LOW()  {HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);}
   
   /* MMC/SD command */
   #define CMD0    (0)          /* GO_IDLE_STATE */
