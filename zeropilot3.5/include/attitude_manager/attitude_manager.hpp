@@ -12,7 +12,9 @@ typedef enum {
     YAW = 0,
     PITCH,
     ROLL,
-    THROTTLE
+    THROTTLE,
+    FLAP_ANGLE,
+    STEERING
 } ControlAxis_e;
 
 class AttitudeManager {
@@ -24,7 +26,9 @@ class AttitudeManager {
             MotorGroupInstance_t *rollMotors,
             MotorGroupInstance_t *pitchMotors,
             MotorGroupInstance_t *yawMotors,
-            MotorGroupInstance_t *throttleMotors
+            MotorGroupInstance_t *throttleMotors,
+            MotorGroupInstance_t *flapMotors,
+            MotorGroupInstance_t *steeringMotors
         );
 
         void runControlLoopIteration();
@@ -41,6 +45,8 @@ class AttitudeManager {
         MotorGroupInstance_t *pitchMotors;
         MotorGroupInstance_t *yawMotors;
         MotorGroupInstance_t *throttleMotors;
+        MotorGroupInstance_t *flapMotors;
+        MotorGroupInstance_t *steeringMotors;
 
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 

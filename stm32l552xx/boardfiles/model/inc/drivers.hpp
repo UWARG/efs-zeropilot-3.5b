@@ -16,6 +16,9 @@ extern MotorControl *rightAileronMotorHandle;
 extern MotorControl *elevatorMotorHandle;
 extern MotorControl *rudderMotorHandle;
 extern MotorControl *throttleMotorHandle;
+extern MotorControl *leftFlapMotorHandle;
+extern MotorControl *rightFlapMotorHandle;
+extern MotorControl *steeringMotorHandle;
 
 extern RCReceiver *rcHandle;
 
@@ -26,5 +29,7 @@ extern MotorGroupInstance_t rollMotors;
 extern MotorGroupInstance_t pitchMotors;
 extern MotorGroupInstance_t yawMotors;
 extern MotorGroupInstance_t throttleMotors;
+extern MotorGroupInstance_t flapMotors;
+extern MotorGroupInstance_t steeringMotors;
 
 void initDrivers();

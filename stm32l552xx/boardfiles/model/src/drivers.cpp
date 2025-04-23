@@ -3,6 +3,7 @@
 #include "stm32l5xx_hal.h"
 
 extern IWDG_HandleTypeDef hiwdg;
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart4;
@@ -15,6 +16,9 @@ MotorControl *rightAileronMotorHandle = nullptr;
 MotorControl *elevatorMotorHandle = nullptr;
 MotorControl *rudderMotorHandle = nullptr;
 MotorControl *throttleMotorHandle = nullptr;
+MotorControl *leftFlapMotorHandle = nullptr;
+MotorControl *rightFlapMotorHandle = nullptr;
+MotorControl *steeringMotorHandle = nullptr;
 
 RCReceiver *rcHandle = nullptr;
 
@@ -26,13 +30,19 @@ MotorInstance_t rollRightMotorInstance;
 MotorInstance_t elevatorMotorInstance;
 MotorInstance_t rudderMotorInstance;
 MotorInstance_t throttleMotorInstance;
+MotorInstance_t leftFlapMotorInstance;
+MotorInstance_t rightFlapMotorInstance;
+MotorInstance_t steeringMotorInstance;
 
 MotorInstance_t rollMotorInstance[2];
+MotorInstance_t flapMotorInstance[2];
 
 MotorGroupInstance_t rollMotors;
 MotorGroupInstance_t pitchMotors;
 MotorGroupInstance_t yawMotors;
 MotorGroupInstance_t throttleMotors;
+MotorGroupInstance_t flapMotors;
+MotorGroupInstance_t steeringMotors;
 
 void initDrivers()
 {
@@ -44,6 +54,9 @@ void initDrivers()
     elevatorMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_3, 5, 10);
     rudderMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_4, 5, 10);
     throttleMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
+    leftFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_1, 5, 10);
+    rightFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
+    steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     
     rcHandle = new RCReceiver(&huart4);
 
@@ -57,6 +70,9 @@ void initDrivers()
     elevatorMotorHandle->init();
     rudderMotorHandle->init();
     throttleMotorHandle->init();
+    leftFlapMotorHandle->init();
+    rightFlapMotorHandle->init();
+    steeringMotorHandle->init();
 
     rcHandle->init();
 
@@ -65,12 +81,20 @@ void initDrivers()
     elevatorMotorInstance = {elevatorMotorHandle, false};
     rudderMotorInstance = {rudderMotorHandle, false};
     throttleMotorInstance = {throttleMotorHandle, false};
+    leftFlapMotorInstance = {leftFlapMotorHandle, false};
+    rightFlapMotorInstance = {rightFlapMotorHandle, false};
+    steeringMotorInstance = {steeringMotorHandle, false};
 
     rollMotorInstance[0] = rollLeftMotorInstance;
     rollMotorInstance[1] = rollRightMotorInstance;
+
+    flapMotorInstance[0] = leftFlapMotorInstance;
+    flapMotorInstance[1] = rightFlapMotorInstance;
 
     rollMotors = {rollMotorInstance, 2};
     pitchMotors = {&elevatorMotorInstance, 1};
     yawMotors = {&rudderMotorInstance, 1};
     throttleMotors = {&throttleMotorInstance, 1};
+    flapMotors = {flapMotorInstance, 2};
+    steeringMotors = {&steeringMotorInstance, 1};
 }
