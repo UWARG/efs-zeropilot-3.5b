@@ -76,14 +76,14 @@ void initDrivers()
 
     rcHandle->init();
 
-    rollLeftMotorInstance = {leftAileronMotorHandle, false};
-    rollRightMotorInstance = {rightAileronMotorHandle, false};
+    rollLeftMotorInstance = {leftAileronMotorHandle, true};
+    rollRightMotorInstance = {rightAileronMotorHandle, true};
     elevatorMotorInstance = {elevatorMotorHandle, false};
     rudderMotorInstance = {rudderMotorHandle, false};
     throttleMotorInstance = {throttleMotorHandle, false};
     leftFlapMotorInstance = {leftFlapMotorHandle, false};
-    rightFlapMotorInstance = {rightFlapMotorHandle, false};
-    steeringMotorInstance = {steeringMotorHandle, false};
+    rightFlapMotorInstance = {rightFlapMotorHandle, true};
+    steeringMotorInstance = {steeringMotorHandle, true};
 
     rollMotorInstance[0] = rollLeftMotorInstance;
     rollMotorInstance[1] = rollRightMotorInstance;
