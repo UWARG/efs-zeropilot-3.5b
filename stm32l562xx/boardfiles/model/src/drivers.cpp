@@ -2,13 +2,13 @@
 #include "museq.hpp"
 #include "stm32l5xx_hal.h"
 
-//extern IWDG_HandleTypeDef hiwdg;
+extern IWDG_HandleTypeDef hiwdg;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart4;
 
-//IndependentWatchdog *iwdgHandle = nullptr;
+IndependentWatchdog *iwdgHandle = nullptr;
 Logger *loggerHandle = nullptr;
 
 MotorControl *leftAileronMotorHandle = nullptr;
@@ -25,8 +25,8 @@ RCReceiver *rcHandle = nullptr;
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
 
-MotorInstance_t rollLeftMotorInstance;
-MotorInstance_t rollRightMotorInstance;
+MotorInstance_t leftAileronMotorInstance;
+MotorInstance_t rightAileronMotorInstance;
 MotorInstance_t elevatorMotorInstance;
 MotorInstance_t rudderMotorInstance;
 MotorInstance_t throttleMotorInstance;
@@ -34,7 +34,7 @@ MotorInstance_t leftFlapMotorInstance;
 MotorInstance_t rightFlapMotorInstance;
 MotorInstance_t steeringMotorInstance;
 
-MotorInstance_t rollMotorInstance[2];
+MotorInstance_t aileronMotorInstance[2];
 MotorInstance_t flapMotorInstance[2];
 
 MotorGroupInstance_t rollMotors;
@@ -46,7 +46,7 @@ MotorGroupInstance_t steeringMotors;
 
 void initDrivers()
 {
-//    iwdgHandle = new IndependentWatchdog(&hiwdg);
+    iwdgHandle = new IndependentWatchdog(&hiwdg);
     loggerHandle = new Logger();
 
     leftAileronMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
@@ -76,8 +76,8 @@ void initDrivers()
 
     rcHandle->init();
 
-    rollLeftMotorInstance = {leftAileronMotorHandle, false};
-    rollRightMotorInstance = {rightAileronMotorHandle, false};
+    leftAileronMotorInstance = {leftAileronMotorHandle, false};
+    rightAileronMotorInstance = {rightAileronMotorHandle, false};
     elevatorMotorInstance = {elevatorMotorHandle, false};
     rudderMotorInstance = {rudderMotorHandle, false};
     throttleMotorInstance = {throttleMotorHandle, false};
@@ -85,13 +85,13 @@ void initDrivers()
     rightFlapMotorInstance = {rightFlapMotorHandle, false};
     steeringMotorInstance = {steeringMotorHandle, false};
 
-    rollMotorInstance[0] = rollLeftMotorInstance;
-    rollMotorInstance[1] = rollRightMotorInstance;
+    aileronMotorInstance[0] = leftAileronMotorInstance;
+    aileronMotorInstance[1] = rightAileronMotorInstance;
 
     flapMotorInstance[0] = leftFlapMotorInstance;
     flapMotorInstance[1] = rightFlapMotorInstance;
 
-    rollMotors = {rollMotorInstance, 2};
+    rollMotors = {aileronMotorInstance, 2};
     pitchMotors = {&elevatorMotorInstance, 1};
     yawMotors = {&rudderMotorInstance, 1};
     throttleMotors = {&throttleMotorInstance, 1};

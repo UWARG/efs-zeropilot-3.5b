@@ -1,7 +1,6 @@
 #include <cmath>
 #include <cstring>
 #include <cstdio>
-#include "rc_defines.hpp"
 #include "rc.hpp"
 
 DataChunk_t channelMappings[SBUS_CHANNEL_COUNT][SBUS_MAX_BTYES_PER_CHANNEL] = {

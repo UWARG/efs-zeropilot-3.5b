@@ -1,5 +1,4 @@
 #include "attitude_manager.hpp"
-#include "rc_motor_control.hpp"
 
 AttitudeManager::AttitudeManager(
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
@@ -27,6 +26,7 @@ void AttitudeManager::runControlLoopIteration() {
     bool res = getControlInputs(&controlMsg);
 
     // Failsafe
+    static int noDataCount = 0;
     static bool failsafeTriggered = false;
 
     if (res != true) {
