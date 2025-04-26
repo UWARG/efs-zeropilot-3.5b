@@ -29,7 +29,7 @@ int Logger::init() {
 #endif
 }
 
-int Logger::log(char message[100]) {
+int Logger::log(const char message[100]) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
     uint32_t ts = (uint32_t)(osKernelGetTickCount() * 1.0 / osKernelGetTickFreq());
@@ -54,7 +54,7 @@ int Logger::log(char message[100]) {
 #endif
 }
 
-int Logger::log(char message[][100], int count) {
+int Logger::log(const char message[][100], int count) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
     uint32_t ts = (uint32_t)(osKernelGetTickCount() * 1.0 / osKernelGetTickFreq());

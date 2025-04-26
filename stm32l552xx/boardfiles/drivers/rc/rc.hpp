@@ -10,11 +10,6 @@ typedef struct {
     int bitshift;
 } DataChunk_t;
 
-typedef enum {
-    BEGINNING = 0,
-    MIDDLE
-} ParseStartLocation_e;
-
 class RCReceiver : public IRCReceiver {
     public:
         RCReceiver(UART_HandleTypeDef *uart);
@@ -22,13 +17,14 @@ class RCReceiver : public IRCReceiver {
         RCControl getRCData() override;
 
         void init();
+        void startDMA();
 
-        void parse(ParseStartLocation_e start);
+        void parse();
        
     private:
         UART_HandleTypeDef *uart_;
         RCControl rcData_;
-        uint8_t rawSbus_[2 * SBUS_BYTE_COUNT];
+        uint8_t rawSbus_[SBUS_BYTE_COUNT];
 
         float sbusToRCControl(uint8_t *buf, int channelMappingIdx);
 };

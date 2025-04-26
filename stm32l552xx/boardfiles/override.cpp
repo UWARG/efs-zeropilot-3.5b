@@ -4,8 +4,10 @@
 #include "drivers.hpp"
 #include "utils.h"
 
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* overriding _write to redirect puts()/printf() to SWO */
 int _write(int file, char *ptr, int len)
 {
@@ -35,20 +37,42 @@ void HAL_Delay(uint32_t Delay) {
   }
 }
 
+#ifdef __cplusplus
+}
+#endif
+
 /* interrupt callback functions */
 
-void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance == UART4){
-		rcHandle->parse(BEGINNING);
-	}
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+    if(huart->Instance == UART4){
+        rcHandle->parse();
+        rcHandle->startDMA();
+    }
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance == UART4){
-		rcHandle->parse(MIDDLE);
-	}
-}
+uint32_t error;
 
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+  if(huart->Instance == UART4){
+    error = HAL_UART_GetError(huart);
+
+    if (error & HAL_UART_ERROR_PE) {
+      __HAL_UART_CLEAR_PEFLAG(huart);
+    }
+
+    if (error & HAL_UART_ERROR_NE){
+      __HAL_UART_CLEAR_FEFLAG(huart);
+    }
+
+    if (error & HAL_UART_ERROR_FE){
+      __HAL_UART_CLEAR_NEFLAG(huart);
+    }
+
+    if (error & HAL_UART_ERROR_ORE){
+      __HAL_UART_CLEAR_OREFLAG(huart);
+    }
+
+    rcHandle->startDMA();
+  }
 }
