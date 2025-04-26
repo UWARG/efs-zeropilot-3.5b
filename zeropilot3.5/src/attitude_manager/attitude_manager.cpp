@@ -1,39 +1,61 @@
 #include "attitude_manager.hpp"
 
 AttitudeManager::AttitudeManager(
-    IMessageQueue<RCMotorControlMessage_t> *amQueue, 
+    IMessageQueue<RCMotorControlMessage_t> *amQueue,
+    IMessageQueue<char[100]> *smLoggerQueue,
     Flightmode *controlAlgorithm,  
-    MotorGroupInstance_t rollMotors, 
-    MotorGroupInstance_t pitchMotors, 
-    MotorGroupInstance_t yawMotors, 
-    MotorGroupInstance_t throttleMotors
+    MotorGroupInstance_t *rollMotors,
+    MotorGroupInstance_t *pitchMotors,
+    MotorGroupInstance_t *yawMotors,
+    MotorGroupInstance_t *throttleMotors,
+    MotorGroupInstance_t *flapMotors,
+    MotorGroupInstance_t *steeringMotors
 ) : 
     amQueue(amQueue),
+    smLoggerQueue(smLoggerQueue),
     controlAlgorithm(controlAlgorithm),
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
     yawMotors(yawMotors),
-    throttleMotors(throttleMotors) {} 
+    throttleMotors(throttleMotors),
+    flapMotors(flapMotors),
+    steeringMotors(steeringMotors) {}
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
     bool res = getControlInputs(&controlMsg);
 
     // Failsafe
+    static int noDataCount = 0;
+    static bool failsafeTriggered = false;
+
     if (res != true) {
         ++noDataCount;
 
-        if (noDataCount * AM_MAIN_DELAY > 500) {
+        if (noDataCount * AM_MAIN_DELAY > 1000) {
             outputToMotor(YAW, 50);
             outputToMotor(PITCH, 50);
             outputToMotor(ROLL, 50);
             outputToMotor(THROTTLE, 0);
+            outputToMotor(FLAP_ANGLE, 0);
+            outputToMotor(STEERING, 50);
+
+            if (!failsafeTriggered) {
+              char errorMsg[100] = "Failsafe triggered";
+              smLoggerQueue->push(&errorMsg);
+              failsafeTriggered = true;
+            }
         }
 
         return;
-    }
-    else {
+    } else {
         noDataCount = 0;
+
+        if (failsafeTriggered) {
+          char errorMsg[100] = "Motor control restored";
+          smLoggerQueue->push(&errorMsg);
+          failsafeTriggered = false;
+        }
     }
 
     // Disarm
@@ -47,6 +69,8 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(PITCH, motorOutputs.pitch);
     outputToMotor(ROLL, motorOutputs.roll);
     outputToMotor(THROTTLE, motorOutputs.throttle);
+    outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
+    outputToMotor(STEERING, motorOutputs.yaw);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -54,8 +78,7 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
         return false;
     }
 
-    *pControlMsg = amQueue->get();
-    amQueue->pop();
+    amQueue->get(pControlMsg);
     return true;
 }
 
@@ -64,16 +87,22 @@ void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {
 
     switch (axis) {
         case ROLL:
-            motorGroup = &rollMotors;
+            motorGroup = rollMotors;
             break;
         case PITCH:
-            motorGroup = &pitchMotors;
+            motorGroup = pitchMotors;
             break;
         case YAW:
-            motorGroup = &yawMotors;
+            motorGroup = yawMotors;
             break;
         case THROTTLE:
-            motorGroup = &throttleMotors;
+            motorGroup = throttleMotors;
+            break;
+        case FLAP_ANGLE:
+            motorGroup = flapMotors;
+            break;
+        case STEERING:
+            motorGroup = steeringMotors;
             break;
         default:
             return;

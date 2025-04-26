@@ -7,6 +7,6 @@ class ILogger {
     public:
         virtual ~ILogger() = default;
 
-        virtual int log(char message[100]) = 0;
-        virtual int log(char message[][100], int count) = 0;
+        virtual int log(const char message[100]) = 0;
+        virtual int log(const char message[][100], int count) = 0;
 };
