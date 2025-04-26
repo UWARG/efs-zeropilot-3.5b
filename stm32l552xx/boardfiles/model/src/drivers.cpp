@@ -34,8 +34,8 @@ MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
 MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
 MessageQueue<mavlink_message_t> *messageBufferHandle = nullptr;
 
-MotorInstance_t rollLeftMotorInstance;
-MotorInstance_t rollRightMotorInstance;
+MotorInstance_t leftAileronMotorInstance;
+MotorInstance_t rightAileronMotorInstance;
 MotorInstance_t elevatorMotorInstance;
 MotorInstance_t rudderMotorInstance;
 MotorInstance_t throttleMotorInstance;
@@ -43,7 +43,7 @@ MotorInstance_t leftFlapMotorInstance;
 MotorInstance_t rightFlapMotorInstance;
 MotorInstance_t steeringMotorInstance;
 
-MotorInstance_t rollMotorInstance[2];
+MotorInstance_t aileronMotorInstance[2];
 MotorInstance_t flapMotorInstance[2];
 
 MotorGroupInstance_t rollMotors;
@@ -91,8 +91,8 @@ void initDrivers()
     rcHandle->init();
     gpsHandle->init();
 
-    rollLeftMotorInstance = {leftAileronMotorHandle, true};
-    rollRightMotorInstance = {rightAileronMotorHandle, true};
+    leftAileronMotorInstance = {leftAileronMotorHandle, true};
+    rightAileronMotorInstance = {rightAileronMotorHandle, true};
     elevatorMotorInstance = {elevatorMotorHandle, false};
     rudderMotorInstance = {rudderMotorHandle, false};
     throttleMotorInstance = {throttleMotorHandle, false};
@@ -100,13 +100,13 @@ void initDrivers()
     rightFlapMotorInstance = {rightFlapMotorHandle, true};
     steeringMotorInstance = {steeringMotorHandle, true};
 
-    rollMotorInstance[0] = rollLeftMotorInstance;
-    rollMotorInstance[1] = rollRightMotorInstance;
+    aileronMotorInstance[0] = leftAileronMotorInstance;
+    aileronMotorInstance[1] = rightAileronMotorInstance;
 
     flapMotorInstance[0] = leftFlapMotorInstance;
     flapMotorInstance[1] = rightFlapMotorInstance;
 
-    rollMotors = {rollMotorInstance, 2};
+    rollMotors = {aileronMotorInstance, 2};
     pitchMotors = {&elevatorMotorInstance, 1};
     yawMotors = {&rudderMotorInstance, 1};
     throttleMotors = {&throttleMotorInstance, 1};

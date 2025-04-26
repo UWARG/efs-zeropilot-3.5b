@@ -39,6 +39,7 @@ void AttitudeManager::runControlLoopIteration() {
     bool controlRes = getControlInputs(&controlMsg);
     
     // Failsafe
+    static int noDataCount = 0;
     static bool failsafeTriggered = false;
 
     if (controlRes != true) {

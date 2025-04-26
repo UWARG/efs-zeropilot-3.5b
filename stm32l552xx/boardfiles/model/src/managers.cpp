@@ -2,6 +2,7 @@
 #include "drivers.hpp"
 #include "managers.hpp"
 
+DirectMapping *flightMode = nullptr;
 AttitudeManager *amHandle = nullptr;
 SystemManager *smHandle = nullptr;
 TelemetryManager *tmHandle = nullptr;
