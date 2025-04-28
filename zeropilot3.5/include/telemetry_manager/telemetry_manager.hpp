@@ -18,4 +18,5 @@ class TelemetryManager {
     void heartBeatMsg(); //temporary implementation
     void transmit();
     void reconstructMessage();
+    void sendCmdFromMessage(const mavlink_message_t &msg);
 };

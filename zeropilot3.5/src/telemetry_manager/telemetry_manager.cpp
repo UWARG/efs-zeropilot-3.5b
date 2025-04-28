@@ -62,31 +62,31 @@ void TelemetryManager::transmit() {
 
 void TelemetryManager::reconstructMessage() {
     mavlink_status_t status;
-    mavlink_message_t mavlink_message = {};
-    int chan = 0; //Not sure if this is the right channel to use for mavlink_parse_char
-    //Keep receiving from the queue until it's empty
-    while (tmQueueDriver_->count > 0) {
-        TMMessage_t tmq_message = tmQueueDriver_->pop();
+    mavlink_message_t message;
 
-        //Figure out which type of data we're receiving
-        TMMessageData_t messageTypeToParse;
-        switch (tmq_message.DataType) {
-            case GPOS_DATA:
-                messageTypeToParse = tmq_message.tm_message_data.GPOSData_t;
-            case AM_DATA:
-                messageTypeToParse = tmq_message.tm_message_data.AMData_t;
-            default:
-                messageTypeToParse = tmq_message.tm_message_data.BMData_t;
-        }
+    uint8_t rx_buffer[BUFSIZ];
 
-        //Process the data
-        //Not sure what exactly we're parsing ik messageTypeToParse isnt a uint8_t
-        if (mavlink_parse_char(chan, messageTypeToParse, &mavlink_message, &status)) {
-            printf("Received message with ID %d, sequence: %d from component %d of system %d", 
-                mavlink_message.msgid, mavlink_message.seq, mavlink_message.compid, mavlink_message.sysid);
+    //I Couldn't find the IRFD class in this branch so im assuming it's implemented the same way as the rfd class in the rfd branch
+    uint16_t received_bytes = rfdDriver_.receive(rx_buffer, sizeof(rx_buffer));
+
+    //Use mavlink_parse_char to process one byte at a time
+    for (uint16_t i = 0; i < received_bytes; ++i) {
+        //Seems like this returns 1 once the message is complete so we can handle processing within the loop
+        if (mavlink_parse_char(0, rx_buffer[i], &message, &status)) {
+            printf("Received MAVLink message: msgid=%d, sysid=%d, compid=%d\n", 
+                message.msgid, message.sysid, message.compid);
+            sendCmdFromMessage(message);
         }
-        else {
-            return;
-        }
+    }
+}
+
+void TelemetryManager::sendCmdFromMessage(const mavlink_message_t &msg) {
+    switch (msg.msgid) {
+        case MAVLINK_MSG_ID_COMMAND_LONG:
+            break;
+        case MAVLINK_MSG_ID_PARAM_SET:
+            break;
+        default:
+            break;
     }
 }
