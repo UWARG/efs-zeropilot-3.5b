@@ -30,5 +30,5 @@ class BatteryManager {
         IMessageQueue<RCMotorControlMessage_t> *amQueueDriver_; // Queue driver for communication to the Attitude Manager
         IMessageQueue<RCMotorControlMessage_t> *smQueueDriver_; // Queue driver for communication to the System Manager
 
-        void sendRCDataToAttitudeManager(const BatteryCntr &batteryData);
+        void sendRCDataToAttitudeManager(const BatteryData &batteryData);
 };

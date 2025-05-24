@@ -43,7 +43,7 @@ std::string BatteryManager::Battery_Logic_Detection(const BatteryData &batteryDa
     if (batteryData.capacity <= BATT_LOW_MAH) {
         // send warning
         return "Battery capacity low";
-    
+    }
 
     // Everything is okay
     return "Battery status OK";
