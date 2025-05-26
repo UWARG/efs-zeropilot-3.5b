@@ -43,8 +43,8 @@ MotorInstance_t leftFlapMotorInstance;
 MotorInstance_t rightFlapMotorInstance;
 MotorInstance_t steeringMotorInstance;
 
-MotorInstance_t aileronMotorInstance[2];
-MotorInstance_t flapMotorInstance[2];
+MotorInstance_t aileronMotorInstances[2];
+MotorInstance_t flapMotorInstances[2];
 
 MotorGroupInstance_t rollMotors;
 MotorGroupInstance_t pitchMotors;
@@ -100,16 +100,16 @@ void initDrivers()
     rightFlapMotorInstance = {rightFlapMotorHandle, true};
     steeringMotorInstance = {steeringMotorHandle, true};
 
-    aileronMotorInstance[0] = leftAileronMotorInstance;
-    aileronMotorInstance[1] = rightAileronMotorInstance;
+    aileronMotorInstances[0] = leftAileronMotorInstance;
+    aileronMotorInstances[1] = rightAileronMotorInstance;
 
-    flapMotorInstance[0] = leftFlapMotorInstance;
-    flapMotorInstance[1] = rightFlapMotorInstance;
+    flapMotorInstances[0] = leftFlapMotorInstance;
+    flapMotorInstances[1] = rightFlapMotorInstance;
 
-    rollMotors = {aileronMotorInstance, 2};
+    rollMotors = {aileronMotorInstances, 2};
     pitchMotors = {&elevatorMotorInstance, 1};
     yawMotors = {&rudderMotorInstance, 1};
     throttleMotors = {&throttleMotorInstance, 1};
-    flapMotors = {flapMotorInstance, 2};
+    flapMotors = {flapMotorInstances, 2};
     steeringMotors = {&steeringMotorInstance, 1};
 }

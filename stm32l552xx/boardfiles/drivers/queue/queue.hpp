@@ -16,7 +16,7 @@ class MessageQueue : public IMessageQueue<T> {
 
       /**
        * @brief Gets top element of queue
-       * @param message:
+       * @param message variable to receive data
        * @retval status code
        */
       int get(T *message) override {
@@ -25,7 +25,7 @@ class MessageQueue : public IMessageQueue<T> {
 
       /**
        * @brief pushes message to the back of the queue
-       * @param message: data to be transmitted
+       * @param message data to be transmitted
        * @retval status code
        */
       int push(T *message) override {
