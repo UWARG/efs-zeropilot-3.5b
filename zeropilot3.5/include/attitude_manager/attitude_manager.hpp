@@ -5,7 +5,8 @@
 #include "motor_datatype.hpp"
 #include "queue_iface.hpp"
 
-#define AM_MAIN_DELAY 50
+#define AM_CONTROL_LOOP_DELAY 50
+#define AM_FAILSAFE_TIMEOUT 1000
 
 typedef enum {
     YAW = 0,

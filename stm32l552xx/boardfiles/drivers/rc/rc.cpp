@@ -65,13 +65,11 @@ RCControl RCReceiver::getRCData() {
 }
 
 void RCReceiver::init() {
-    // start circular DMA
     rcData_.isDataNew = false;
     HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
 }
 
 void RCReceiver::startDMA() {
-    // start circular DMA
     HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
 }
 
@@ -79,7 +77,7 @@ void RCReceiver::parse() {
 
     uint8_t *buf = rawSbus_;
 
-    if ((buf[0] == HEADER_) && (buf[24] == FOOTER_)) {
+    if ((buf[0] == HEADER_) && (buf[SBUS_BYTE_COUNT-1] == FOOTER_)) {
 
         for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
             rcData_.controlSignals[i] = sbusToRCControl(buf, i);
