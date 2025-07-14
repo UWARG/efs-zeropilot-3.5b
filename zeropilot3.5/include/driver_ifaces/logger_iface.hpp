@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 
 class ILogger {
     protected:
@@ -10,3 +11,4 @@ class ILogger {
         virtual int log(const char message[100]) = 0;
         virtual int log(const char message[][100], int count) = 0;
 };
+
