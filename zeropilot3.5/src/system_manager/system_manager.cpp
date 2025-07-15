@@ -3,16 +3,16 @@
 SystemManager::SystemManager(
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
-    IRCReceiver *rcDriver,
-    IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
-    IMessageQueue<char[100]> *smLoggerQueue) :
+    IRCReceiver *rcDriver, 
+    IMessageQueue<RCMotorControlMessage_t> *amRCQueue, 
+    IMessageQueue<char[100]> *smLoggerQueue) : 
         iwdgDriver(iwdgDriver),
         loggerDriver(loggerDriver),
-        rcDriver(rcDriver),
-        amRcQueue(amRCQueue),
+        rcDriver(rcDriver), 
+        amRCQueue(amRCQueue),
         smLoggerQueue(smLoggerQueue) {}
 
-void SystemManager::smUpdate() {
+void SystemManager::runControlLoopIteration() {
     // Kick the watchdog
     iwdgDriver->refreshWatchdog();
 
@@ -32,7 +32,7 @@ void SystemManager::smUpdate() {
     } else {
         oldDataCount += 1;
 
-        if ((oldDataCount * SM_MAIN_DELAY > 500) && rcConnected) {
+        if ((oldDataCount * SM_CONTROL_LOOP_DELAY > SM_RC_TIMEOUT) && rcConnected) {
             loggerDriver->log("RC Disconnected");
             rcConnected = false;
         }
@@ -54,7 +54,7 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.arm = rcData.arm;
     rcDataMessage.flapAngle = rcData.aux2;
 
-    amRcQueue->push(&rcDataMessage);
+    amRCQueue->push(&rcDataMessage);
 }
 
 void SystemManager::sendMessagesToLogger() {

@@ -15,10 +15,18 @@ class RCReceiver : public IRCReceiver {
         RCReceiver(UART_HandleTypeDef *uart);
 
         RCControl getRCData() override;
-
+        /**
+         * @brief starts DMA receive
+         */
         void init();
-        void startDMA();
 
+        /**
+         * @brief restarts DMA
+         */
+        void startDMA();
+        /**
+         * @brief Updates RCControl values
+         */
         void parse();
        
     private:
