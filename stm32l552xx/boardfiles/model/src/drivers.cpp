@@ -60,7 +60,7 @@ void initDrivers()
     steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     
     rcHandle = new RCReceiver(&huart4);
-    gpsHandle = new GPS(&huart2)
+    gpsHandle = new GPS(&huart2);
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
