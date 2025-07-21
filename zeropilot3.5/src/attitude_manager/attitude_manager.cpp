@@ -1,5 +1,7 @@
 #include "attitude_manager.hpp"
 #include "rc_motor_control.hpp"
+#include <cstdio>
+
 
 AttitudeManager::AttitudeManager(
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
@@ -22,6 +24,15 @@ AttitudeManager::AttitudeManager(
     flapMotors(flapMotors),
     steeringMotors(steeringMotors) {}
 
+void AttitudeManager::setRudderMixing(float coeff) {
+    if (coeff < 0.0f || coeff > 1.0f) {
+        return;
+    }
+
+    adverseCoeff = coeff;
+    signedYaw = 0.0f; // Reset signedYaw to avoid incorrect values
+    
+}
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
     bool res = getControlInputs(&controlMsg);
@@ -65,12 +76,23 @@ void AttitudeManager::runControlLoopIteration() {
 
     RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
 
-    outputToMotor(YAW, motorOutputs.yaw);
-    outputToMotor(PITCH, motorOutputs.pitch);
-    outputToMotor(ROLL, motorOutputs.roll);
-    outputToMotor(THROTTLE, motorOutputs.throttle);
-    outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
-    outputToMotor(STEERING, motorOutputs.yaw);
+    signedYaw = motorOutputs.roll-50;
+    adverseYaw = signedYaw * adverseCoeff;
+    motorOutputs.yaw +=adverseYaw; 
+    // limit yaw to 100
+    if (motorOutputs.yaw>100){
+        motorOutputs.yaw = 100;
+    //limit yaw to 0
+    } else if (motorOutputs.yaw < 0) {
+        motorOutputs.yaw = 0;
+    }
+    
+    outputToMotor(YAW, (100-motorOutputs.yaw)*if_yawMotors_invert+motorOutputs.yaw*(if_yawMotors_invert-1)+YAWMOTORS_TRIM);
+    outputToMotor(PITCH, (100-motorOutputs.pitch)*if_pitchMotors_invert+motorOutputs.pitch*(if_pitchMotors_invert-1)+PITCHMOTORS_TRIM);
+    outputToMotor(ROLL, (100-motorOutputs.roll)*if_rollMotors_invert+motorOutputs.roll*(if_rollMotors_invert-1)+ROLLMOTORS_TRIM);
+    outputToMotor(THROTTLE, (100-motorOutputs.throttle)*if_throttleMotors_invert+motorOutputs.throttle*(if_throttleMotors_invert-1)+THROTTLEMOTORS_TRIM);
+    outputToMotor(FLAP_ANGLE, (100-motorOutputs.flapAngle)*if_flapMotors_invert+motorOutputs.flapAngle*(if_flapMotors_invert-1)+FLAPMOTORS_TRIM);
+    outputToMotor(STEERING, motorOutputs.yaw+STEERINGMOTORS_TRIM);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -119,3 +141,4 @@ void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
         }
     }
 }
+
