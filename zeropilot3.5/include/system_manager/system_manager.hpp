@@ -1,12 +1,10 @@
 #pragma once
 
-#include <cstdint>
-#include "logger_iface.hpp"
-#include "queue_iface.hpp"
-#include "rc_iface.hpp"
-#include "rc_datatypes.hpp"
-#include "rc_motor_control.hpp"
 #include "iwdg_iface.hpp"
+#include "logger_iface.hpp"
+#include "rc_iface.hpp"
+#include "rc_motor_control.hpp"
+#include "queue_iface.hpp"
 
 #define SM_MAIN_DELAY 50
 
