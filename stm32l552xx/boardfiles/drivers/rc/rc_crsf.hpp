@@ -33,5 +33,5 @@ class CRSFReceiver : public IRCReceiver {
     private:
         UART_HandleTypeDef *uart_;
         RCControl rcData_;
-        uint8_t rawCrsf_[CRSF_BYTE_COUNT];
+        uint8_t crsfRxBuffer_[CRSF_BYTE_COUNT];
 };
