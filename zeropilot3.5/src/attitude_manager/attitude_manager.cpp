@@ -87,12 +87,12 @@ void AttitudeManager::runControlLoopIteration() {
         motorOutputs.yaw = 0;
     }
     
-    outputToMotor(YAW, (100-motorOutputs.yaw)*if_yawMotors_invert+motorOutputs.yaw*(if_yawMotors_invert-1)+YAWMOTORS_TRIM);
-    outputToMotor(PITCH, (100-motorOutputs.pitch)*if_pitchMotors_invert+motorOutputs.pitch*(if_pitchMotors_invert-1)+PITCHMOTORS_TRIM);
-    outputToMotor(ROLL, (100-motorOutputs.roll)*if_rollMotors_invert+motorOutputs.roll*(if_rollMotors_invert-1)+ROLLMOTORS_TRIM);
-    outputToMotor(THROTTLE, (100-motorOutputs.throttle)*if_throttleMotors_invert+motorOutputs.throttle*(if_throttleMotors_invert-1)+THROTTLEMOTORS_TRIM);
-    outputToMotor(FLAP_ANGLE, (100-motorOutputs.flapAngle)*if_flapMotors_invert+motorOutputs.flapAngle*(if_flapMotors_invert-1)+FLAPMOTORS_TRIM);
-    outputToMotor(STEERING, motorOutputs.yaw+STEERINGMOTORS_TRIM);
+    outputToMotor(YAW, motorOutputs.yaw);
+    outputToMotor(PITCH, motorOutputs.pitch);
+    outputToMotor(ROLL, motorOutputs.roll);
+    outputToMotor(THROTTLE, motorOutputs.throttle);
+    outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
+    outputToMotor(STEERING, motorOutputs.arm);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -134,10 +134,10 @@ void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {
         MotorInstance_t *motor = (motorGroup->motors + i);
         
         if (motor->isInverted) {
-            motor->motorInstance->set(100 - percent);
+            motor->motorInstance->set(100 - (percent + motor->trim));
         } 
         else {
-            motor->motorInstance->set(percent);
+            motor->motorInstance->set(percent + motor->trim);
         }
     }
 }
