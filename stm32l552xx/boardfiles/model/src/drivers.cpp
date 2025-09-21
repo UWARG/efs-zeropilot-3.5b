@@ -6,8 +6,8 @@ extern IWDG_HandleTypeDef hiwdg;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
-extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 
 IndependentWatchdog *iwdgHandle = nullptr;
@@ -68,7 +68,7 @@ void initDrivers()
     gpsHandle = new GPS(&huart2);
     rcHandle = new RCReceiver(&huart4);
 
-    rfdHandle = new RFD(&huart1);
+    rfdHandle = new RFD(&huart3);
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
