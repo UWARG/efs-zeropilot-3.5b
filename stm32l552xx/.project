@@ -32,4 +32,16 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Core/Inc/ZeroPilot3.5</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/zeropilot3.5/include</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/ZeroPilot3.5</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/zeropilot3.5/src</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
