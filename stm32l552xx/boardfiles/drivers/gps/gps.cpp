@@ -218,7 +218,7 @@ bool GPS::getSpeedRMC(int &idx) {
         idx++;
     }
     idx++; // Decimal char
-    int mult = 10;
+    uint32_t mult = 10;
     while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
         spd += ((float)(rxBuffer[idx] - '0')) / mult;
         idx++;
@@ -240,7 +240,7 @@ bool GPS::getTrackAngleRMC(int &idx) {
             idx++;
         }
         idx++; // Decimal char
-        int mult = 10;
+        uint32_t mult = 10;
         while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
             cog += ((float)(rxBuffer[idx] - '0')) / mult;
             idx++;
