@@ -14,10 +14,8 @@ void tmMainLoopWrapper(void *arg)
 {
   while(true)
   {
-    tmHandle->heartBeatMsg();
-    tmHandle->transmit();
+    tmHandle->tmUpdate();
     osDelay(timeToTicks(50));
-    tmHandle->processMsgQueue();
   }
 }
 
