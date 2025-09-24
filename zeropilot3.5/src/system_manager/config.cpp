@@ -119,6 +119,14 @@ int Config::writeParam(ConfigKey key, float newValue) {
   return 0;
 }
 
+Owner Config::getParamOwner(ConfigKey key) {
+  size_t index = static_cast<size_t>(key);
+  if (index >= NUM_KEYS) {
+      return Owner::COUNT; // Invalid owner
+  }
+  return config_table[index].owner;
+}
+
 #if defined(SWO_LOGGING)
 extern "C" {
   int __io_putchar(int ch) {

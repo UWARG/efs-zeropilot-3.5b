@@ -24,6 +24,8 @@ RCReceiver *rcHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
+MessageQueue<ConfigMessage_t> *smConfigQueueHandle = nullptr;
+MessageQueue<ConfigMessage_t> *smConfigAttitudeQueueHandle = nullptr;
 
 MotorInstance_t rollLeftMotorInstance;
 MotorInstance_t rollRightMotorInstance;
@@ -48,6 +50,7 @@ void initDrivers()
 {
     iwdgHandle = new IndependentWatchdog(&hiwdg);
     textIOHandle = new SDIO();
+    configTextIOHandle = new SDIO();
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
     rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
@@ -62,6 +65,8 @@ void initDrivers()
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
+    smConfigQueueHandle = new MessageQueue<ConfigMessage_t>(&smConfigQueueId);
+    smConfigAttitudeQueueHandle = new MessageQueue<ConfigMessage_t>(&smConfigAttitudeQueueId);
 
     loggerHandle->init();
 

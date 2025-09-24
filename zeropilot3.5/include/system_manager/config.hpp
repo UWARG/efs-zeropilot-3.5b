@@ -11,6 +11,7 @@ typedef struct {
     const char key[MAX_KEY_LENGTH];
     float value;
     bool reboot_on_change = false;
+    Owner owner;
 } Param_t;
 
 class Config {
@@ -19,7 +20,7 @@ class Config {
         ITextIO *textIO;
 
         Param_t config_table[NUM_KEYS] = {
-            #define _(name, default_val, reboot_flag) {#name, default_val, reboot_flag},
+            #define _(name, default_val, reboot_flag, owner) {#name, default_val, reboot_flag, owner},
                 CONFIG_KEYS_LIST(_)
             #undef _
         };
@@ -59,4 +60,11 @@ class Config {
          * @retval Operation success
          */
         int writeParam(ConfigKey key, float newValue);
+
+        /**
+         * @brief gets the owner of a parameter
+         * @param param parameter to get owner for
+         * @retval Owner of the parameter
+         */
+        Owner getParamOwner(ConfigKey key);
 };

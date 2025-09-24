@@ -4,6 +4,7 @@
 AttitudeManager::AttitudeManager(
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
     IMessageQueue<char[100]> *smLoggerQueue,
+    IMessageQueue<ConfigMessage_t> *smConfigAttitudeQueue,
     Flightmode *controlAlgorithm,  
     MotorGroupInstance_t *rollMotors,
     MotorGroupInstance_t *pitchMotors,
@@ -14,6 +15,7 @@ AttitudeManager::AttitudeManager(
 ) : 
     amQueue(amQueue),
     smLoggerQueue(smLoggerQueue),
+    smConfigAttitudeQueue(smConfigAttitudeQueue),
     controlAlgorithm(controlAlgorithm),
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
@@ -80,6 +82,18 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
 
     amQueue->get(pControlMsg);
     return true;
+}
+
+void AttitudeManager::handleConfigChanges() {
+    if (smConfigAttitudeQueue->count() == 0) {
+        return;
+    }
+    ConfigMessage_t *pConfigMsg = new ConfigMessage_t;
+    smConfigAttitudeQueue->get(pConfigMsg);
+    // Handle config changes here for whatever config keys the attitude manager owns
+
+    delete pConfigMsg;
+    return;
 }
 
 void AttitudeManager::outputToMotor(ControlAxis_e axis, uint8_t percent) {

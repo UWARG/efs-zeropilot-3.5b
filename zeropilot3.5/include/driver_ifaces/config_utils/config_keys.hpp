@@ -3,7 +3,7 @@
 #include "config_keys.inc"
 
 enum class ConfigKey : size_t {
-    #define _(name, default_val, reboot_flag) name,
+    #define _(name, default_val, reboot_flag, owner) name,
         CONFIG_KEYS_LIST(_)
     #undef _
     COUNT

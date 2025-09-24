@@ -5,6 +5,7 @@
 #include "queue_iface.hpp"
 #include "motor_iface.hpp"
 #include "motor_datatype.hpp"
+#include "config_msg.hpp"
 
 #define AM_MAIN_DELAY 50
 
@@ -22,6 +23,7 @@ class AttitudeManager {
         AttitudeManager(
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
+            IMessageQueue<ConfigMessage_t> *smConfigAttitudeQueue,
             Flightmode *controlAlgorithm,  
             MotorGroupInstance_t *rollMotors,
             MotorGroupInstance_t *pitchMotors,
@@ -36,6 +38,7 @@ class AttitudeManager {
     private:
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
         IMessageQueue<char[100]> *smLoggerQueue;
+        IMessageQueue<ConfigMessage_t> *smConfigAttitudeQueue;
 
         Flightmode *controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
@@ -49,6 +52,8 @@ class AttitudeManager {
         MotorGroupInstance_t *steeringMotors;
 
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
+
+        void handleConfigChanges();
 
         void outputToMotor(ControlAxis_e axis, uint8_t percent);
 };
