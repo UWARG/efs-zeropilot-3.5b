@@ -19,8 +19,11 @@ TelemetryManager::~TelemetryManager() = default;
 
 
 void TelemetryManager::processMsgQueue() {
-    while (tmQueueDriver->count() > 0) {
-        mavlink_message_t mavlinkMessage = {};
+    uint16_t count = tmQueueDriver->count();
+    TMMessage rcMsg= {};
+    bool rc = false;
+	while (count-- > 0) {
+        mavlink_message_t mavlinkMessage = {0};
         TMMessage_t tmqMessage = {};
         tmQueueDriver->get(&tmqMessage);
 
@@ -29,23 +32,42 @@ void TelemetryManager::processMsgQueue() {
                 auto gposData = tmqMessage.tmMessageData.gposData;
                 mavlink_msg_global_position_int_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs,
                 	gposData.lat, gposData.lon, gposData.alt, gposData.relativeAlt, gposData.vx, gposData.vy, gposData.vz, gposData.hdg);
-                break; }
+                break;
+            }
+
             case TMMessage_t::RC_DATA: {
-                auto rcData = tmqMessage.tmMessageData.rcData;
-                mavlink_msg_rc_channels_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs, 6,
-                	rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
-                    UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,  UINT16_MAX,  UINT16_MAX, UINT16_MAX, UINT8_MAX);
-                break; }
+                rcMsg = tmqMessage;
+                rc = true;
+                continue;
+            }
+
             case TMMessage_t::BM_DATA: {
                 auto bmData = tmqMessage.tmMessageData.bmData;
                 mavlink_msg_battery_status_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, 255, MAV_BATTERY_FUNCTION_UNKNOWN, MAV_BATTERY_TYPE_LIPO,
                 	bmData.temperature, bmData.voltages, bmData.currentBattery, bmData.currentConsumed, bmData.energyConsumed, bmData.batteryRemaining,
-					bmData.timeRemaining, bmData.chargeState, {}, 0, 0); }
-            default: {}
-                //WHOOPS
+					bmData.timeRemaining, bmData.chargeState, {}, 0, 0);
+                break;
+            }
+
+            default: {
+                continue;
+            }
         }
+
         messageBuffer->push(&mavlinkMessage);
     }
+
+	if (rc) {
+		auto rcData = rcMsg.tmMessageData.rcData;
+		mavlink_message_t mavlinkMessage = {0};
+		mavlink_msg_rc_channels_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, rcMsg.timeBootMs, 6,
+			rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
+			UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,  UINT16_MAX,  UINT16_MAX, UINT16_MAX, UINT8_MAX);
+		if (mavlinkMessage.len == 0) {
+			return;
+		}
+		messageBuffer->push(&mavlinkMessage);
+	}
 }
 
 void TelemetryManager::heartBeatMsg() {
@@ -59,24 +81,31 @@ void TelemetryManager::heartBeatMsg() {
     messageBuffer->push(&heartbeatMessage);
 }
 
+void TelemetryManager::gpsMsg() {
+	mavlink_message_t gpsMessage = {0};
+
+	mavlink_msg_gps_raw_int_pack(SYSTEM_ID, COMPONENT_ID, &gpsMessage, 10, GPS_FIX_TYPE_3D_FIX,
+			183002000, -648252000, 50000, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT8_MAX, 25000, 0, 0, 0, 0, 0);
+
+	messageBuffer->push(&gpsMessage);
+}
+
 void TelemetryManager::transmit() {
     uint8_t transmitBuffer[MAVLINK_MSG_MAX_SIZE];
     mavlink_message_t msgToTx{};
-        while (messageBuffer->count() > 0) {
-            messageBuffer->get(&msgToTx);
-            const uint8_t MSG_LEN = mavlink_msg_to_send_buffer(transmitBuffer, &msgToTx);
-            rfdDriver->transmit(transmitBuffer, MSG_LEN);
-        }
+    if (messageBuffer->count() > 0) {
+        messageBuffer->get(&msgToTx);
+        const uint16_t MSG_LEN = mavlink_msg_to_send_buffer(transmitBuffer, &msgToTx);
+        rfdDriver->transmit(transmitBuffer, MSG_LEN);
+    }
 }
 
 void TelemetryManager::reconstructMsg() {
-
-
     uint8_t rxBuffer[RX_BUFFER_LEN];
 
     const uint16_t RECEIVED_BYTES = rfdDriver->receive(rxBuffer, sizeof(rxBuffer));
 
-    //Use mavlink_parse_char to process one byte at a time
+    // Use mavlink_parse_char to process one byte at a time
     for (uint16_t i = 0; i < RECEIVED_BYTES; ++i) {
         if (mavlink_parse_char(0, rxBuffer[i], &message, &status)) {
             handleRxMsg(message);
@@ -87,14 +116,14 @@ void TelemetryManager::reconstructMsg() {
 
 void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) {
     switch (msg.msgid) {
-        case MAVLINK_MSG_ID_PARAM_SET:{
+        case MAVLINK_MSG_ID_PARAM_SET: {
             float valueToSet;
             char paramToSet[MAVLINK_MAX_IDENTIFIER_LEN] = {};
             uint8_t valueType;
             valueToSet = mavlink_msg_param_set_get_param_value(&msg);
             valueType = mavlink_msg_param_set_get_param_type(&msg);
 
-            if(paramToSet[0] == 'A'){ //Would prefer to do this using an ENUM LUT but if this is the only param being set its whatever
+            if(paramToSet[0] == 'A'){ // Would prefer to do this using an ENUM LUT but if this is the only param being set its whatever
                 RCMotorControlMessage_t armDisarmMsg{};
                 armDisarmMsg.arm = valueToSet;
                 amQueueDriver->push(&armDisarmMsg);
@@ -102,8 +131,11 @@ void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) {
             mavlink_message_t response = {};
             mavlink_msg_param_value_pack(SYSTEM_ID, COMPONENT_ID, &response, paramToSet, valueToSet, valueType, 1, 0);
             messageBuffer->push(&response);
-            break;}
-        default:
             break;
+        }
+
+        default: {
+            break;
+        }
     }
 }

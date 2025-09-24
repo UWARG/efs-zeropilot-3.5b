@@ -24,6 +24,7 @@ class TelemetryManager {
     ~TelemetryManager();
     void processMsgQueue();
     void heartBeatMsg();
+    void gpsMsg();
     void transmit();
     void reconstructMsg();
 };
