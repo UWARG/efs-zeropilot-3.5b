@@ -25,7 +25,7 @@ class TelemetryManager {
     void reconstructMsg();
 
   public:
-    TelemetryManager(IRFD *rfdDriver, IMessageQueue<TMMessage_t>  *tmQueueDriver,  IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,IMessageQueue<mavlink_message_t> *messageBuffer);
+    TelemetryManager(IRFD *rfdDriver, IMessageQueue<TMMessage_t> *tmQueueDriver, IMessageQueue<RCMotorControlMessage_t> *amQueueDriver, IMessageQueue<mavlink_message_t> *messageBuffer);
     ~TelemetryManager();
 
     void tmUpdate();
