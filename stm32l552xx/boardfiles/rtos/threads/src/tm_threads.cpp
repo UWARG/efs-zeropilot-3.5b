@@ -15,7 +15,7 @@ void tmMainLoopWrapper(void *arg)
   while(true)
   {
     tmHandle->tmUpdate();
-    osDelay(timeToTicks(10));
+    osDelay(timeToTicks(50));
   }
 }
 
