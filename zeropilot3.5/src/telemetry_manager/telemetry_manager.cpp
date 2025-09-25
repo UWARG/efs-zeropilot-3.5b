@@ -17,6 +17,31 @@ TelemetryManager::TelemetryManager(
 
 TelemetryManager::~TelemetryManager() = default;
 
+void TelemetryManager::tmUpdate() {
+    static uint8_t counter = 0;
+
+    switch (counter) {
+        case 0: {
+            heartBeatMsg();
+            break;
+        }
+        case 1: {
+            gpsMsg();
+            break;
+        }
+        case 2: {
+            processMsgQueue();
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    counter = (counter + 1) % 3;
+
+    transmit();
+}
 
 void TelemetryManager::processMsgQueue() {
     uint16_t count = tmQueueDriver->count();
@@ -93,7 +118,7 @@ void TelemetryManager::gpsMsg() {
 void TelemetryManager::transmit() {
     uint8_t transmitBuffer[MAVLINK_MSG_MAX_SIZE];
     mavlink_message_t msgToTx{};
-    if (messageBuffer->count() > 0) {
+    while (messageBuffer->count() > 0) {
         messageBuffer->get(&msgToTx);
         const uint16_t MSG_LEN = mavlink_msg_to_send_buffer(transmitBuffer, &msgToTx);
         rfdDriver->transmit(transmitBuffer, MSG_LEN);

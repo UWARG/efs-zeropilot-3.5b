@@ -40,7 +40,7 @@ void SystemManager::smUpdate() {
         }
     }
 
-    // Send to TM
+    // Send RC data to TM
     sendRCDataToTelemetryManager(rcData);
 
     // Log if new messages
@@ -52,7 +52,6 @@ void SystemManager::smUpdate() {
 void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
     TMMessage_t rcDataMsg =  rcDataPack(0, rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
     tmQueue->push(&rcDataMsg);
-
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
