@@ -54,6 +54,12 @@ foreach(INC_FILE IN LISTS ZP_INC)
     list(APPEND RELATIVE_ZP_INC ${INC_FILE})
 endforeach()
 
+set(RELATIVE_EXTERNAL_INC)
+foreach(INC_FILE IN LISTS EXTERNAL_INC)
+    string(PREPEND INC_FILE "${CMAKE_SOURCE_DIR}/../")
+    list(APPEND RELATIVE_EXTERNAL_INC ${INC_FILE})
+endforeach()
+
 add_executable(${PROJECT_NAME} 
     ${RELATIVE_ZP_SRC} 
     ${ALL_TSRC}
@@ -62,6 +68,7 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE ${RELATIVE_ZP_INC} 
     PRIVATE "${CMAKE_SOURCE_DIR}/driver_mocks"
 )
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${RELATIVE_EXTERNAL_INC})
 target_link_libraries(${PROJECT_NAME} GTest::gmock_main)
 
 gtest_discover_tests(${PROJECT_NAME})

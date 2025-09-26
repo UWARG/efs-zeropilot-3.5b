@@ -78,4 +78,4 @@ cmake --build .
 
 echo && echo "copying headers..."
 mkdir -p "${build_dir}/include"
-find "${script_dir}/include" -name "*.hpp" -exec echo "{}" \; -exec cp {} "${build_dir}/include" \;
+find "${script_dir}/include" \( -name "*.hpp" -o -name "*.h" \) -exec echo "{}" \; -exec cp {} "${build_dir}/include" \;
