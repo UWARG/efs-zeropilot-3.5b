@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstdint>
 
 static constexpr uint8_t SBUS_BYTE_COUNT = 25;
