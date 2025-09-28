@@ -5,6 +5,7 @@
 .settings/
 .vscode/
 /.project
+/.idea
 
 # build and debug artifacts
 build/

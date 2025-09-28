@@ -1,11 +1,15 @@
 #include "museq.hpp"
 #include "rc_motor_control.hpp"
+#include "tm_queue.hpp"
+#include "mavlink.h"
 
 /* --- mutexes --- */
 /* define mutexes begin */
 osMutexId_t itmMutex;
 osMessageQueueId_t amQueueId;
 osMessageQueueId_t smLoggerQueueId;
+osMessageQueueId_t tmQueueId;
+osMessageQueueId_t messageBufferId;
 
 static const osMutexAttr_t itmMutexAttr = {
   "itmMutex",
@@ -37,4 +41,6 @@ void initQueues()
 {
   amQueueId = osMessageQueueNew(16, sizeof(RCMotorControlMessage_t), NULL);
   smLoggerQueueId = osMessageQueueNew(16, sizeof(char[100]), NULL);
+  tmQueueId = osMessageQueueNew(16, sizeof(TMMessage_t), NULL);
+  messageBufferId = osMessageQueueNew(16, sizeof(mavlink_message_t), NULL);
 }

@@ -4,4 +4,5 @@ void initThreads()
 {
   amInitThreads();
   smInitThreads();
+  tmInitThreads();
 }
