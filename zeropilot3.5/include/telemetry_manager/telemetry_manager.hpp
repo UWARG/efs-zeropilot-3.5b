@@ -16,6 +16,9 @@ class TelemetryManager {
     IMessageQueue<mavlink_message_t> *messageBuffer{};	  	// GPOS, Attitude and Heartbeat/Connection Messages
     mavlink_status_t status;
     mavlink_message_t message;
+    mavlink_message_t overflowBuf;
+    bool overflowMsgPending;
+    uint8_t tmUpdateCounter;
 
     void handleRxMsg(const mavlink_message_t &msg);
     void processMsgQueue();
