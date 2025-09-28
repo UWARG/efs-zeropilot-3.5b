@@ -16,7 +16,7 @@ void initManagers()
     amHandle = new AttitudeManager(amRCQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
 
     // SM initialization
-    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
+    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, gpsHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
 
     // TM initialization
     tmHandle = new TelemetryManager(rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);

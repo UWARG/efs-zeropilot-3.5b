@@ -3,6 +3,7 @@
 #include "stm32l5xx_hal.h"
 #include "gps_iface.hpp"
 #include "gps_defines.hpp"
+#include <cmath>
 
 class GPS : public IGPS {
 

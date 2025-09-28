@@ -5,6 +5,7 @@
 #include "queue_iface.hpp"
 #include "motor_iface.hpp"
 #include "motor_datatype.hpp"
+#include "gps_iface.hpp"
 
 #define AM_MAIN_DELAY 50
 

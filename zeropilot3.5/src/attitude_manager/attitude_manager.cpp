@@ -24,12 +24,12 @@ AttitudeManager::AttitudeManager(
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
-    bool res = getControlInputs(&controlMsg);
-
+    bool controlRes = getControlInputs(&controlMsg);
+    
     // Failsafe
     static bool failsafeTriggered = false;
 
-    if (res != true) {
+    if (controlRes != true) {
         ++noDataCount;
 
         if (noDataCount * AM_MAIN_DELAY > 1000) {

@@ -99,6 +99,18 @@ bool GPS::parseRMC() {
         return 0;
     }
 
+    if (tempData.trackAngle != INVALID_TRACK_ANGLE) {
+        uint16_t vx = tempData.groundSpeed * sin(tempData.trackAngle * 3.14 / 365.0);
+        uint16_t vy = tempData.groundSpeed * tempData.groundSpeed - vx * vx;
+    
+        tempData.vx = vx;
+        tempData.vy = vy;
+    }
+    else {
+        tempData.vx = INVALID_DATA;
+        tempData.vy = INVALID_DATA;
+    }
+
     return true;
 }
 
@@ -225,7 +237,7 @@ bool GPS::getSpeedRMC(int &idx) {
         mult *= 10;
     }
 
-    tempData.groundSpeed = spd;
+    tempData.groundSpeed = spd * 51.4444; // Convert from kt to cm/s
 
     return true;
 }

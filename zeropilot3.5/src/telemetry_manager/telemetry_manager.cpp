@@ -26,10 +26,6 @@ void TelemetryManager::tmUpdate() {
             break;
         }
         case 1: {
-            gpsMsg();
-            break;
-        }
-        case 2: {
             processMsgQueue();
             break;
         }
@@ -38,7 +34,7 @@ void TelemetryManager::tmUpdate() {
         }
     }
 
-    counter = (counter + 1) % 3;
+    counter = (counter + 1) % 2;
 
     transmit();
 }
@@ -48,10 +44,20 @@ void TelemetryManager::processMsgQueue() {
     TMMessage rcMsg= {};
     bool rc = false;
 	while (count-- > 0) {
-        mavlink_message_t mavlinkMessage = {0};
         TMMessage_t tmqMessage = {};
         tmQueueDriver->get(&tmqMessage);
-
+        
+    //     TMMessage_t gpsDataMsg1 = gposDataPack(
+    //     0, 0, 100000000, 100000000, 0, 0, 0, 0, 0
+    // );
+        // auto gposData = gpsDataMsg1.tmMessageData.gposData;
+        // mavlink_msg_global_position_int_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs,
+        //     gposData.lat, gposData.lon, gposData.alt, gposData.relativeAlt, gposData.vx, gposData.vy, gposData.vz, gposData.hdg);
+        // mavlink_msg_global_position_int_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs,
+        //     100000000, 100000000, 0, 0, 0, 0, 0, 0);
+        
+        // messageBuffer->push(&mavlinkMessage);
+        // return;
         switch (tmqMessage.dataType) {
             case TMMessage_t::GPOS_DATA: {
                 auto gposData = tmqMessage.tmMessageData.gposData;
@@ -116,7 +122,7 @@ void TelemetryManager::gpsMsg() {
 }
 
 void TelemetryManager::transmit() {
-    uint8_t transmitBuffer[MAVLINK_MSG_MAX_SIZE];
+    uint8_t transmitBuffer[MAVLINK_MSG_MAX_SIZE*MAVLINK_MSG_MAX_SIZE];
     mavlink_message_t msgToTx{};
     while (messageBuffer->count() > 0) {
         messageBuffer->get(&msgToTx);

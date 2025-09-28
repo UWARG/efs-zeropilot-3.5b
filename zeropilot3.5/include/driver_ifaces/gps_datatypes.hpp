@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #define INVALID_TRACK_ANGLE -1
+#define INVALID_DATA -2
 
 typedef struct {
     uint8_t year;
@@ -23,8 +24,10 @@ typedef struct {
     GpsTime_t time;
     float latitude;
     float longitude;
-    float groundSpeed;
+    float groundSpeed; // cm/s
     uint8_t numSatellites;
     float trackAngle;
     bool isNew;
+    uint16_t vx; // cm/s
+    uint16_t vy; // cm/s
 } GpsData_t;

@@ -4,12 +4,14 @@ SystemManager::SystemManager(
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
     IRCReceiver *rcDriver,
+    IGPS *gpsDriver,
     IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<char[100]> *smLoggerQueue) :
         iwdgDriver(iwdgDriver),
         loggerDriver(loggerDriver),
         rcDriver(rcDriver),
+        gpsDriver(gpsDriver),
         amRCQueue(amRCQueue),
         tmQueue(tmQueue),
         smLoggerQueue(smLoggerQueue) {}
@@ -40,8 +42,13 @@ void SystemManager::smUpdate() {
         }
     }
 
+    GpsData_t gpsData = gpsDriver->readData();
+
     // Send RC data to TM
     sendRCDataToTelemetryManager(rcData);
+
+    // Send GPS data to TM
+    sendGPSDataToTelemetryManager(gpsData);
 
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
@@ -65,6 +72,30 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.flapAngle = rcData.aux2;
 
     amRCQueue->push(&rcDataMessage);
+}
+
+void SystemManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData) {
+    TMMessage_t gpsDataMsg1 = gposDataPack(
+        0, 0, 100000000, 100000000, 0, 0, 0, 0, 0
+    );
+    tmQueue->push(&gpsDataMsg1);
+
+    return;
+    if (!gpsData.isNew) return;
+
+    TMMessage_t gpsDataMsg = gposDataPack(
+        0, // time_boot_ms
+        0, // alt
+        gpsData.latitude * 1e7,
+        gpsData.longitude * 1e7,
+        0, // relative altitude
+        gpsData.vx,
+        gpsData.vy,
+        0, // vz
+        gpsData.trackAngle
+    );
+
+    tmQueue->push(&gpsDataMsg);
 }
 
 void SystemManager::sendMessagesToLogger() {
