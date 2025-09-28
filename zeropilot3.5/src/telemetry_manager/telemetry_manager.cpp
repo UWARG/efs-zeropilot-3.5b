@@ -111,7 +111,7 @@ void TelemetryManager::gpsMsg() {
 void TelemetryManager::transmit() {
     uint8_t transmitBuffer[MAX_TRANSMISSION_BYTES];
     mavlink_message_t msgToTx{};
-    uint8_t txBufIdx = 0;
+    uint16_t txBufIdx = 0;
 
     // Transmit overflow first if it exists
     if (overflowMsgPending) {
