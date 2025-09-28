@@ -2,11 +2,11 @@
 
 #include <cstdint>
 #include "flightmode.hpp"
-#include "queue_iface.hpp"
-#include "motor_iface.hpp"
 #include "motor_datatype.hpp"
+#include "queue_iface.hpp"
 
-#define AM_MAIN_DELAY 50
+#define AM_CONTROL_LOOP_DELAY 50
+#define AM_FAILSAFE_TIMEOUT 1000
 
 typedef enum {
     YAW = 0,
@@ -39,7 +39,6 @@ class AttitudeManager {
 
         Flightmode *controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
-        int noDataCount = 0;
 
         MotorGroupInstance_t *rollMotors;
         MotorGroupInstance_t *pitchMotors;

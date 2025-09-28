@@ -32,8 +32,8 @@ MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
 MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
 MessageQueue<mavlink_message_t> *messageBufferHandle = nullptr;
 
-MotorInstance_t rollLeftMotorInstance;
-MotorInstance_t rollRightMotorInstance;
+MotorInstance_t leftAileronMotorInstance;
+MotorInstance_t rightAileronMotorInstance;
 MotorInstance_t elevatorMotorInstance;
 MotorInstance_t rudderMotorInstance;
 MotorInstance_t throttleMotorInstance;
@@ -41,8 +41,8 @@ MotorInstance_t leftFlapMotorInstance;
 MotorInstance_t rightFlapMotorInstance;
 MotorInstance_t steeringMotorInstance;
 
-MotorInstance_t rollMotorInstance[2];
-MotorInstance_t flapMotorInstance[2];
+MotorInstance_t aileronMotorInstances[2];
+MotorInstance_t flapMotorInstances[2];
 
 MotorGroupInstance_t rollMotors;
 MotorGroupInstance_t pitchMotors;
@@ -87,8 +87,8 @@ void initDrivers()
 
     rcHandle->init();
 
-    rollLeftMotorInstance = {leftAileronMotorHandle, true};
-    rollRightMotorInstance = {rightAileronMotorHandle, true};
+    leftAileronMotorInstance = {leftAileronMotorHandle, true};
+    rightAileronMotorInstance = {rightAileronMotorHandle, true};
     elevatorMotorInstance = {elevatorMotorHandle, false};
     rudderMotorInstance = {rudderMotorHandle, false};
     throttleMotorInstance = {throttleMotorHandle, false};
@@ -96,16 +96,16 @@ void initDrivers()
     rightFlapMotorInstance = {rightFlapMotorHandle, true};
     steeringMotorInstance = {steeringMotorHandle, true};
 
-    rollMotorInstance[0] = rollLeftMotorInstance;
-    rollMotorInstance[1] = rollRightMotorInstance;
+    aileronMotorInstances[0] = leftAileronMotorInstance;
+    aileronMotorInstances[1] = rightAileronMotorInstance;
 
-    flapMotorInstance[0] = leftFlapMotorInstance;
-    flapMotorInstance[1] = rightFlapMotorInstance;
+    flapMotorInstances[0] = leftFlapMotorInstance;
+    flapMotorInstances[1] = rightFlapMotorInstance;
 
-    rollMotors = {rollMotorInstance, 2};
+    rollMotors = {aileronMotorInstances, 2};
     pitchMotors = {&elevatorMotorInstance, 1};
     yawMotors = {&rudderMotorInstance, 1};
     throttleMotors = {&throttleMotorInstance, 1};
-    flapMotors = {flapMotorInstance, 2};
+    flapMotors = {flapMotorInstances, 2};
     steeringMotors = {&steeringMotorInstance, 1};
 }

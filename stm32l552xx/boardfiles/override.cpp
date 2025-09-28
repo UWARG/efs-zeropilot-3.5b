@@ -58,11 +58,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     }
 }
 
-uint32_t error;
-
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
   if(huart->Instance == UART4){
-    error = HAL_UART_GetError(huart);
+    uint32_t error = HAL_UART_GetError(huart);
 
     if (error & HAL_UART_ERROR_PE) {
       __HAL_UART_CLEAR_PEFLAG(huart);
