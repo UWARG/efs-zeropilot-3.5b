@@ -92,7 +92,7 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(ROLL, motorOutputs.roll);
     outputToMotor(THROTTLE, motorOutputs.throttle);
     outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
-    outputToMotor(STEERING, motorOutputs.arm);
+    outputToMotor(STEERING, motorOutputs.yaw);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
