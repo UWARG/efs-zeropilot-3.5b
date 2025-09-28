@@ -46,6 +46,7 @@ void TelemetryManager::processMsgQueue() {
 	while (count-- > 0) {
         TMMessage_t tmqMessage = {};
         tmQueueDriver->get(&tmqMessage);
+        mavlink_message_t mavlinkMessage = {};
         
     //     TMMessage_t gpsDataMsg1 = gposDataPack(
     //     0, 0, 100000000, 100000000, 0, 0, 0, 0, 0
