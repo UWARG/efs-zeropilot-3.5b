@@ -6,6 +6,7 @@
 #include "motor_iface.hpp"
 #include "motor_datatype.hpp"
 #include "gps_iface.hpp"
+#include "tm_queue.hpp"
 
 #define AM_MAIN_DELAY 50
 
@@ -21,7 +22,9 @@ typedef enum {
 class AttitudeManager {
     public:
         AttitudeManager(
+            IGPS *gpsDriver,
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
+            IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
             Flightmode *controlAlgorithm,
             MotorGroupInstance_t *rollMotors,
@@ -35,7 +38,10 @@ class AttitudeManager {
         void runControlLoopIteration();
 
     private:
+        IGPS *gpsDriver;
+
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
+        IMessageQueue<TMMessage_t> *tmQueue;
         IMessageQueue<char[100]> *smLoggerQueue;
 
         Flightmode *controlAlgorithm;
@@ -52,4 +58,6 @@ class AttitudeManager {
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
         void outputToMotor(ControlAxis_t axis, uint8_t percent);
+
+        void sendGPSDataToTelemetryManager(const GpsData_t &gpsData);
 };

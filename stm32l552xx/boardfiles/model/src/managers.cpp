@@ -13,10 +13,10 @@ void initManagers()
     // AM initialization
 
     flightMode = new DirectMapping();
-    amHandle = new AttitudeManager(amRCQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
+    amHandle = new AttitudeManager(gpsHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
 
     // SM initialization
-    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, gpsHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
+    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
 
     // TM initialization
     tmHandle = new TelemetryManager(rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);

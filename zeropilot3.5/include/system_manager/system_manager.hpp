@@ -8,7 +8,6 @@
 #include "rc_motor_control.hpp"
 #include "iwdg_iface.hpp"
 #include "tm_queue.hpp"
-#include "gps_iface.hpp"
 
 #define SM_MAIN_DELAY 50
 
@@ -18,7 +17,6 @@ class SystemManager {
             IIndependentWatchdog *iwdgDriver,
             ILogger *loggerDriver,
             IRCReceiver *rcDriver,
-            IGPS *gpsDriver,
             IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
             IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue
@@ -30,7 +28,6 @@ class SystemManager {
         IIndependentWatchdog *iwdgDriver; // Independent Watchdog driver
         ILogger *loggerDriver; // Logger driver
         IRCReceiver *rcDriver; // RC receive;
-        IGPS *gpsDriver;
         
         IMessageQueue<RCMotorControlMessage_t> *amRCQueue; // Queue driver for communication to the Attitude Manager
         IMessageQueue<TMMessage_t> *tmQueue;
@@ -38,6 +35,5 @@ class SystemManager {
 
         void sendRCDataToAttitudeManager(const RCControl &rcData);
         void sendRCDataToTelemetryManager(const RCControl &rcData);
-        void sendGPSDataToTelemetryManager(const GpsData_t &gpsData);
         void sendMessagesToLogger();
 };

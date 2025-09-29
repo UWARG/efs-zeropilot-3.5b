@@ -2,7 +2,9 @@
 #include "rc_motor_control.hpp"
 
 AttitudeManager::AttitudeManager(
+    IGPS *gpsDriver,
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
+    IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<char[100]> *smLoggerQueue,
     Flightmode *controlAlgorithm,
     MotorGroupInstance_t *rollMotors,
@@ -12,7 +14,9 @@ AttitudeManager::AttitudeManager(
     MotorGroupInstance_t *flapMotors,
     MotorGroupInstance_t *steeringMotors
 ) :
+    gpsDriver(gpsDriver),
     amQueue(amQueue),
+    tmQueue(tmQueue),
     smLoggerQueue(smLoggerQueue),
     controlAlgorithm(controlAlgorithm),
     rollMotors(rollMotors),
@@ -71,6 +75,10 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(THROTTLE, motorOutputs.throttle);
     outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
     outputToMotor(STEERING, motorOutputs.yaw);
+
+    // Send GPS data to telemetry manager
+    GpsData_t gpsData = gpsDriver->readData();
+    sendGPSDataToTelemetryManager(gpsData);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -118,4 +126,23 @@ void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
             motor->motorInstance->set(percent);
         }
     }
+}
+
+
+void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData) {
+    if (!gpsData.isNew) return;
+
+    TMMessage_t gpsDataMsg = gposDataPack(
+        0, // time_boot_ms
+        0, // alt
+        gpsData.latitude * 1e7,
+        gpsData.longitude * 1e7,
+        0, // relative altitude
+        gpsData.vx,
+        gpsData.vy,
+        0, // vz
+        gpsData.trackAngle
+    );
+
+    tmQueue->push(&gpsDataMsg);
 }
