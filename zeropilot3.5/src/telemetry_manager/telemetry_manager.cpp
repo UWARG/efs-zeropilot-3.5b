@@ -79,7 +79,7 @@ void TelemetryManager::processMsgQueue() {
 		auto rcData = rcMsg.tmMessageData.rcData;
 		mavlink_message_t mavlinkMessage = {0};
 		mavlink_msg_rc_channels_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, rcMsg.timeBootMs, 6,
-			rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
+			rcData.roll, rcData.pitch, rcData.throttle, rcData.yaw, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
 			UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,  UINT16_MAX,  UINT16_MAX, UINT16_MAX, UINT8_MAX);
 		if (mavlinkMessage.len == 0) {
 			return;
