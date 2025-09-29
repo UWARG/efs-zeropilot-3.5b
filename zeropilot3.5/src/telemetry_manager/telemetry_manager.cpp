@@ -2,10 +2,10 @@
 #define SYSTEM_ID 1             // Suggested System ID by Mavlink
 #define COMPONENT_ID 1          // Suggested Component ID by MAVLINK
 
-#define RFD_BAUDRATE 57600
+#define TM_RFD_BAUDRATE 57600
 #define TM_SCHEDULING_RATE_HZ 20
-#define RFD_TX_LOADING_FACTOR 0.8f
-#define MAX_TRANSMISSION_BYTES (uint16_t)(RFD_TX_LOADING_FACTOR * (RFD_BAUDRATE / (8 * TM_SCHEDULING_RATE_HZ)))
+#define TM_RFD_TX_LOADING_FACTOR 0.8f
+#define TM_MAX_TRANSMISSION_BYTES (uint16_t)(TM_RFD_TX_LOADING_FACTOR * (TM_RFD_BAUDRATE / (8 * TM_SCHEDULING_RATE_HZ)))
 
 TelemetryManager::TelemetryManager(
     IRFD *rfdDriver,
@@ -109,7 +109,7 @@ void TelemetryManager::gpsMsg() {
 }
 
 void TelemetryManager::transmit() {
-    uint8_t transmitBuffer[MAX_TRANSMISSION_BYTES];
+    uint8_t transmitBuffer[TM_MAX_TRANSMISSION_BYTES];
     mavlink_message_t msgToTx{};
     uint16_t txBufIdx = 0;
 
@@ -120,11 +120,11 @@ void TelemetryManager::transmit() {
         overflowMsgPending = false;
     }
 
-    while (messageBuffer->count() > 0 && txBufIdx < MAX_TRANSMISSION_BYTES) {
+    while (messageBuffer->count() > 0 && txBufIdx < TM_MAX_TRANSMISSION_BYTES) {
         messageBuffer->get(&msgToTx);
         const uint16_t MSG_LEN = mavlink_msg_to_send_buffer(transmitBuffer + txBufIdx, &msgToTx);
 
-        if (txBufIdx + MSG_LEN > MAX_TRANSMISSION_BYTES) {
+        if (txBufIdx + MSG_LEN > TM_MAX_TRANSMISSION_BYTES) {
             // Store overflow message for next transmission
             overflowBuf = msgToTx;
             overflowMsgPending = true;
