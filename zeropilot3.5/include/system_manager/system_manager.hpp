@@ -32,7 +32,7 @@ class SystemManager {
         
         IMessageQueue<RCMotorControlMessage_t> *amRCQueue; // Queue driver for tx communication to the Attitude Manager
         IMessageQueue<TMMessage_t> *tmQueue; // Queue driver for tx communication to the Telemetry Manager
-        IMessageQueue<char[100]> *smLoggerQueue; // Queue driver fpr rx communication from other modules to the System Manager for logging
+        IMessageQueue<char[100]> *smLoggerQueue; // Queue driver for rx communication from other modules to the System Manager for logging
 
         void sendRCDataToAttitudeManager(const RCControl &rcData);
         void sendRCDataToTelemetryManager(const RCControl &rcData);
