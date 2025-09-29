@@ -12,10 +12,10 @@ class RCControl {
         float controlSignals[SBUS_INPUT_CHANNELS];
         bool isDataNew;
 
-        float &roll     = controlSignals[0];
+        float &yaw      = controlSignals[0];
         float &pitch    = controlSignals[1];
         float &throttle = controlSignals[2];
-        float &yaw      = controlSignals[3];
+        float &roll     = controlSignals[3];
         float &arm      = controlSignals[4];
         float &aux1     = controlSignals[5];
         float &aux2     = controlSignals[6];
