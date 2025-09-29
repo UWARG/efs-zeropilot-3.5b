@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "mavlink.h"
 #include "logger_iface.hpp"
 #include "queue_iface.hpp"
 #include "rc_iface.hpp"
@@ -35,5 +36,6 @@ class SystemManager {
 
         void sendRCDataToAttitudeManager(const RCControl &rcData);
         void sendRCDataToTelemetryManager(const RCControl &rcData);
+        void sendHeartbeatDataToTelemetryManager(uint8_t baseMode, MAV_STATE systemStatus);
         void sendMessagesToLogger();
 };

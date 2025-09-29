@@ -16,10 +16,11 @@ TelemetryManager::TelemetryManager(
     rfdDriver(rfdDriver),
     tmQueueDriver(tmQueueDriver),
     amQueueDriver(amQueueDriver),
-    messageBuffer(messageBuffer) {
-        overflowMsgPending = false;
-        tmUpdateCounter = 0;
-}
+    messageBuffer(messageBuffer),
+    tmUpdateCounter(0),
+    overflowMsgPending(false),
+    heartbeatBasestate(0),
+    heartbeatSystemStatus(MAV_STATE_UNINIT) {}
 
 TelemetryManager::~TelemetryManager() = default;
 
@@ -46,6 +47,12 @@ void TelemetryManager::processMsgQueue() {
         tmQueueDriver->get(&tmqMessage);
 
         switch (tmqMessage.dataType) {
+            case TMMessage_t::HEARTBEAT_DATA: {
+                heartbeatBasestate = tmqMessage.tmMessageData.heartbeatData.baseMode;
+                heartbeatSystemStatus = static_cast<MAV_STATE>(tmqMessage.tmMessageData.heartbeatData.systemStatus);
+                continue; // Heartbeat is sent at a properly scheduled rate via the heartBeatMsg function
+            }
+
             case TMMessage_t::GPOS_DATA: {
                 auto gposData = tmqMessage.tmMessageData.gposData;
                 mavlink_msg_global_position_int_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs,
@@ -89,13 +96,10 @@ void TelemetryManager::processMsgQueue() {
 }
 
 void TelemetryManager::heartBeatMsg() {
-    MAV_MODE_FLAG baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED; // Ideally these two fields should be managed by something
-    MAV_STATE systemStatus = MAV_STATE_STANDBY;                  // else like system manager
-
     mavlink_message_t heartbeatMessage = {0};
 
     mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &heartbeatMessage, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_INVALID,
-                               baseMode, 0, systemStatus);
+                               heartbeatBasestate, 0, heartbeatSystemStatus);
     messageBuffer->push(&heartbeatMessage);
 }
 

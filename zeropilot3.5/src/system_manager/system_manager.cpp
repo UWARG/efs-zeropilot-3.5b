@@ -43,6 +43,23 @@ void SystemManager::smUpdate() {
     // Send RC data to TM
     sendRCDataToTelemetryManager(rcData);
 
+    // Populate baseMode based on arm state
+    uint8_t baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
+    if (rcData.arm) {
+        baseMode |= MAV_MODE_FLAG_SAFETY_ARMED;
+    }
+
+    // Determine system status based on RC connection and arm state
+    MAV_STATE systemStatus = MAV_STATE_ACTIVE;
+    if (!rcConnected) {
+        systemStatus = MAV_STATE_CRITICAL;
+    } else if (!rcData.arm) {
+        systemStatus = MAV_STATE_STANDBY;
+    }
+
+    // Send Heartbeat data to TM
+    sendHeartbeatDataToTelemetryManager(baseMode, systemStatus);
+
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
@@ -52,6 +69,11 @@ void SystemManager::smUpdate() {
 void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
     TMMessage_t rcDataMsg =  rcDataPack(0, rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
     tmQueue->push(&rcDataMsg);
+}
+
+void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, MAV_STATE systemStatus) {
+    TMMessage_t hbDataMsg = heartbeatPack(0, baseMode, systemStatus);
+    tmQueue->push(&hbDataMsg);
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
