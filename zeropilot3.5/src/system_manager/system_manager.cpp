@@ -26,7 +26,6 @@ void SystemManager::smUpdate() {
     if (rcData.isDataNew) {
         oldDataCount = 0;
         sendRCDataToAttitudeManager(rcData);
-        sendRCDataToTelemetryManager(rcData);
 
         if (!rcConnected) {
             loggerDriver->log("RC Reconnected");
@@ -41,10 +40,18 @@ void SystemManager::smUpdate() {
         }
     }
 
+    // Send RC data to TM
+    sendRCDataToTelemetryManager(rcData);
+
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
     }
+}
+
+void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
+    TMMessage_t rcDataMsg =  rcDataPack(0, rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
+    tmQueue->push(&rcDataMsg);
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
@@ -60,19 +67,14 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     amRCQueue->push(&rcDataMessage);
 }
 
-void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
-    TMMessage_t tmMessage = rcDataPack(0, rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
-    tmQueue->push(&tmMessage);
-}
-
 void SystemManager::sendMessagesToLogger() {
-    static char messages[MAX_MSG_COUNT][100];
-    int msgIdx = 0;
+    static char messages[16][100];
+    int msgCount = 0;
 
-    while (smLoggerQueue->count() > 0 && msgIdx < MAX_MSG_COUNT) {
-        smLoggerQueue->get(&messages[msgIdx]);
-        msgIdx++;
+    while (smLoggerQueue->count() > 0) {
+        smLoggerQueue->get(&messages[msgCount]);
+        msgCount++;
     }
 
-    loggerDriver->log(messages, msgIdx);
+    loggerDriver->log(messages, msgCount);
 }
