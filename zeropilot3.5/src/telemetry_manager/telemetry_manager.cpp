@@ -38,7 +38,7 @@ void TelemetryManager::tmUpdate() {
 
 void TelemetryManager::processMsgQueue() {
     uint16_t count = tmQueueDriver->count();
-    TMMessage rcMsg= {};
+    TMMessage rcMsg = {};
     bool rc = false;
 	while (count-- > 0) {
         mavlink_message_t mavlinkMessage = {0};
@@ -112,6 +112,11 @@ void TelemetryManager::transmit() {
         const uint16_t MSG_LEN = mavlink_msg_to_send_buffer(transmitBuffer + txBufIdx, &overflowBuf);
         txBufIdx += MSG_LEN;
         overflowMsgPending = false;
+    }
+
+    if (messageBuffer->count() == 0 && txBufIdx == 0) {
+        // Nothing to transmit
+        return;
     }
 
     while (messageBuffer->count() > 0 && txBufIdx < TM_MAX_TRANSMISSION_BYTES) {
