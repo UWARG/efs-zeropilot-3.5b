@@ -29,7 +29,6 @@ void TelemetryManager::tmUpdate() {
         heartBeatMsg();
     }
 
-    gpsMsg();
     processMsgQueue();
 
     transmit();
@@ -101,15 +100,6 @@ void TelemetryManager::heartBeatMsg() {
     mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &heartbeatMessage, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_INVALID,
                                heartbeatBaseMode, 0, heartbeatSystemStatus);
     messageBuffer->push(&heartbeatMessage);
-}
-
-void TelemetryManager::gpsMsg() {
-	mavlink_message_t gpsMessage = {0};
-
-	mavlink_msg_gps_raw_int_pack(SYSTEM_ID, COMPONENT_ID, &gpsMessage, 10, GPS_FIX_TYPE_3D_FIX,
-			183002000, -648252000, 50000, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT8_MAX, 25000, 0, 0, 0, 0, 0);
-
-	messageBuffer->push(&gpsMessage);
 }
 
 void TelemetryManager::transmit() {

@@ -25,7 +25,6 @@ class TelemetryManager {
     void handleRxMsg(const mavlink_message_t &msg);
     void processMsgQueue();
     void heartBeatMsg();
-    void gpsMsg();
     void transmit();
     void reconstructMsg();
 
