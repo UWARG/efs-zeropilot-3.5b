@@ -49,7 +49,7 @@ void TelemetryManager::processMsgQueue() {
             case TMMessage_t::HEARTBEAT_DATA: {
                 heartbeatBaseMode = tmqMessage.tmMessageData.heartbeatData.baseMode;
                 heartbeatSystemStatus = static_cast<MAV_STATE>(tmqMessage.tmMessageData.heartbeatData.systemStatus);
-                break; // Heartbeat is sent at a properly scheduled rate via the heartBeatMsg function
+                continue; // Heartbeat is sent at a properly scheduled rate via the heartBeatMsg function
             }
 
             case TMMessage_t::GPOS_DATA: {
@@ -74,10 +74,10 @@ void TelemetryManager::processMsgQueue() {
             }
 
             default: {
-                break;
+                continue;
             }
         }
-
+        
         messageBuffer->push(&mavlinkMessage);
     }
 
