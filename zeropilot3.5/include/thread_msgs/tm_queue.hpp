@@ -49,7 +49,7 @@ typedef struct TMMessage{
 
 inline TMMessage_t heartbeatPack(uint32_t time_boot_ms, uint8_t base_mode, uint8_t system_status) {
     const TMMessageData_t DATA = {.heartbeatData={base_mode, system_status }};
-    return TMMessage_t{TMMessage_t::GPOS_DATA, DATA, time_boot_ms};
+    return TMMessage_t{TMMessage_t::HEARTBEAT_DATA, DATA, time_boot_ms};
 }
 
 inline TMMessage_t gposDataPack(uint32_t time_boot_ms, int32_t alt, int32_t lat, int32_t lon, int32_t relative_alt, int16_t vx, int16_t vy, int16_t vz,uint16_t hdg) {
