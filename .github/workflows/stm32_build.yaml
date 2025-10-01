@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    type: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened]
 
 jobs:
   stm32cubeide_build:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: xanderhendriks/stm32cubeide:15.1
+      image: xanderhendriks/stm32cubeide:16.0
       options: --privileged
 
     steps:
@@ -27,11 +27,22 @@ jobs:
           apt-get update
           apt-get install -y cmake make gcc-arm-none-eabi
 
+      - name: Create workspace directory
+        run: mkdir -p /workspace
+
       - name: Build project using headless STM32CubeIDE
         run: |
-          /opt/st/stm32cubeide_1.18.1/stm32cubeide \
+          /opt/st/stm32cubeide_1.19.0/stm32cubeide \
             --launcher.suppressErrors -nosplash \
             -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
-            -build stm32l552xx/Debug \
-            -import ./stm32l552xx \
-            -data /local/temp
+            -data /workspace \
+            -import $GITHUB_WORKSPACE/stm32l552xx \
+            -build stm32l552xx/Debug
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d "stm32l552xx/Debug" ]; then
+            echo "Build failed - Debug directory not found"
+            exit 1
+          fi
+          echo "Build completed successfully"
