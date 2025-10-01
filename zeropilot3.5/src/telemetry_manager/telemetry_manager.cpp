@@ -62,7 +62,7 @@ void TelemetryManager::processMsgQueue() {
             case TMMessage_t::RC_DATA: {
                 rcMsg = tmqMessage;
                 rc = true;
-                break;
+                continue;
             }
 
             case TMMessage_t::BM_DATA: {
