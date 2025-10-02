@@ -22,6 +22,7 @@ class TelemetryManager {
     mavlink_message_t overflowBuf;
     bool overflowMsgPending;
     uint8_t heartbeatBaseMode;
+    uint32_t heartbeatCustomMode;
     MAV_STATE heartbeatSystemStatus;
 
     void handleRxMsg(const mavlink_message_t &msg);

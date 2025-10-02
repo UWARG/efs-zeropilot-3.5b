@@ -59,8 +59,11 @@ void SystemManager::smUpdate() {
         systemStatus = MAV_STATE_STANDBY;
     }
 
+    // Custom mode not used, set to 0
+    uint32_t customMode = 0;
+
     // Send Heartbeat data to TM
-    sendHeartbeatDataToTelemetryManager(baseMode, systemStatus);
+    sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
 
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
@@ -73,8 +76,8 @@ void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
     tmQueue->push(&rcDataMsg);
 }
 
-void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, MAV_STATE systemStatus) {
-    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, systemStatus);
+void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
+    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
     tmQueue->push(&hbDataMsg);
 }
 
