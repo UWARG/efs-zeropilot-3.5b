@@ -6,6 +6,8 @@ void airspeed::getData() {
     rxBusy = true;
     HAL_I2C_Master_Receive_IT (hi2c, devAddress, RX_Buffer, sizeof(RX_Buffer));
 
+    rxdone = true;
+    rxBusy = false;
 }
 
 void airspeed::calculateAirspeed() { // This
