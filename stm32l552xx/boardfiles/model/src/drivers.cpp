@@ -10,6 +10,8 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 
+SystemUtils *systemUtilsHandle = nullptr;
+
 IndependentWatchdog *iwdgHandle = nullptr;
 Logger *loggerHandle = nullptr;
 
@@ -53,6 +55,8 @@ MotorGroupInstance_t steeringMotors;
 
 void initDrivers()
 {
+    systemUtilsHandle = new SystemUtils();
+
     iwdgHandle = new IndependentWatchdog(&hiwdg);
     loggerHandle = new Logger();
 

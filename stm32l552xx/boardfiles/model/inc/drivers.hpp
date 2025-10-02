@@ -1,5 +1,6 @@
 #pragma once
 
+#include "systemutils.hpp"
 #include "iwdg.hpp"
 #include "logger.hpp"
 #include "motor.hpp"
@@ -11,6 +12,8 @@
 #include "queue.hpp"
 #include "gps.hpp"
 #include "rfd.hpp"
+
+extern SystemUtils *systemUtilsHandle;
 
 extern IndependentWatchdog *iwdgHandle;
 extern Logger *loggerHandle;
