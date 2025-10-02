@@ -4,6 +4,7 @@
 typedef union TMMessageData_u {
   struct{
       uint8_t baseMode;
+      uint32_t customMode;
       uint8_t systemStatus;
   } heartbeatData;
   struct{
@@ -47,8 +48,8 @@ typedef struct TMMessage{
     uint32_t timeBootMs = 0;
 } TMMessage_t;
 
-inline TMMessage_t heartbeatPack(uint32_t time_boot_ms, uint8_t base_mode, uint8_t system_status) {
-    const TMMessageData_t DATA = {.heartbeatData={base_mode, system_status }};
+inline TMMessage_t heartbeatPack(uint32_t time_boot_ms, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status) {
+    const TMMessageData_t DATA = {.heartbeatData={base_mode, custom_mode, system_status }};
     return TMMessage_t{TMMessage_t::HEARTBEAT_DATA, DATA, time_boot_ms};
 }
 
