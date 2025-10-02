@@ -1,7 +1,5 @@
 #include "system_manager.hpp"
 
-#define SM_SCHEDULING_RATE_HZ 20
-
 SystemManager::SystemManager(
     ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
@@ -16,8 +14,7 @@ SystemManager::SystemManager(
         rcDriver(rcDriver),
         amRCQueue(amRCQueue),
         tmQueue(tmQueue),
-        smLoggerQueue(smLoggerQueue),
-        smCounter(0) {}
+        smLoggerQueue(smLoggerQueue) {}
 
 void SystemManager::smUpdate() {
     // Kick the watchdog
@@ -62,20 +59,13 @@ void SystemManager::smUpdate() {
         systemStatus = MAV_STATE_STANDBY;
     }
 
-    // Custom mode field; not used in this implementation, set to 0
-    uint32_t customMode = 0;
-
-    // Send Heartbeat data to TM at a 1 Hz rate
-    if (smCounter == 0) {
-        sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
-    }
+    // Send Heartbeat data to TM
+    sendHeartbeatDataToTelemetryManager(baseMode, systemStatus);
 
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
     }
-
-    smCounter = (smCounter + 1) % SM_SCHEDULING_RATE_HZ;
 }
 
 void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
@@ -83,8 +73,8 @@ void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
     tmQueue->push(&rcDataMsg);
 }
 
-void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
-    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
+void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, MAV_STATE systemStatus) {
+    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, systemStatus);
     tmQueue->push(&hbDataMsg);
 }
 

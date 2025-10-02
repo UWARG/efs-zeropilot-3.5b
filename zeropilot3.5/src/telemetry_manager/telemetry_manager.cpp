@@ -19,13 +19,23 @@ TelemetryManager::TelemetryManager(
     tmQueueDriver(tmQueueDriver),
     amQueueDriver(amQueueDriver),
     messageBuffer(messageBuffer),
-    overflowMsgPending(false) {}
+    tmUpdateCounter(0),
+    overflowMsgPending(false),
+    heartbeatBaseMode(0),
+    heartbeatSystemStatus(MAV_STATE_UNINIT) {}
 
 TelemetryManager::~TelemetryManager() = default;
 
 void TelemetryManager::tmUpdate() {
+    if (tmUpdateCounter == 0) {
+        heartBeatMsg();
+    }
+
     processMsgQueue();
+
     transmit();
+
+    tmUpdateCounter = (tmUpdateCounter + 1) % TM_SCHEDULING_RATE_HZ;
 }
 
 void TelemetryManager::processMsgQueue() {
@@ -39,10 +49,9 @@ void TelemetryManager::processMsgQueue() {
 
         switch (tmqMessage.dataType) {
             case TMMessage_t::HEARTBEAT_DATA: {
-                auto heartbeatData = tmqMessage.tmMessageData.heartbeatData;
-                mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_INVALID,
-                	heartbeatData.baseMode, heartbeatData.customMode, static_cast<MAV_STATE>(heartbeatData.systemStatus));
-                continue;
+                heartbeatBaseMode = tmqMessage.tmMessageData.heartbeatData.baseMode;
+                heartbeatSystemStatus = static_cast<MAV_STATE>(tmqMessage.tmMessageData.heartbeatData.systemStatus);
+                continue; // Heartbeat is sent at a properly scheduled rate via the heartBeatMsg function
             }
 
             case TMMessage_t::GPOS_DATA: {
@@ -85,6 +94,14 @@ void TelemetryManager::processMsgQueue() {
 		}
 		messageBuffer->push(&mavlinkMessage);
 	}
+}
+
+void TelemetryManager::heartBeatMsg() {
+    mavlink_message_t heartbeatMessage = {0};
+
+    mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &heartbeatMessage, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_INVALID,
+                               heartbeatBaseMode, 0, heartbeatSystemStatus);
+    messageBuffer->push(&heartbeatMessage);
 }
 
 void TelemetryManager::transmit() {
