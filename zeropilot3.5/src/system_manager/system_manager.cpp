@@ -69,12 +69,12 @@ void SystemManager::smUpdate() {
 }
 
 void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
-    TMMessage_t rcDataMsg =  rcDataPack(0, rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
+    TMMessage_t rcDataMsg =  rcDataPack(systemUtilsDriver->getCurrentTimestampMs(), rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
     tmQueue->push(&rcDataMsg);
 }
 
 void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, MAV_STATE systemStatus) {
-    TMMessage_t hbDataMsg = heartbeatPack(0, baseMode, systemStatus);
+    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, systemStatus);
     tmQueue->push(&hbDataMsg);
 }
 

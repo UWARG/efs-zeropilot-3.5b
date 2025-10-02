@@ -135,7 +135,7 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData) {
     if (!gpsData.isNew) return;
 
     TMMessage_t gpsDataMsg = gposDataPack(
-        0, // time_boot_ms
+        systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
         0, // alt
         gpsData.latitude * 1e7,
         gpsData.longitude * 1e7,
