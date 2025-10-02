@@ -86,6 +86,7 @@ void initDrivers()
     steeringMotorHandle->init();
 
     rcHandle->init();
+    gpsHandle->init();
 
     rollLeftMotorInstance = {leftAileronMotorHandle, true};
     rollRightMotorInstance = {rightAileronMotorHandle, true};
