@@ -1,5 +1,7 @@
 #include "system_manager.hpp"
 
+#define SM_SCHEDULING_RATE_HZ 20
+
 SystemManager::SystemManager(
     ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
@@ -14,7 +16,8 @@ SystemManager::SystemManager(
         rcDriver(rcDriver),
         amRCQueue(amRCQueue),
         tmQueue(tmQueue),
-        smLoggerQueue(smLoggerQueue) {}
+        smLoggerQueue(smLoggerQueue),
+        smSchedulingCounter(0) {}
 
 void SystemManager::smUpdate() {
     // Kick the watchdog
@@ -62,13 +65,18 @@ void SystemManager::smUpdate() {
     // Custom mode not used, set to 0
     uint32_t customMode = 0;
 
-    // Send Heartbeat data to TM
-    sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+    // Send Heartbeat data to TM at a 1Hz rate
+    if (smSchedulingCounter == 0) {
+        sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+    }
 
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
     }
+
+    // Increment scheduling counter
+    smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
 }
 
 void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {

@@ -19,24 +19,13 @@ TelemetryManager::TelemetryManager(
     tmQueueDriver(tmQueueDriver),
     amQueueDriver(amQueueDriver),
     messageBuffer(messageBuffer),
-    tmUpdateCounter(0),
-    overflowMsgPending(false),
-    heartbeatBaseMode(0),
-    heartbeatCustomMode(0),
-    heartbeatSystemStatus(MAV_STATE_UNINIT) {}
+    overflowMsgPending(false) {}
 
 TelemetryManager::~TelemetryManager() = default;
 
 void TelemetryManager::tmUpdate() {
-    if (tmUpdateCounter == 0) {
-        heartBeatMsg();
-    }
-
     processMsgQueue();
-
     transmit();
-
-    tmUpdateCounter = (tmUpdateCounter + 1) % TM_SCHEDULING_RATE_HZ;
 }
 
 void TelemetryManager::processMsgQueue() {
@@ -50,10 +39,10 @@ void TelemetryManager::processMsgQueue() {
 
         switch (tmqMessage.dataType) {
             case TMMessage_t::HEARTBEAT_DATA: {
-                heartbeatBaseMode = tmqMessage.tmMessageData.heartbeatData.baseMode;
-                heartbeatCustomMode = tmqMessage.tmMessageData.heartbeatData.customMode;
-                heartbeatSystemStatus = static_cast<MAV_STATE>(tmqMessage.tmMessageData.heartbeatData.systemStatus);
-                continue; // Heartbeat is sent at a properly scheduled rate via the heartBeatMsg function
+                auto heartbeatData = tmqMessage.tmMessageData.heartbeatData;
+                mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, MAV_TYPE_GENERIC, MAV_AUTOPILOT_INVALID,
+                	heartbeatData.baseMode, heartbeatData.customMode, heartbeatData.systemStatus);
+                break;
             }
 
             case TMMessage_t::GPOS_DATA: {
@@ -96,14 +85,6 @@ void TelemetryManager::processMsgQueue() {
 		}
 		messageBuffer->push(&mavlinkMessage);
 	}
-}
-
-void TelemetryManager::heartBeatMsg() {
-    mavlink_message_t heartbeatMessage = {0};
-
-    mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &heartbeatMessage, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_INVALID,
-                               heartbeatBaseMode, heartbeatCustomMode, heartbeatSystemStatus);
-    messageBuffer->push(&heartbeatMessage);
 }
 
 void TelemetryManager::transmit() {
