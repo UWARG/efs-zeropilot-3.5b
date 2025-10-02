@@ -8,11 +8,13 @@
 #define TM_MAX_TRANSMISSION_BYTES (uint16_t)(TM_RFD_TX_LOADING_FACTOR * (TM_RFD_BAUDRATE / (8 * TM_SCHEDULING_RATE_HZ)))
 
 TelemetryManager::TelemetryManager(
+    ISystemUtils *systemUtilsDriver,
     IRFD *rfdDriver,
     IMessageQueue<TMMessage_t> *tmQueueDriver,
     IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,
     IMessageQueue<mavlink_message_t> *messageBuffer
 ) :
+    systemUtilsDriver(systemUtilsDriver),
     rfdDriver(rfdDriver),
     tmQueueDriver(tmQueueDriver),
     amQueueDriver(amQueueDriver),

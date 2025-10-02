@@ -11,13 +11,12 @@ DirectMapping *flightMode = nullptr;
 void initManagers()
 {
     // AM initialization
-
     flightMode = new DirectMapping();
-    amHandle = new AttitudeManager(gpsHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
+    amHandle = new AttitudeManager(systemUtilsHandle, gpsHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
 
     // SM initialization
-    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
+    smHandle = new SystemManager(systemUtilsHandle, iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
 
     // TM initialization
-    tmHandle = new TelemetryManager(rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);
+    tmHandle = new TelemetryManager(systemUtilsHandle, rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "systemutils_iface.hpp"
 #include "mavlink.h"
 #include "logger_iface.hpp"
 #include "queue_iface.hpp"
@@ -15,6 +16,7 @@
 class SystemManager {
     public:
         SystemManager(
+            ISystemUtils *systemUtilsDriver,
             IIndependentWatchdog *iwdgDriver,
             ILogger *loggerDriver,
             IRCReceiver *rcDriver,
@@ -26,6 +28,8 @@ class SystemManager {
         void smUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
+        ISystemUtils *systemUtilsDriver; // System utilities instance
+
         IIndependentWatchdog *iwdgDriver; // Independent Watchdog driver
         ILogger *loggerDriver; // Logger driver
         IRCReceiver *rcDriver; // RC receiver driver

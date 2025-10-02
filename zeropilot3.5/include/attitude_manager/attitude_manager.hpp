@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "systemutils_iface.hpp"
 #include "flightmode.hpp"
 #include "queue_iface.hpp"
 #include "motor_iface.hpp"
@@ -22,6 +23,7 @@ typedef enum {
 class AttitudeManager {
     public:
         AttitudeManager(
+            ISystemUtils *systemUtilsDriver,
             IGPS *gpsDriver,
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
             IMessageQueue<TMMessage_t> *tmQueue,
@@ -38,6 +40,8 @@ class AttitudeManager {
         void runControlLoopIteration();
 
     private:
+        ISystemUtils *systemUtilsDriver;
+
         IGPS *gpsDriver;
 
         IMessageQueue<RCMotorControlMessage_t> *amQueue;

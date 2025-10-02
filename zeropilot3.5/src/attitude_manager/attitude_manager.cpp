@@ -2,6 +2,7 @@
 #include "rc_motor_control.hpp"
 
 AttitudeManager::AttitudeManager(
+    ISystemUtils *systemUtilsDriver,
     IGPS *gpsDriver,
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
@@ -14,6 +15,7 @@ AttitudeManager::AttitudeManager(
     MotorGroupInstance_t *flapMotors,
     MotorGroupInstance_t *steeringMotors
 ) :
+    systemUtilsDriver(systemUtilsDriver),
     gpsDriver(gpsDriver),
     amQueue(amQueue),
     tmQueue(tmQueue),
