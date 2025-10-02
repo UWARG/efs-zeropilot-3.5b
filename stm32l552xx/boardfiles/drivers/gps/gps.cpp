@@ -18,10 +18,10 @@ bool GPS::init() {
 
 GpsData_t GPS::readData() {
     __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
-    
+
     GpsData_t data = validData;
     validData.isNew = false;
-    
+
     __HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
     return data;
@@ -29,7 +29,7 @@ GpsData_t GPS::readData() {
 
 bool GPS::processGPSData() {
     __HAL_DMA_DISABLE(huart->hdmarx);
-    
+
     bool success = parseRMC() && parseGGA();
     tempData.isNew = success;
     validData = tempData;
@@ -72,15 +72,15 @@ bool GPS::parseRMC() {
     if (getLatitudeRMC(idx) == false) {
         return 0;
     }
-    
+
     idx += 2;
-    
+
     if (getLongitudeRMC(idx) == false) {
         return 0;
     }
-    
+
     idx += 2;
-    
+
     if (getSpeedRMC(idx) == false) {
         return 0;
     }
@@ -102,7 +102,7 @@ bool GPS::parseRMC() {
     if (tempData.trackAngle != INVALID_TRACK_ANGLE) {
         uint16_t vx = tempData.groundSpeed * sin(tempData.trackAngle * 3.14 / 365.0);
         uint16_t vy = tempData.groundSpeed * tempData.groundSpeed - vx * vx;
-    
+
         tempData.vx = vx;
         tempData.vy = vy;
     }
@@ -134,6 +134,22 @@ bool GPS::parseGGA() {
 
     if (getNumSatellitesGGA(idx) == false) {
         return 0;
+    }
+
+    for (int i = 0; i < 2; i++, idx++) {
+    	while (rxBuffer[idx] != ',') idx++;
+    }
+
+    if(getAltitudeGGA(idx) == false){
+    	return 0;
+    }
+
+    for (int i = 0; i < 1; i++, idx++){
+    	while (rxBuffer[idx] != ',') idx++;
+    }
+
+    if(getGeoidSeperationGGA(idx) == false){
+    	return 0;
     }
 
     return 1;
@@ -293,4 +309,45 @@ bool GPS::getNumSatellitesGGA(int &idx) {
     tempData.numSatellites = numSats;
 
     return true;
+}
+
+bool GPS::getAltitudeGGA(int &idx){
+    float altitude = 0;
+    while (rxBuffer[idx] != '.') {
+        altitude *= 10;
+        altitude += rxBuffer[idx] - '0';
+        idx++;
+    }
+    idx++; // Decimal char
+    uint32_t mult = 10;
+    while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
+        altitude += ((float)(rxBuffer[idx] - '0')) / mult;
+        idx++;
+        mult *= 10;
+    }
+
+    tempData.altitude = altitude;
+    return true;
+}
+
+bool GPS::getGeoidSeperationGGA(int &idx){
+	float seperation = 0;
+    while (rxBuffer[idx] != '.') {
+    	seperation *= 10;
+    	seperation += rxBuffer[idx] - '0';
+        idx++;
+    }
+    idx++; // Decimal char
+    uint32_t mult = 10;
+    while (rxBuffer[idx] != ',' && mult <= DECIMAL_PRECISION) {
+    	seperation += ((float)(rxBuffer[idx] - '0')) / mult;
+        idx++;
+        mult *= 10;
+    }
+
+    tempData.geoidseperation = seperation;
+
+    return true;
+
+
 }

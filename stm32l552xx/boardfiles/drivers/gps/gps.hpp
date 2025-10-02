@@ -1,7 +1,8 @@
 #pragma once
 
-#include "stm32l5xx_hal.h"
+#include <stm32l5xx_hal_uart.h>
 #include "gps_iface.hpp"
+#include "gps_datatypes.hpp"
 #include "gps_defines.hpp"
 #include <cmath>
 
@@ -18,7 +19,7 @@ public:
 private:
     GpsData_t validData;
     GpsData_t tempData;
-    
+
     uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
     UART_HandleTypeDef *huart;
 
@@ -33,6 +34,9 @@ private:
     bool getTrackAngleRMC(int &idx);
     bool getDateRMC(int &idx);
 
+
     // GGA helper functions
     bool getNumSatellitesGGA(int &idx);
+    bool getAltitudeGGA(int &idx);
+    bool getGeoidSeperationGGA(int &idx);
 };

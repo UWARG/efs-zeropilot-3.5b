@@ -26,6 +26,8 @@ typedef struct {
     float longitude;
     float groundSpeed; // cm/s
     uint8_t numSatellites;
+    float altitude;
+    float geoidseperation;
     float trackAngle;
     bool isNew;
     uint16_t vx; // cm/s
