@@ -4,27 +4,31 @@
 
 GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
 
+
 bool GPS::init() {
-    HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
-		huart,
-		rxBuffer,
-		MAX_NMEA_DATA_LENGTH
-    );
+//	huart->hdmarx->Init.Mode = DMA_CIRCULAR;
+//	HAL_DMA_Init(huart->hdmarx);
+//	HAL_StatusTypeDef success = HAL_UART_Receive_DMA(huart, rxBuffer, MAX_NMEA_DATA_LENGTH);
+	HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
+			huart,
+			rxBuffer,
+			MAX_NMEA_DATA_LENGTH
+	);
 
-    __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
+	__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 
-    return success == HAL_OK;
+	return success == HAL_OK;
 }
 
 GpsData_t GPS::readData() {
-    __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
-    
-    GpsData_t data = validData;
-    validData.isNew = false;
-    
-    __HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
+	__HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
 
-    return data;
+	GpsData_t data = validData;
+	validData.isNew = false;
+
+	__HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
+
+	return data;
 }
 
 bool GPS::processGPSData() {

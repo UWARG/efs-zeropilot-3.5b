@@ -79,8 +79,8 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(STEERING, motorOutputs.yaw);
 
     // Send GPS data to telemetry manager
-    GpsData_t gpsData = gpsDriver->readData();
-    sendGPSDataToTelemetryManager(gpsData);
+    // GpsData_t gpsData = gpsDriver->readData();
+    // sendGPSDataToTelemetryManager(gpsData);
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {

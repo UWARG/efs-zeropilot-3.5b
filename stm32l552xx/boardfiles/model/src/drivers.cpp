@@ -69,7 +69,7 @@ void initDrivers()
     rightFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
     steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     
-    gpsHandle = new GPS(&huart2);
+    // gpsHandle = new GPS(&huart2);
     rcHandle = new RCReceiver(&huart4);
 
     rfdHandle = new RFD(&huart3);

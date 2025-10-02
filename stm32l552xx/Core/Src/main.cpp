@@ -28,6 +28,7 @@
 #include "unified_threads.hpp"
 #include "utils.h"
 #include "drivers.hpp"
+#include "gps.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,11 +101,33 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+GPS * gps = new GPS(&huart2);
 
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+//	static volatile uint32_t callback_count = 0;
+//	callback_count++;
+	if (huart->Instance == UART4){
+        rcHandle->parse();
+        rcHandle->startDMA();
+    } else if (RFD::instance && RFD::instance->getHuart() == huart) {
+      RFD::instance->receiveCallback(Size);
+    }
+    // GPS dma callback
+    else if (huart->Instance == USART2) {
+//    	static volatile uint32_t gps_callback_count = 0;
+//    	gps_callback_count++;
+      gpsHandle->processGPSData();
+      HAL_UARTEx_ReceiveToIdle_DMA(
+		  huart,
+		  gpsHandle->rxBuffer,
+		  MAX_NMEA_DATA_LENGTH
+	  );
+    }
+}
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
+  * @bsrief  The application entry point.
   * @retval int
   */
 int main(void)
@@ -141,7 +164,7 @@ int main(void)
   MX_TIM3_Init();
   MX_UART4_Init();
   MX_TIM4_Init();
-  MX_IWDG_Init();
+//  MX_IWDG_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
@@ -151,14 +174,14 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  osKernelInitialize();
+//  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  initMutexes();
+//  initMutexes();
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  initSemphrs();
+//  initSemphrs();
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -166,7 +189,7 @@ int main(void)
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  initQueues();
+//  initQueues();
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -174,8 +197,11 @@ int main(void)
 //  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  initModel();
-  initThreads();
+//  initModel();
+//  initThreads();
+
+
+  int success = gps->init();
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -183,7 +209,7 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-  osKernelStart();
+//  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
@@ -191,6 +217,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  GpsData_t a = gps->readData();
+	  HAL_Delay(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

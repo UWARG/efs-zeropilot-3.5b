@@ -14,12 +14,12 @@ public:
 
     bool init();
     bool processGPSData();
+    uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
 
 private:
     GpsData_t validData;
     GpsData_t tempData;
     
-    uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
     UART_HandleTypeDef *huart;
 
     bool parseRMC();

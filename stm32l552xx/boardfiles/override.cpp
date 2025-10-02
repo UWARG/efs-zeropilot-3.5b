@@ -5,6 +5,8 @@
 #include "drivers.hpp"
 #include "utils.h"
 
+extern UART_HandleTypeDef huart2;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,20 +25,20 @@ int _write(int file, char *ptr, int len)
   return len;
 }
 
-void HAL_Delay(uint32_t Delay) {
-  if (osKernelGetState() == osKernelRunning) {
-    osDelayUntil(osKernelGetTickCount() + timeToTicks(Delay));
-  } else {
-    uint32_t tickstart = HAL_GetTick();
-    uint32_t wait = Delay;
-
-    if (wait < HAL_MAX_DELAY) {
-      wait += (uint32_t)uwTickFreq;
-    }
-
-    while ((HAL_GetTick() - tickstart) < wait) {}
-  }
-}
+//void HAL_Delay(uint32_t Delay) {
+//  if (osKernelGetState() == osKernelRunning) {
+//    osDelayUntil(osKernelGetTickCount() + timeToTicks(Delay));
+//  } else {
+//    uint32_t tickstart = HAL_GetTick();
+//    uint32_t wait = Delay;
+//
+//    if (wait < HAL_MAX_DELAY) {
+//      wait += (uint32_t)uwTickFreq;
+//    }
+//
+//    while ((HAL_GetTick() - tickstart) < wait) {}
+//  }
+//}
 
 #ifdef __cplusplus
 }
@@ -44,19 +46,6 @@ void HAL_Delay(uint32_t Delay) {
 
 /* interrupt callback functions */
 
-
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-    if (huart->Instance == UART4){
-        rcHandle->parse();
-        rcHandle->startDMA();
-    } else if (RFD::instance && RFD::instance->getHuart() == huart) {
-      RFD::instance->receiveCallback(Size);
-    }
-    // GPS dma callback
-    else if (huart->Instance == USART2) {
-      gpsHandle->processGPSData();
-    }
-}
 
 uint32_t error;
 
