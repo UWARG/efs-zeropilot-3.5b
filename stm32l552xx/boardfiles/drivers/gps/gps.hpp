@@ -23,8 +23,19 @@ private:
     uint8_t rxBuffer[MAX_NMEA_DATA_LENGTH];
     UART_HandleTypeDef *huart;
 
+    HAL_StatusTypeDef enableMessage(uint8_t msgClass, uint8_t msgId);
+    bool sendUBX(uint8_t *msg, uint16_t len);
+    void calcChecksum(uint8_t *msg, uint16_t len);
+
     bool parseRMC();
     bool parseGGA();
+    bool parseUBX();
+
+    // UBX helper functions
+    bool getVx(int &idx);
+    bool getVy(int &idx);
+    bool getVz(int &idx);
+
 
     // RMC helper functions
     bool getTimeRMC(int &idx);
@@ -35,8 +46,8 @@ private:
     bool getDateRMC(int &idx);
 
 
+
     // GGA helper functions
     bool getNumSatellitesGGA(int &idx);
     bool getAltitudeGGA(int &idx);
-    bool getGeoidSeperationGGA(int &idx);
 };
