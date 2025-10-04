@@ -21,7 +21,7 @@ SystemManager::SystemManager(
 
 void SystemManager::smUpdate() {
     // Kick the watchdog
-    iwdgDriver->refreshWatchdog();
+//    iwdgDriver->refreshWatchdog();
 
     // Get RC data from the RC receiver and passthrough to AM if new
     static int oldDataCount = 0;

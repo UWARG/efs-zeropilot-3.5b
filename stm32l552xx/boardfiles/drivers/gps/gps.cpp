@@ -12,11 +12,22 @@ bool GPS::init() {
 			MAX_NMEA_DATA_LENGTH
 	);
 
-	__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
+	// __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 
     HAL_StatusTypeDef messagesuccess = enableMessage(0x01, 0x11); //enable ubx velecef messages
 
     return (success == HAL_OK) & (messagesuccess == HAL_OK);
+}
+
+GpsData_t GPS::readData() {
+    // __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
+
+    GpsData_t data = validData;
+    validData.isNew = false;
+
+    // __HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
+
+    return data;
 }
 
 HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId) {
@@ -51,16 +62,6 @@ bool GPS::sendUBX(uint8_t *msg, uint16_t len) {
     return (HAL_UART_Transmit(huart, msg, len, HAL_MAX_DELAY) == HAL_OK);
 }
 
-GpsData_t GPS::readData() {
-    __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
-
-    GpsData_t data = validData;
-    validData.isNew = false;
-
-    __HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
-
-	return data;
-}
 
 bool GPS::processGPSData() {
     __HAL_DMA_DISABLE(huart->hdmarx);

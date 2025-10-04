@@ -25,20 +25,20 @@ int _write(int file, char *ptr, int len)
   return len;
 }
 
-//void HAL_Delay(uint32_t Delay) {
-//  if (osKernelGetState() == osKernelRunning) {
-//    osDelayUntil(osKernelGetTickCount() + timeToTicks(Delay));
-//  } else {
-//    uint32_t tickstart = HAL_GetTick();
-//    uint32_t wait = Delay;
-//
-//    if (wait < HAL_MAX_DELAY) {
-//      wait += (uint32_t)uwTickFreq;
-//    }
-//
-//    while ((HAL_GetTick() - tickstart) < wait) {}
-//  }
-//}
+void HAL_Delay(uint32_t Delay) {
+ if (osKernelGetState() == osKernelRunning) {
+   osDelayUntil(osKernelGetTickCount() + timeToTicks(Delay));
+ } else {
+   uint32_t tickstart = HAL_GetTick();
+   uint32_t wait = Delay;
+
+   if (wait < HAL_MAX_DELAY) {
+     wait += (uint32_t)uwTickFreq;
+   }
+
+   while ((HAL_GetTick() - tickstart) < wait) {}
+ }
+}
 
 #ifdef __cplusplus
 }
@@ -46,6 +46,27 @@ int _write(int file, char *ptr, int len)
 
 /* interrupt callback functions */
 
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+//	static volatile uint32_t callback_count = 0;
+//	callback_count++;
+	if (huart->Instance == UART4){
+        rcHandle->parse();
+        rcHandle->startDMA();
+    } else if (RFD::instance && RFD::instance->getHuart() == huart) {
+      RFD::instance->receiveCallback(Size);
+    }
+    // GPS dma callback
+    else if (huart->Instance == USART2) {
+//    	static volatile uint32_t gps_callback_count = 0;
+//    	gps_callback_count++;
+      gpsHandle->processGPSData();
+//      HAL_UARTEx_ReceiveToIdle_DMA(
+//		  huart,
+//		  gpsHandle->rxBuffer,
+//		  MAX_NMEA_DATA_LENGTH
+//	  );
+    }
+}
 
 uint32_t error;
 

@@ -24,7 +24,7 @@ MotorControl *leftFlapMotorHandle = nullptr;
 MotorControl *rightFlapMotorHandle = nullptr;
 MotorControl *steeringMotorHandle = nullptr;
 
-//GPS *gpsHandle = nullptr;
+GPS *gpsHandle = nullptr;
 RCReceiver *rcHandle = nullptr;
 
 RFD *rfdHandle = nullptr;
@@ -57,8 +57,8 @@ void initDrivers()
 {
     systemUtilsHandle = new SystemUtils();
 
-    iwdgHandle = new IndependentWatchdog(&hiwdg);
-    loggerHandle = new Logger();
+//    iwdgHandle = new IndependentWatchdog(&hiwdg);
+   loggerHandle = new Logger();
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
     rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
@@ -69,16 +69,16 @@ void initDrivers()
     rightFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
     steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     
-    // gpsHandle = new GPS(&huart2);
-    rcHandle = new RCReceiver(&huart4);
+     gpsHandle = new GPS(&huart2);
+   rcHandle = new RCReceiver(&huart4);
 
-    rfdHandle = new RFD(&huart3);
+   rfdHandle = new RFD(&huart3);
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
     tmQueueHandle = new MessageQueue<TMMessage_t>(&tmQueueId);
     messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
-    loggerHandle->init();
+//    loggerHandle->init();
 
     leftAileronMotorHandle->init();
     rightAileronMotorHandle->init();
