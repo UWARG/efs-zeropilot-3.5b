@@ -26,7 +26,9 @@ AttitudeManager::AttitudeManager(
     yawMotors(yawMotors),
     throttleMotors(throttleMotors),
     flapMotors(flapMotors),
-    steeringMotors(steeringMotors) {}
+    steeringMotors(steeringMotors),
+    previouslyArmed(false),
+    armAltitude(0.0f) {}
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
@@ -131,18 +133,31 @@ void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
 }
 
 
-void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData) {
+void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed) {
     if (!gpsData.isNew) return;
+
+    if (armed) {
+        if (!previouslyArmed) {
+            armAltitude = gpsData.altitude;
+            previouslyArmed = true;
+        }
+    } else {
+        previouslyArmed = false;
+        armAltitude = 0.0f;
+    }
+
+    // calculate relative altitude
+    float relativeAltitude = previouslyArmed ? (gpsData.altitude - armAltitude) : 0.0f;
 
     TMMessage_t gpsDataMsg = gposDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
-        0, // alt
+        gpsData.altitude * 1000, // altitude in mm
         gpsData.latitude * 1e7,
         gpsData.longitude * 1e7,
-        0, // relative altitude
+        relativeAltitude * 1000, // relative altitude in mm
         gpsData.vx,
         gpsData.vy,
-        0, // vz
+        gpsData.vz,
         gpsData.trackAngle
     );
 
