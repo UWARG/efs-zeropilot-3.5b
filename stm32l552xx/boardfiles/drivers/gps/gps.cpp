@@ -18,7 +18,7 @@ bool GPS::init() {
     return (success == HAL_OK) & (messagesuccess == HAL_OK);
 }
 
-HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId){
+HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId) {
     uint8_t cfgMsg[] = {
         0xB5, 0x62,         //sync chars
         0x06, 0x01,         //class and id
@@ -27,10 +27,10 @@ HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId){
         0x01,               //rate
         0x00, 0x00          //placeholder
     };
-    if(sendUBX(cfgMsg, sizeof(cfgMsg))){
+
+    if(sendUBX(cfgMsg, sizeof(cfgMsg))) {
         return HAL_OK;
-    }
-    else{
+    } else {
         return HAL_ERROR;
     }
 }
@@ -45,12 +45,9 @@ void GPS::calcChecksum(uint8_t *msg, uint16_t len) {
     msg[len - 1] = ckB;
 }
 
-bool GPS::sendUBX(uint8_t *msg, uint16_t len){
+bool GPS::sendUBX(uint8_t *msg, uint16_t len) {
     calcChecksum(msg, len);
-    if(HAL_UART_Transmit(huart, msg, len, HAL_MAX_DELAY) == HAL_OK){
-        return true;
-    }
-    return false;
+    return (HAL_UART_Transmit(huart, msg, len, HAL_MAX_DELAY) == HAL_OK);
 }
 
 GpsData_t GPS::readData() {
@@ -82,11 +79,11 @@ bool GPS::parseUBX() {
     // find sync
     while (!(rxBuffer[idx] == 0xB5 && rxBuffer[idx+1] == 0x62)) {
         idx++;
-        if (idx >= MAX_NMEA_DATA_LENGTH) return 0;  // not found
+        if (idx >= MAX_NMEA_DATA_LENGTH) return false;  // not found
     }
     // check class
     if (rxBuffer[idx+2] != 0x01 || rxBuffer[idx+3] != 0x11) {
-        return 0;
+        return false;
     }
 
     // payload
@@ -94,20 +91,20 @@ bool GPS::parseUBX() {
 
     idx += 4;
 
-    if(getVx(idx) == false){
-    	return 0;
+    if(getVx(idx) == false) {
+    	return false;
     }
 
     idx += 4;
 
-    if(getVy(idx) == false){
-    	return 0;
+    if(getVy(idx) == false) {
+    	return false;
     }
 
     idx += 4;
 
-    if (getVz(idx) == false){
-    	return 0;
+    if (getVz(idx) == false) {
+    	return false;
     }
 
     return true;
@@ -118,18 +115,18 @@ bool GPS::parseRMC() {
     int idx = 0;
     while (!(rxBuffer[idx] == 'R' && rxBuffer[idx+1] == 'M' && rxBuffer[idx+2] == 'C')) {
         idx++;
-        if (idx == MAX_NMEA_DATA_LENGTH) return 0;
+        if (idx == MAX_NMEA_DATA_LENGTH) return false;
     }
 
     idx += 4;
 
     // Check if data exists
     if (rxBuffer[idx] == ',') {
-        return 0;
+        return false;
     }
 
     if (getTimeRMC(idx) == false) {
-        return 0;
+        return false;
     }
 
     // Skip to status
@@ -139,52 +136,40 @@ bool GPS::parseRMC() {
     idx++;
 
     // Check if data valid
-    if (rxBuffer[idx] == 'V') return 0;
+    if (rxBuffer[idx] == 'V') return false;
     // End status
 
     idx += 2;
 
     if (getLatitudeRMC(idx) == false) {
-        return 0;
+        return false;
     }
 
     idx += 2;
 
     if (getLongitudeRMC(idx) == false) {
-        return 0;
+        return false;
     }
 
     idx += 2;
 
     if (getSpeedRMC(idx) == false) {
-        return 0;
+        return false;
     }
 
     while (rxBuffer[idx] != ',') idx++;
     idx++;
 
     if (getTrackAngleRMC(idx) == false) {
-        return 0;
+        return false;
     }
 
     while (rxBuffer[idx] != ',') idx++;
     while (rxBuffer[idx] == ',') idx++;
 
     if (getDateRMC(idx) == false) {
-        return 0;
+        return false;
     }
-
-//    if (tempData.trackAngle != INVALID_TRACK_ANGLE) {
-//        uint16_t vx = tempData.groundSpeed * sin(tempData.trackAngle * 3.14 / 365.0);
-//        uint16_t vy = tempData.groundSpeed * tempData.groundSpeed - vx * vx;
-//
-//        tempData.vx = vx;
-//        tempData.vy = vy;
-//    }
-//    else {
-//        tempData.vx = INVALID_DATA;
-//        tempData.vy = INVALID_DATA;
-//    }
 
     return true;
 }
@@ -193,13 +178,13 @@ bool GPS::parseGGA() {
     int idx = 0;
     while (!(rxBuffer[idx] == 'G' && rxBuffer[idx + 1] == 'G' && rxBuffer[idx + 2] == 'A')) {
         idx++;
-        if (idx == MAX_NMEA_DATA_LENGTH) return 0;
+        if (idx == MAX_NMEA_DATA_LENGTH) return false;
     }
     idx+=4; // Skip to data
 
     // Check if data exists
     if (rxBuffer[idx] == ',') {
-        return 0;
+        return false;
     }
 
     // Skip 7 sections of data
@@ -208,18 +193,18 @@ bool GPS::parseGGA() {
     }
 
     if (getNumSatellitesGGA(idx) == false) {
-        return 0;
+        return false;
     }
 
     for (int i = 0; i < 2; i++, idx++) {
     	while (rxBuffer[idx] != ',') idx++;
     }
 
-    if(getAltitudeGGA(idx) == false){
-    	return 0;
+    if(getAltitudeGGA(idx) == false) {
+    	return false;
     }
 
-    return 1;
+    return true;
 }
 
 bool GPS::getTimeRMC(int &idx) {
@@ -378,7 +363,7 @@ bool GPS::getNumSatellitesGGA(int &idx) {
     return true;
 }
 
-bool GPS::getAltitudeGGA(int &idx){
+bool GPS::getAltitudeGGA(int &idx) {
     float altitude = 0;
     while (rxBuffer[idx] != '.') {
         altitude *= 10;
@@ -398,7 +383,7 @@ bool GPS::getAltitudeGGA(int &idx){
 }
 
 
-bool GPS::getVx(int &idx){
+bool GPS::getVx(int &idx) {
     int32_t ecefVX = (int32_t)((uint32_t)rxBuffer[idx] |
                                ((uint32_t)rxBuffer[idx+1] << 8) |
                                ((uint32_t)rxBuffer[idx+2] << 16) |
@@ -408,7 +393,7 @@ bool GPS::getVx(int &idx){
     return true;
 }
 
-bool GPS::getVy(int &idx){
+bool GPS::getVy(int &idx) {
     int32_t ecefVY = (int32_t)((uint32_t)rxBuffer[idx] |
                                ((uint32_t)rxBuffer[idx+1] << 8) |
                                ((uint32_t)rxBuffer[idx+2] << 16) |
@@ -418,7 +403,7 @@ bool GPS::getVy(int &idx){
     return true;
 }
 
-bool GPS::getVz(int &idx){
+bool GPS::getVz(int &idx) {
     int32_t ecefVZ = (int32_t)((uint32_t)rxBuffer[idx] |
                                ((uint32_t)rxBuffer[idx+1] << 8) |
                                ((uint32_t)rxBuffer[idx+2] << 16) |
