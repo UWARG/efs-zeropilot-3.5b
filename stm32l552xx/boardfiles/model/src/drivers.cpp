@@ -24,7 +24,7 @@ MotorControl *leftFlapMotorHandle = nullptr;
 MotorControl *rightFlapMotorHandle = nullptr;
 MotorControl *steeringMotorHandle = nullptr;
 
-GPS *gpsHandle = nullptr;
+//GPS *gpsHandle = nullptr;
 RCReceiver *rcHandle = nullptr;
 
 RFD *rfdHandle = nullptr;

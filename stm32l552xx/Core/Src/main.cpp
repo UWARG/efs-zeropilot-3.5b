@@ -101,7 +101,7 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-GPS * gps = new GPS(&huart2);
+GPS * gpsHandle = new GPS(&huart2);
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 //	static volatile uint32_t callback_count = 0;
@@ -201,7 +201,7 @@ int main(void)
 //  initThreads();
 
 
-  int success = gps->init();
+  int success = gpsHandle->init();
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -217,7 +217,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  GpsData_t a = gps->readData();
+//	  GpsData_t a = gpsHandle->readData();
 	  HAL_Delay(10);
     /* USER CODE END WHILE */
 
