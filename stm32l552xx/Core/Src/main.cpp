@@ -127,7 +127,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 /* USER CODE END 0 */
 
 /**
-  * @bsrief  The application entry point.
+  * @brief  The application entry point.
   * @retval int
   */
 int main(void)
@@ -164,7 +164,7 @@ int main(void)
   MX_TIM3_Init();
   MX_UART4_Init();
   MX_TIM4_Init();
-//  MX_IWDG_Init();
+  MX_IWDG_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
@@ -174,14 +174,14 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-//  osKernelInitialize();
+  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
-//  initMutexes();
+  initMutexes();
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-//  initSemphrs();
+  initSemphrs();
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -209,7 +209,7 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-//  osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
