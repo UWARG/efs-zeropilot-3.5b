@@ -1,6 +1,9 @@
 #include "attitude_manager.hpp"
 #include "rc_motor_control.hpp"
 
+#define AM_SCHEDULING_RATE_HZ 20
+#define AM_TELEMETRY_GPS_DATA_RATE_HZ 5
+
 AttitudeManager::AttitudeManager(
     ISystemUtils *systemUtilsDriver,
     IGPS *gpsDriver,
@@ -28,7 +31,8 @@ AttitudeManager::AttitudeManager(
     flapMotors(flapMotors),
     steeringMotors(steeringMotors),
     previouslyArmed(false),
-    armAltitude(0.0f) {}
+    armAltitude(0.0f),
+    amSchedulingCounter(0) {}
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
@@ -82,7 +86,11 @@ void AttitudeManager::runControlLoopIteration() {
 
     // Send GPS data to telemetry manager
     GpsData_t gpsData = gpsDriver->readData();
-    sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
+        sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
+    }
+
+    amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {

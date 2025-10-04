@@ -62,6 +62,8 @@ class AttitudeManager {
         bool previouslyArmed;
         float armAltitude;
 
+        uint8_t amSchedulingCounter;
+
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
         void outputToMotor(ControlAxis_t axis, uint8_t percent);

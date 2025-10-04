@@ -1,6 +1,8 @@
 #include "system_manager.hpp"
 
 #define SM_SCHEDULING_RATE_HZ 20
+#define SM_TELEMETRY_HEARTBEAT_RATE_HZ 1
+#define SM_TELEMETRY_RC_DATA_RATE_HZ 5
 
 SystemManager::SystemManager(
     ISystemUtils *systemUtilsDriver,
@@ -46,7 +48,9 @@ void SystemManager::smUpdate() {
     }
 
     // Send RC data to TM
-    sendRCDataToTelemetryManager(rcData);
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_RC_DATA_RATE_HZ) == 0) {
+        sendRCDataToTelemetryManager(rcData);
+    }
 
     // Populate baseMode based on arm state
     uint8_t baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
@@ -66,7 +70,7 @@ void SystemManager::smUpdate() {
     uint32_t customMode = 0;
 
     // Send Heartbeat data to TM at a 1Hz rate
-    if (smSchedulingCounter == 0) {
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
         sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
     }
 
