@@ -2,43 +2,35 @@
 #define SYSTEM_ID 1             // Suggested System ID by Mavlink
 #define COMPONENT_ID 1          // Suggested Component ID by MAVLINK
 
-#define RFD_BAUDRATE 57600
+#define TM_RFD_BAUDRATE 57600
 #define TM_SCHEDULING_RATE_HZ 20
-#define RFD_TX_LOADING_FACTOR 0.8f
-#define MAX_TRANSMISSION_BYTES (uint16_t)(RFD_TX_LOADING_FACTOR * (RFD_BAUDRATE / (8 * TM_SCHEDULING_RATE_HZ)))
+#define TM_RFD_TX_LOADING_FACTOR 0.8f
+#define TM_MAX_TRANSMISSION_BYTES (uint16_t)(TM_RFD_TX_LOADING_FACTOR * (TM_RFD_BAUDRATE / (8 * TM_SCHEDULING_RATE_HZ)))
 
 TelemetryManager::TelemetryManager(
+    ISystemUtils *systemUtilsDriver,
     IRFD *rfdDriver,
     IMessageQueue<TMMessage_t> *tmQueueDriver,
     IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,
     IMessageQueue<mavlink_message_t> *messageBuffer
 ) :
+    systemUtilsDriver(systemUtilsDriver),
     rfdDriver(rfdDriver),
     tmQueueDriver(tmQueueDriver),
     amQueueDriver(amQueueDriver),
-    messageBuffer(messageBuffer) {
-        overflowMsgPending = false;
-        tmUpdateCounter = 0;
-}
+    messageBuffer(messageBuffer),
+    overflowMsgPending(false) {}
 
 TelemetryManager::~TelemetryManager() = default;
 
 void TelemetryManager::tmUpdate() {
-    if (tmUpdateCounter == 0) {
-        heartBeatMsg();
-    }
-
-    gpsMsg();
     processMsgQueue();
-
     transmit();
-
-    tmUpdateCounter = (tmUpdateCounter + 1) % TM_SCHEDULING_RATE_HZ;
 }
 
 void TelemetryManager::processMsgQueue() {
     uint16_t count = tmQueueDriver->count();
-    TMMessage rcMsg= {};
+    TMMessage rcMsg = {};
     bool rc = false;
 	while (count-- > 0) {
         mavlink_message_t mavlinkMessage = {0};
@@ -46,6 +38,13 @@ void TelemetryManager::processMsgQueue() {
         tmQueueDriver->get(&tmqMessage);
 
         switch (tmqMessage.dataType) {
+            case TMMessage_t::HEARTBEAT_DATA: {
+                auto heartbeatData = tmqMessage.tmMessageData.heartbeatData;
+                mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, MAV_TYPE_GENERIC, MAV_AUTOPILOT_INVALID,
+                	heartbeatData.baseMode, heartbeatData.customMode, heartbeatData.systemStatus);
+                break;
+            }
+
             case TMMessage_t::GPOS_DATA: {
                 auto gposData = tmqMessage.tmMessageData.gposData;
                 mavlink_msg_global_position_int_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs,
@@ -71,7 +70,7 @@ void TelemetryManager::processMsgQueue() {
                 continue;
             }
         }
-
+        
         messageBuffer->push(&mavlinkMessage);
     }
 
@@ -79,7 +78,7 @@ void TelemetryManager::processMsgQueue() {
 		auto rcData = rcMsg.tmMessageData.rcData;
 		mavlink_message_t mavlinkMessage = {0};
 		mavlink_msg_rc_channels_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, rcMsg.timeBootMs, 6,
-			rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
+			rcData.roll, rcData.pitch, rcData.throttle, rcData.yaw, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
 			UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,  UINT16_MAX,  UINT16_MAX, UINT16_MAX, UINT8_MAX);
 		if (mavlinkMessage.len == 0) {
 			return;
@@ -88,28 +87,8 @@ void TelemetryManager::processMsgQueue() {
 	}
 }
 
-void TelemetryManager::heartBeatMsg() {
-    MAV_MODE_FLAG baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED; // Ideally these two fields should be managed by something
-    MAV_STATE systemStatus = MAV_STATE_STANDBY;                  // else like system manager
-
-    mavlink_message_t heartbeatMessage = {0};
-
-    mavlink_msg_heartbeat_pack(SYSTEM_ID, COMPONENT_ID, &heartbeatMessage, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_INVALID,
-                               baseMode, 0, systemStatus);
-    messageBuffer->push(&heartbeatMessage);
-}
-
-void TelemetryManager::gpsMsg() {
-	mavlink_message_t gpsMessage = {0};
-
-	mavlink_msg_gps_raw_int_pack(SYSTEM_ID, COMPONENT_ID, &gpsMessage, 10, GPS_FIX_TYPE_3D_FIX,
-			183002000, -648252000, 50000, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT8_MAX, 25000, 0, 0, 0, 0, 0);
-
-	messageBuffer->push(&gpsMessage);
-}
-
 void TelemetryManager::transmit() {
-    uint8_t transmitBuffer[MAX_TRANSMISSION_BYTES];
+    uint8_t transmitBuffer[TM_MAX_TRANSMISSION_BYTES];
     mavlink_message_t msgToTx{};
     uint16_t txBufIdx = 0;
 
@@ -120,11 +99,16 @@ void TelemetryManager::transmit() {
         overflowMsgPending = false;
     }
 
-    while (messageBuffer->count() > 0 && txBufIdx < MAX_TRANSMISSION_BYTES) {
+    if (messageBuffer->count() == 0 && txBufIdx == 0) {
+        // Nothing to transmit
+        return;
+    }
+
+    while (messageBuffer->count() > 0 && txBufIdx < TM_MAX_TRANSMISSION_BYTES) {
         messageBuffer->get(&msgToTx);
         const uint16_t MSG_LEN = mavlink_msg_to_send_buffer(transmitBuffer + txBufIdx, &msgToTx);
 
-        if (txBufIdx + MSG_LEN > MAX_TRANSMISSION_BYTES) {
+        if (txBufIdx + MSG_LEN > TM_MAX_TRANSMISSION_BYTES) {
             // Store overflow message for next transmission
             overflowBuf = msgToTx;
             overflowMsgPending = true;

@@ -2,6 +2,7 @@
 
 void initThreads()
 {
+  startUpInitThreads();
   amInitThreads();
   smInitThreads();
   tmInitThreads();

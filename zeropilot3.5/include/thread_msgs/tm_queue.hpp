@@ -3,6 +3,11 @@
 
 typedef union TMMessageData_u {
   struct{
+      uint8_t baseMode;
+      uint32_t customMode;
+      uint8_t systemStatus;
+  } heartbeatData;
+  struct{
       int32_t alt;
       int32_t lat;
       int32_t lon;
@@ -34,6 +39,7 @@ typedef union TMMessageData_u {
 
 typedef struct TMMessage{
     enum{
+        HEARTBEAT_DATA,
         GPOS_DATA,
         RC_DATA,
         BM_DATA
@@ -42,8 +48,13 @@ typedef struct TMMessage{
     uint32_t timeBootMs = 0;
 } TMMessage_t;
 
+inline TMMessage_t heartbeatPack(uint32_t time_boot_ms, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status) {
+    const TMMessageData_t DATA = {.heartbeatData={base_mode, custom_mode, system_status }};
+    return TMMessage_t{TMMessage_t::HEARTBEAT_DATA, DATA, time_boot_ms};
+}
+
 inline TMMessage_t gposDataPack(uint32_t time_boot_ms, int32_t alt, int32_t lat, int32_t lon, int32_t relative_alt, int16_t vx, int16_t vy, int16_t vz,uint16_t hdg) {
-    const TMMessageData_t DATA = {.gposData={alt, lat, lon ,relative_alt, vx, vy, vz, hdg }};
+    const TMMessageData_t DATA = {.gposData={alt, lat, lon, relative_alt, vx, vy, vz, hdg }};
     return TMMessage_t{TMMessage_t::GPOS_DATA, DATA, time_boot_ms};
 }
 
