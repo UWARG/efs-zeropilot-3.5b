@@ -58,7 +58,7 @@ void initDrivers()
     systemUtilsHandle = new SystemUtils();
 
     iwdgHandle = new IndependentWatchdog(&hiwdg);
-    loggerHandle = new Logger();
+    loggerHandle = new Logger(); // Initialized in a RTOS task
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
     rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
@@ -78,7 +78,6 @@ void initDrivers()
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
     tmQueueHandle = new MessageQueue<TMMessage_t>(&tmQueueId);
     messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
-    loggerHandle->init();
 
     leftAileronMotorHandle->init();
     rightAileronMotorHandle->init();
