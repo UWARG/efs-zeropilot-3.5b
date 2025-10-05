@@ -14,7 +14,7 @@ SystemManager::SystemManager(
         tmQueue(tmQueue),
         smLoggerQueue(smLoggerQueue) {}
 
-void SystemManager::smUpdate() {
+void SystemManager::runControlLoopIteration() {
     // Kick the watchdog
     iwdgDriver->refreshWatchdog();
 
@@ -34,7 +34,7 @@ void SystemManager::smUpdate() {
     } else {
         oldDataCount += 1;
 
-        if ((oldDataCount * SM_MAIN_DELAY > 500) && rcConnected) {
+        if ((oldDataCount * SM_CONTROL_LOOP_DELAY > SM_RC_TIMEOUT) && rcConnected) {
             loggerDriver->log("RC Disconnected");
             rcConnected = false;
         }
