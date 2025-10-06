@@ -70,7 +70,7 @@ if [[ ! -f "CMakeCache.txt" ]]; then
     echo "generating cmake..."
     echo "generator: $generator"
     echo "toolchain: $tc_file"
-    cmake -G "$generator" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$tc_file" "$script_dir"
+    cmake -G "$generator" -Werror -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$tc_file" "$script_dir"
 fi
 
 echo && echo "building..."
@@ -78,4 +78,4 @@ cmake --build .
 
 echo && echo "copying headers..."
 mkdir -p "${build_dir}/include"
-find "${script_dir}/include" -name "*.hpp" -exec echo "{}" \; -exec cp {} "${build_dir}/include" \;
+find "${script_dir}/include" \( -name "*.hpp" -o -name "*.h" \) -exec echo "{}" \; -exec cp {} "${build_dir}/include" \;

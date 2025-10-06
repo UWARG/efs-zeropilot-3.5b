@@ -4,16 +4,19 @@
 
 AttitudeManager *amHandle = nullptr;
 SystemManager *smHandle = nullptr;
+TelemetryManager *tmHandle = nullptr;
 DirectMapping *flightMode = nullptr;
 
 
 void initManagers()
 {
     // AM initialization
-
     flightMode = new DirectMapping();
-    amHandle = new AttitudeManager(amRCQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
+    amHandle = new AttitudeManager(systemUtilsHandle, gpsHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
 
     // SM initialization
-    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, smLoggerQueueHandle);
+    smHandle = new SystemManager(systemUtilsHandle, iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
+
+    // TM initialization
+    tmHandle = new TelemetryManager(systemUtilsHandle, rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);
 }

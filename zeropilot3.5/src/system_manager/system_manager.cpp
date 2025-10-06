@@ -1,47 +1,96 @@
 #include "system_manager.hpp"
 
+#define SM_SCHEDULING_RATE_HZ 20
+#define SM_TELEMETRY_HEARTBEAT_RATE_HZ 1
+#define SM_TELEMETRY_RC_DATA_RATE_HZ 5
+
 SystemManager::SystemManager(
+    ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
-    IRCReceiver *rcDriver, 
-    IMessageQueue<RCMotorControlMessage_t> *amRCQueue, 
-    IMessageQueue<char[100]> *smLoggerQueue) : 
-        iwdgDriver_(iwdgDriver),
-        loggerDriver_(loggerDriver),
-        rcDriver_(rcDriver), 
-        amRCQueue_(amRCQueue),
-        smLoggerQueue_(smLoggerQueue) {}
+    IRCReceiver *rcDriver,
+    IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
+    IMessageQueue<TMMessage_t> *tmQueue,
+    IMessageQueue<char[100]> *smLoggerQueue) :
+        systemUtilsDriver(systemUtilsDriver),
+        iwdgDriver(iwdgDriver),
+        loggerDriver(loggerDriver),
+        rcDriver(rcDriver),
+        amRCQueue(amRCQueue),
+        tmQueue(tmQueue),
+        smLoggerQueue(smLoggerQueue),
+        smSchedulingCounter(0) {}
 
-void SystemManager::SMUpdate() {
+void SystemManager::smUpdate() {
     // Kick the watchdog
-    iwdgDriver_->refreshWatchdog();
+    iwdgDriver->refreshWatchdog();
 
     // Get RC data from the RC receiver and passthrough to AM if new
     static int oldDataCount = 0;
     static bool rcConnected = true;
 
-    RCControl rcData = rcDriver_->getRCData();
+    RCControl rcData = rcDriver->getRCData();
     if (rcData.isDataNew) {
         oldDataCount = 0;
         sendRCDataToAttitudeManager(rcData);
 
         if (!rcConnected) {
-            loggerDriver_->log("RC Reconnected");
+            loggerDriver->log("RC Reconnected");
             rcConnected = true;
         }
     } else {
         oldDataCount += 1;
 
         if ((oldDataCount * SM_MAIN_DELAY > 500) && rcConnected) {
-            loggerDriver_->log("RC Disconnected");
+            loggerDriver->log("RC Disconnected");
             rcConnected = false;
         }
     }
 
+    // Send RC data to TM
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_RC_DATA_RATE_HZ) == 0) {
+        sendRCDataToTelemetryManager(rcData);
+    }
+
+    // Populate baseMode based on arm state
+    uint8_t baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
+    if (rcData.arm) {
+        baseMode |= MAV_MODE_FLAG_SAFETY_ARMED;
+    }
+
+    // Determine system status based on RC connection and arm state
+    MAV_STATE systemStatus = MAV_STATE_ACTIVE;
+    if (!rcConnected) {
+        systemStatus = MAV_STATE_CRITICAL;
+    } else if (!rcData.arm) {
+        systemStatus = MAV_STATE_STANDBY;
+    }
+
+    // Custom mode not used, set to 0
+    uint32_t customMode = 0;
+
+    // Send Heartbeat data to TM at a 1Hz rate
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
+        sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+    }
+
     // Log if new messages
-    if (smLoggerQueue_->count() > 0) {
+    if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
     }
+
+    // Increment scheduling counter
+    smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
+}
+
+void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
+    TMMessage_t rcDataMsg =  rcDataPack(systemUtilsDriver->getCurrentTimestampMs(), rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
+    tmQueue->push(&rcDataMsg);
+}
+
+void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
+    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
+    tmQueue->push(&hbDataMsg);
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
@@ -54,17 +103,17 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     rcDataMessage.arm = rcData.arm;
     rcDataMessage.flapAngle = rcData.aux2;
 
-    amRCQueue_->push(&rcDataMessage);
+    amRCQueue->push(&rcDataMessage);
 }
 
 void SystemManager::sendMessagesToLogger() {
     static char messages[16][100];
     int msgCount = 0;
 
-    while (smLoggerQueue_->count() > 0) {
-        smLoggerQueue_->get(&messages[msgCount]);
+    while (smLoggerQueue->count() > 0) {
+        smLoggerQueue->get(&messages[msgCount]);
         msgCount++;
     }
 
-    loggerDriver_->log(messages, msgCount);
+    loggerDriver->log(messages, msgCount);
 }

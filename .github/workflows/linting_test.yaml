@@ -1,0 +1,38 @@
+name: Linting Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    type: [opened, synchronize, reopened]
+
+jobs:
+  linting_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi libgtest-dev libgmock-dev clang-tidy g++ build-essential
+
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Build main 
+      working-directory: ./zeropilot3.5
+      run: |
+        bash ./hwbuild.bash -c l552
+        # Assuming hwbuild.bash configures CMake with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Build tests
+      working-directory: ./zeropilot3.5/tests
+      run: |
+        bash ./testbuild.bash -c l552
+        # Same assumption for testbuild.bash
+
+    - name: Run clang-tidy lint script
+      working-directory: ./zeropilot3.5
+      run: bash ./lint.bash  

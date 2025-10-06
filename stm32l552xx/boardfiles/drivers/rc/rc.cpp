@@ -83,7 +83,7 @@ void RCReceiver::parse() {
     if ((buf[0] == HEADER_) && (buf[24] == FOOTER_)) {
 
         for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
-            rcData_.ControlSignals[i] = sbusToRCControl(buf, i);
+            rcData_.controlSignals[i] = sbusToRCControl(buf, i);
         }
 
         rcData_.isDataNew = true;

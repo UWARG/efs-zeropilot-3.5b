@@ -5,8 +5,12 @@
 .settings/
 .vscode/
 /.project
+/.idea
 
 # build and debug artifacts
 build/
 Debug/
 *.launch
+
+# remove build host
+*build-host*

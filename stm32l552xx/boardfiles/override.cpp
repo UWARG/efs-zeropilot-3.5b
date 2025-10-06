@@ -1,6 +1,7 @@
 #include "cmsis_os2.h"
 #include "main.h"
 #include "museq.hpp"
+#include "rfd.hpp"
 #include "drivers.hpp"
 #include "utils.h"
 
@@ -45,9 +46,15 @@ void HAL_Delay(uint32_t Delay) {
 
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-    if(huart->Instance == UART4){
+    if (huart->Instance == UART4){
         rcHandle->parse();
         rcHandle->startDMA();
+    } else if (RFD::instance && RFD::instance->getHuart() == huart) {
+      RFD::instance->receiveCallback(Size);
+    }
+    // GPS dma callback
+    else if (huart->Instance == USART2) {
+      gpsHandle->processGPSData();
     }
 }
 

@@ -6,7 +6,11 @@ extern IWDG_HandleTypeDef hiwdg;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
+
+SystemUtils *systemUtilsHandle = nullptr;
 
 IndependentWatchdog *iwdgHandle = nullptr;
 Logger *loggerHandle = nullptr;
@@ -20,10 +24,15 @@ MotorControl *leftFlapMotorHandle = nullptr;
 MotorControl *rightFlapMotorHandle = nullptr;
 MotorControl *steeringMotorHandle = nullptr;
 
+GPS *gpsHandle = nullptr;
 RCReceiver *rcHandle = nullptr;
+
+RFD *rfdHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
+MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
+MessageQueue<mavlink_message_t> *messageBufferHandle = nullptr;
 
 MotorInstance_t rollLeftMotorInstance;
 MotorInstance_t rollRightMotorInstance;
@@ -46,8 +55,10 @@ MotorGroupInstance_t steeringMotors;
 
 void initDrivers()
 {
+    systemUtilsHandle = new SystemUtils();
+
     iwdgHandle = new IndependentWatchdog(&hiwdg);
-    loggerHandle = new Logger();
+    loggerHandle = new Logger(); // Initialized in a RTOS task
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
     rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
@@ -58,12 +69,15 @@ void initDrivers()
     rightFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
     steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     
+    gpsHandle = new GPS(&huart2);
     rcHandle = new RCReceiver(&huart4);
+
+    rfdHandle = new RFD(&huart3);
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
-
-    loggerHandle->init();
+    tmQueueHandle = new MessageQueue<TMMessage_t>(&tmQueueId);
+    messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
 
     leftAileronMotorHandle->init();
     rightAileronMotorHandle->init();
@@ -75,6 +89,7 @@ void initDrivers()
     steeringMotorHandle->init();
 
     rcHandle->init();
+    gpsHandle->init();
 
     rollLeftMotorInstance = {leftAileronMotorHandle, true};
     rollRightMotorInstance = {rightAileronMotorHandle, true};
