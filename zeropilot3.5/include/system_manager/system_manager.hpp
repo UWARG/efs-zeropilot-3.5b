@@ -12,6 +12,7 @@
 #include "tm_queue.hpp"
 
 #define SM_MAIN_DELAY 50
+#define MAX_MSG_COUNT 16
 
 class SystemManager {
     public:

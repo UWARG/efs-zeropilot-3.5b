@@ -14,3 +14,4 @@ Debug/
 
 # remove build host
 *build-host*
+compile_commands.json
