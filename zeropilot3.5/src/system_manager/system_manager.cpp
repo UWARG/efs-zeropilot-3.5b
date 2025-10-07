@@ -69,7 +69,7 @@ void SystemManager::smUpdate() {
     // Send Heartbeat data to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
         // Custom mode not used, set to 0
-        const uint32_t customMode = 0;
+        constexpr uint32_t customMode = 0;
 
         sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
     }
