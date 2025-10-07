@@ -9,7 +9,7 @@
 class RCControl {
     public:
 
-        float controlSignals[SBUS_INPUT_CHANNELS];
+        float controlSignals[SBUS_INPUT_CHANNELS] = {0};
         bool isDataNew;
 
         float &roll     = controlSignals[0];

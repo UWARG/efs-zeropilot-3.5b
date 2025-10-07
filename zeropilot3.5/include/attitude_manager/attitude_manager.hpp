@@ -49,7 +49,7 @@ class AttitudeManager {
         IMessageQueue<char[100]> *smLoggerQueue;
 
         Flightmode *controlAlgorithm;
-        RCMotorControlMessage_t controlMsg;
+        RCMotorControlMessage_t controlMsg = {};
         int noDataCount = 0;
 
         MotorGroupInstance_t *rollMotors;
