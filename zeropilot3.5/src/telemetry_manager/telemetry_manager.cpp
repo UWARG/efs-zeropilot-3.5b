@@ -138,9 +138,9 @@ void TelemetryManager::reconstructMsg() {
 void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) const {
     switch (msg.msgid) {
         case MAVLINK_MSG_ID_PARAM_SET: {
-            float valueToSet = mavlink_msg_param_set_get_param_value(&msg);
+            const float valueToSet = mavlink_msg_param_set_get_param_value(&msg);
             const char paramToSet[MAVLINK_MAX_IDENTIFIER_LEN] = {};
-            uint8_t valueType = mavlink_msg_param_set_get_param_type(&msg);
+            const uint8_t valueType = mavlink_msg_param_set_get_param_type(&msg);
 
             if(paramToSet[0] == 'A'){ // Would prefer to do this using an ENUM LUT but if this is the only param being set its whatever
                 RCMotorControlMessage_t armDisarmMsg{};
