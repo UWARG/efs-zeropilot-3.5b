@@ -10,7 +10,6 @@
 #include "rc_motor_control.hpp"
 #include "rfd_iface.hpp"
 class TelemetryManager {
-  private:
     ISystemUtils *systemUtilsDriver;			                  // System Utils Driver
     IRFD *rfdDriver;										                    // Driver used to actually send mavlink messages
     IMessageQueue<TMMessage_t> *tmQueueDriver;				      // Driver that receives messages from other managers
