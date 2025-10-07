@@ -124,8 +124,6 @@ void AttitudeManager::outputToMotor(const ControlAxis_t axis, const uint8_t perc
         case STEERING:
             motorGroup = steeringMotors;
             break;
-        default:
-            return;
     }
 
     for (uint8_t i = 0; i < motorGroup->motorCount; i++) {
