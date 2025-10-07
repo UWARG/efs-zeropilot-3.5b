@@ -4,7 +4,6 @@
 #include "systemutils_iface.hpp"
 #include "flightmode.hpp"
 #include "queue_iface.hpp"
-#include "motor_iface.hpp"
 #include "motor_datatype.hpp"
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
