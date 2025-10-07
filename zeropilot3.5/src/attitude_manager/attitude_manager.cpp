@@ -129,7 +129,7 @@ void AttitudeManager::outputToMotor(const ControlAxis_t axis, const uint8_t perc
     }
 
     for (uint8_t i = 0; i < motorGroup->motorCount; i++) {
-        const MotorInstance_t *motor = (motorGroup->motors + i);
+        const MotorInstance_t *motor = motorGroup->motors + i;
 
         if (motor->isInverted) {
             motor->motorInstance->set(100 - percent);
@@ -155,7 +155,7 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
     }
 
     // calculate relative altitude
-    const float relativeAltitude = previouslyArmed ? (gpsData.altitude - armAltitude) : 0.0f;
+    const float relativeAltitude = previouslyArmed ? gpsData.altitude - armAltitude : 0.0f;
 
     TMMessage_t gpsDataMsg = gposDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms

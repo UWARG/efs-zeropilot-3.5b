@@ -41,7 +41,7 @@ void SystemManager::smUpdate() {
     } else {
         oldDataCount += 1;
 
-        if ((oldDataCount * SM_MAIN_DELAY > 500) && rcConnected) {
+        if (oldDataCount * SM_MAIN_DELAY > 500 && rcConnected) {
             loggerDriver->log("RC Disconnected");
             rcConnected = false;
         }
