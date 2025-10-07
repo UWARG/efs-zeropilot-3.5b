@@ -33,7 +33,7 @@ void TelemetryManager::processMsgQueue() const {
     TMMessage rcMsg = {};
     bool rc = false;
 	while (count-- > 0) {
-        mavlink_message_t mavlinkMessage = {0};
+        mavlink_message_t mavlinkMessage = {};
         TMMessage_t tmqMessage = {};
         tmQueueDriver->get(&tmqMessage);
 
@@ -76,7 +76,7 @@ void TelemetryManager::processMsgQueue() const {
 
 	if (rc) {
 		auto rcData = rcMsg.tmMessageData.rcData;
-		mavlink_message_t mavlinkMessage = {0};
+		mavlink_message_t mavlinkMessage = {};
 		mavlink_msg_rc_channels_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, rcMsg.timeBootMs, 6,
 			rcData.roll, rcData.pitch, rcData.throttle, rcData.yaw, rcData.arm, rcData.flapAngle,  // Channel arrangement from system manager
 			UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX,  UINT16_MAX,  UINT16_MAX, UINT16_MAX, UINT8_MAX);
