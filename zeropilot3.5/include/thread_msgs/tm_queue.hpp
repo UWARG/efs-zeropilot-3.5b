@@ -69,7 +69,7 @@ inline TMMessage_t rcDataPack(const uint32_t time_boot_ms, const float roll, con
     return TMMessage_t{TMMessage_t::RC_DATA, DATA, time_boot_ms};
 }
 
-inline TMMessage_t bmDataPack(const uint32_t time_boot_ms, int16_t temperature, const float *voltages, const uint8_t voltage_len, const int16_t current_battery, const int32_t current_consumed,
+inline TMMessage_t bmDataPack(const uint32_t time_boot_ms, int16_t temperature, const float *const voltages, const uint8_t voltage_len, const int16_t current_battery, const int32_t current_consumed,
     const int32_t energy_consumed, const int8_t battery_remaining, const int32_t time_remaining, const uint8_t charge_state) {
     uint16_t mavlinkVoltageArray[16] = {UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX};
     for (int i = 0; i < voltage_len; i++) {
