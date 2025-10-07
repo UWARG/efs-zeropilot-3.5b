@@ -42,6 +42,6 @@ class SystemManager {
 
         void sendRCDataToAttitudeManager(const RCControl &rcData) const;
         void sendRCDataToTelemetryManager(const RCControl &rcData) const;
-        void sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) const;
+        void sendHeartbeatDataToTelemetryManager(uint8_t BASE_MODE, uint32_t customMode, MAV_STATE SYSTEM_STATUS) const;
         void sendMessagesToLogger() const;
 };

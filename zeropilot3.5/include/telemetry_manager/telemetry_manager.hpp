@@ -27,7 +27,7 @@ class TelemetryManager {
 
   public:
     TelemetryManager(ISystemUtils *systemUtilsDriver, IRFD *rfdDriver, IMessageQueue<TMMessage_t>  *tmQueueDriver,  IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,IMessageQueue<mavlink_message_t> *messageBuffer);
-    ~TelemetryManager();
+    ~TelemetryManager() = default;
 
     void tmUpdate();
 };

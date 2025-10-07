@@ -29,10 +29,10 @@ void SystemManager::smUpdate() {
     static int oldDataCount = 0;
     static bool rcConnected = true;
 
-    const RCControl rcData = rcDriver->getRCData();
-    if (rcData.isDataNew) {
+    const RCControl RC_DATA = rcDriver->getRCData();
+    if (RC_DATA.isDataNew) {
         oldDataCount = 0;
-        sendRCDataToAttitudeManager(rcData);
+        sendRCDataToAttitudeManager(RC_DATA);
 
         if (!rcConnected) {
             loggerDriver->log("RC Reconnected");
@@ -49,12 +49,12 @@ void SystemManager::smUpdate() {
 
     // Send RC data to TM
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_RC_DATA_RATE_HZ) == 0) {
-        sendRCDataToTelemetryManager(rcData);
+        sendRCDataToTelemetryManager(RC_DATA);
     }
 
     // Populate baseMode based on arm state
     uint8_t baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
-    if (rcData.arm) {
+    if (RC_DATA.arm) {
         baseMode |= MAV_MODE_FLAG_SAFETY_ARMED;
     }
 
@@ -62,16 +62,16 @@ void SystemManager::smUpdate() {
     MAV_STATE systemStatus = MAV_STATE_ACTIVE;
     if (!rcConnected) {
         systemStatus = MAV_STATE_CRITICAL;
-    } else if (!rcData.arm) {
+    } else if (!RC_DATA.arm) {
         systemStatus = MAV_STATE_STANDBY;
     }
 
     // Send Heartbeat data to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
         // Custom mode not used, set to 0
-        constexpr uint32_t customMode = 0;
+        constexpr uint32_t CUSTOM_MODE = 0;
 
-        sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+        sendHeartbeatDataToTelemetryManager(baseMode, CUSTOM_MODE, systemStatus);
     }
 
     // Log if new messages
@@ -88,8 +88,8 @@ void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) const 
     tmQueue->push(&rcDataMsg);
 }
 
-void SystemManager::sendHeartbeatDataToTelemetryManager(const uint8_t baseMode, uint32_t customMode, const MAV_STATE systemStatus) const {
-    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
+void SystemManager::sendHeartbeatDataToTelemetryManager(const uint8_t BASE_MODE, uint32_t customMode, const MAV_STATE SYSTEM_STATUS) const {
+    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), BASE_MODE, customMode, SYSTEM_STATUS);
     tmQueue->push(&hbDataMsg);
 }
 

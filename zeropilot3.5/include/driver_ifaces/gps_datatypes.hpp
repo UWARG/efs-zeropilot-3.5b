@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
-#define INVALID_TRACK_ANGLE -1
-#define INVALID_DATA -2
+#define INVALID_TRACK_ANGLE (-1)
+#define INVALID_DATA (-2)
 
 typedef struct {
     uint8_t year;

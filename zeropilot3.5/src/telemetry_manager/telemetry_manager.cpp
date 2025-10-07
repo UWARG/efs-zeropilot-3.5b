@@ -21,8 +21,6 @@ TelemetryManager::TelemetryManager(
     messageBuffer(messageBuffer),
     overflowMsgPending(false) {}
 
-TelemetryManager::~TelemetryManager() = default;
-
 void TelemetryManager::tmUpdate() {
     processMsgQueue();
     transmit();
@@ -138,17 +136,17 @@ void TelemetryManager::reconstructMsg() {
 void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) const {
     switch (msg.msgid) {
         case MAVLINK_MSG_ID_PARAM_SET: {
-            const float valueToSet = mavlink_msg_param_set_get_param_value(&msg);
-            constexpr char paramToSet[MAVLINK_MAX_IDENTIFIER_LEN] = {};
-            const uint8_t valueType = mavlink_msg_param_set_get_param_type(&msg);
+            const float VALUE_TO_SET = mavlink_msg_param_set_get_param_value(&msg);
+            constexpr char PARAM_TO_SET[MAVLINK_MAX_IDENTIFIER_LEN] = {};
+            const uint8_t VALUE_TYPE = mavlink_msg_param_set_get_param_type(&msg);
 
-            if(paramToSet[0] == 'A'){ // Would prefer to do this using an ENUM LUT but if this is the only param being set its whatever
+            if(PARAM_TO_SET[0] == 'A'){ // Would prefer to do this using an ENUM LUT but if this is the only param being set its whatever
                 RCMotorControlMessage_t armDisarmMsg{};
-                armDisarmMsg.arm = valueToSet;
+                armDisarmMsg.arm = VALUE_TO_SET;
                 amQueueDriver->push(&armDisarmMsg);
             }
             mavlink_message_t response = {};
-            mavlink_msg_param_value_pack(SYSTEM_ID, COMPONENT_ID, &response, paramToSet, valueToSet, valueType, 1, 0);
+            mavlink_msg_param_value_pack(SYSTEM_ID, COMPONENT_ID, &response, PARAM_TO_SET, VALUE_TO_SET, VALUE_TYPE, 1, 0);
             messageBuffer->push(&response);
             break;
         }

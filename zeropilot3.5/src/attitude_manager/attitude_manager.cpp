@@ -36,12 +36,12 @@ AttitudeManager::AttitudeManager(
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
-    const bool controlRes = getControlInputs(&controlMsg);
+    const bool CONTROL_RES = getControlInputs(&controlMsg);
     
     // Failsafe
     static bool failsafeTriggered = false;
 
-    if (controlRes != true) {
+    if (CONTROL_RES != true) {
         ++noDataCount;
 
         if (noDataCount * AM_MAIN_DELAY > 1000) {
@@ -75,19 +75,19 @@ void AttitudeManager::runControlLoopIteration() {
         controlMsg.throttle = 0;
     }
 
-    const RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
+    const RCMotorControlMessage_t MOTOR_OUTPUTS = controlAlgorithm->runControl(controlMsg);
 
-    outputToMotor(YAW, motorOutputs.yaw);
-    outputToMotor(PITCH, motorOutputs.pitch);
-    outputToMotor(ROLL, motorOutputs.roll);
-    outputToMotor(THROTTLE, motorOutputs.throttle);
-    outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
-    outputToMotor(STEERING, motorOutputs.yaw);
+    outputToMotor(YAW, MOTOR_OUTPUTS.yaw);
+    outputToMotor(PITCH, MOTOR_OUTPUTS.pitch);
+    outputToMotor(ROLL, MOTOR_OUTPUTS.roll);
+    outputToMotor(THROTTLE, MOTOR_OUTPUTS.throttle);
+    outputToMotor(FLAP_ANGLE, MOTOR_OUTPUTS.flapAngle);
+    outputToMotor(STEERING, MOTOR_OUTPUTS.yaw);
 
     // Send GPS data to telemetry manager
-    const GpsData_t gpsData = gpsDriver->readData();
+    const GpsData_t GPS_DATA = gpsDriver->readData();
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
-        sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
+        sendGPSDataToTelemetryManager(GPS_DATA, controlMsg.arm > 0);
     }
 
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
@@ -102,10 +102,10 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) con
     return true;
 }
 
-void AttitudeManager::outputToMotor(const ControlAxis_t axis, const uint8_t percent) const {
+void AttitudeManager::outputToMotor(const ControlAxis_t AXIS, const uint8_t PERCENT) const {
     const MotorGroupInstance_t *motorGroup = nullptr;
 
-    switch (axis) {
+    switch (AXIS) {
         case ROLL:
             motorGroup = rollMotors;
             break;
@@ -130,10 +130,10 @@ void AttitudeManager::outputToMotor(const ControlAxis_t axis, const uint8_t perc
         const MotorInstance_t *motor = motorGroup->motors + i;
 
         if (motor->isInverted) {
-            motor->motorInstance->set(100 - percent);
+            motor->motorInstance->set(100 - PERCENT);
         }
         else {
-            motor->motorInstance->set(percent);
+            motor->motorInstance->set(PERCENT);
         }
     }
 }
@@ -153,14 +153,14 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
     }
 
     // calculate relative altitude
-    const float relativeAltitude = previouslyArmed ? gpsData.altitude - armAltitude : 0.0f;
+    const float RELATIVE_ALTITUDE = previouslyArmed ? gpsData.altitude - armAltitude : 0.0f;
 
     TMMessage_t gpsDataMsg = gposDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
         gpsData.altitude * 1000, // altitude in mm
         gpsData.latitude * 1e7,
         gpsData.longitude * 1e7,
-        relativeAltitude * 1000, // relative altitude in mm
+        RELATIVE_ALTITUDE * 1000, // relative altitude in mm
         gpsData.vx,
         gpsData.vy,
         gpsData.vz,
