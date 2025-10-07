@@ -29,7 +29,7 @@ void SystemManager::smUpdate() {
     static int oldDataCount = 0;
     static bool rcConnected = true;
 
-    RCControl rcData = rcDriver->getRCData();
+    const RCControl rcData = rcDriver->getRCData();
     if (rcData.isDataNew) {
         oldDataCount = 0;
         sendRCDataToAttitudeManager(rcData);

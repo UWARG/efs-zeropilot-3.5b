@@ -36,7 +36,7 @@ AttitudeManager::AttitudeManager(
 
 void AttitudeManager::runControlLoopIteration() {
     // Get data from Queue and motor outputs
-    bool controlRes = getControlInputs(&controlMsg);
+    const bool controlRes = getControlInputs(&controlMsg);
     
     // Failsafe
     static bool failsafeTriggered = false;
@@ -75,7 +75,7 @@ void AttitudeManager::runControlLoopIteration() {
         controlMsg.throttle = 0;
     }
 
-    RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
+    const RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
 
     outputToMotor(YAW, motorOutputs.yaw);
     outputToMotor(PITCH, motorOutputs.pitch);
@@ -85,7 +85,7 @@ void AttitudeManager::runControlLoopIteration() {
     outputToMotor(STEERING, motorOutputs.yaw);
 
     // Send GPS data to telemetry manager
-    GpsData_t gpsData = gpsDriver->readData();
+    const GpsData_t gpsData = gpsDriver->readData();
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
         sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
     }
@@ -103,7 +103,7 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
 }
 
 void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
-    MotorGroupInstance_t *motorGroup = nullptr;
+    const MotorGroupInstance_t *motorGroup = nullptr;
 
     switch (axis) {
         case ROLL:
@@ -129,7 +129,7 @@ void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
     }
 
     for (uint8_t i = 0; i < motorGroup->motorCount; i++) {
-        MotorInstance_t *motor = (motorGroup->motors + i);
+        const MotorInstance_t *motor = (motorGroup->motors + i);
 
         if (motor->isInverted) {
             motor->motorInstance->set(100 - percent);
@@ -155,7 +155,7 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
     }
 
     // calculate relative altitude
-    float relativeAltitude = previouslyArmed ? (gpsData.altitude - armAltitude) : 0.0f;
+    const float relativeAltitude = previouslyArmed ? (gpsData.altitude - armAltitude) : 0.0f;
 
     TMMessage_t gpsDataMsg = gposDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms

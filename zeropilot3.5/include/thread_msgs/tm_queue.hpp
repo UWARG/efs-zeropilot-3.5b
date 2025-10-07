@@ -59,12 +59,12 @@ inline TMMessage_t gposDataPack(uint32_t time_boot_ms, int32_t alt, int32_t lat,
 }
 
 inline TMMessage_t rcDataPack(uint32_t time_boot_ms, float roll, float pitch, float yaw, float throttle, float flap_angle, float arm) {
-    auto rollPPM = static_cast<uint16_t>(1000 + roll * 10);
-    auto pitchPPM = static_cast<uint16_t>(1000 + pitch * 10);
-    auto yawPPM = static_cast<uint16_t>(1000 + yaw * 10);
-    auto throttlePPM = static_cast<uint16_t>(1000 + throttle * 10);
-    auto flapAnglePPM = static_cast<uint16_t>(1000 + flap_angle * 10);
-    auto armPPM = static_cast<uint16_t>(1000 + arm * 10);
+    const auto rollPPM = static_cast<uint16_t>(1000 + roll * 10);
+    const auto pitchPPM = static_cast<uint16_t>(1000 + pitch * 10);
+    const auto yawPPM = static_cast<uint16_t>(1000 + yaw * 10);
+    const auto throttlePPM = static_cast<uint16_t>(1000 + throttle * 10);
+    const auto flapAnglePPM = static_cast<uint16_t>(1000 + flap_angle * 10);
+    const auto armPPM = static_cast<uint16_t>(1000 + arm * 10);
     const TMMessageData_t DATA = {.rcData ={rollPPM, pitchPPM, yawPPM, throttlePPM, flapAnglePPM, armPPM }};
     return TMMessage_t{TMMessage_t::RC_DATA, DATA, time_boot_ms};
 }
