@@ -2,7 +2,7 @@
 
 #include "flightmode.hpp"
 
-class DirectMapping : public Flightmode {
+class DirectMapping final : public Flightmode {
     public:
         DirectMapping() = default;
 
