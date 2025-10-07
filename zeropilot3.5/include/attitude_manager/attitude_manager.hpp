@@ -64,9 +64,9 @@ class AttitudeManager {
 
         uint8_t amSchedulingCounter;
 
-        bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
+        bool getControlInputs(RCMotorControlMessage_t *pControlMsg) const;
 
-        void outputToMotor(ControlAxis_t axis, uint8_t percent);
+        void outputToMotor(ControlAxis_t axis, uint8_t percent) const;
 
         void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 };

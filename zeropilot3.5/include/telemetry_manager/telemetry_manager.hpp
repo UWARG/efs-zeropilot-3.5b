@@ -21,8 +21,8 @@ class TelemetryManager {
     mavlink_message_t overflowBuf;
     bool overflowMsgPending;
 
-    void handleRxMsg(const mavlink_message_t &msg);
-    void processMsgQueue();
+    void handleRxMsg(const mavlink_message_t &msg) const;
+    void processMsgQueue() const;
     void transmit();
     void reconstructMsg();
 

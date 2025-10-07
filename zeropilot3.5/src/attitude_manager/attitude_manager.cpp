@@ -93,7 +93,7 @@ void AttitudeManager::runControlLoopIteration() {
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
 }
 
-bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
+bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) const {
     if (amQueue->count() == 0) {
         return false;
     }
@@ -102,7 +102,7 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
     return true;
 }
 
-void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) {
+void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) const {
     const MotorGroupInstance_t *motorGroup = nullptr;
 
     switch (axis) {

@@ -83,17 +83,17 @@ void SystemManager::smUpdate() {
     smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
 }
 
-void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
+void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) const {
     TMMessage_t rcDataMsg =  rcDataPack(systemUtilsDriver->getCurrentTimestampMs(), rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
     tmQueue->push(&rcDataMsg);
 }
 
-void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
+void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) const {
     TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
     tmQueue->push(&hbDataMsg);
 }
 
-void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
+void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) const {
     RCMotorControlMessage_t rcDataMessage;
 
     rcDataMessage.roll = rcData.roll;
@@ -106,7 +106,7 @@ void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     amRCQueue->push(&rcDataMessage);
 }
 
-void SystemManager::sendMessagesToLogger() {
+void SystemManager::sendMessagesToLogger() const {
     static char messages[16][100];
     int msgCount = 0;
 

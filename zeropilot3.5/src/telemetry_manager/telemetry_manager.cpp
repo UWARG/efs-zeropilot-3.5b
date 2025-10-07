@@ -28,7 +28,7 @@ void TelemetryManager::tmUpdate() {
     transmit();
 }
 
-void TelemetryManager::processMsgQueue() {
+void TelemetryManager::processMsgQueue() const {
     uint16_t count = tmQueueDriver->count();
     TMMessage rcMsg = {};
     bool rc = false;
@@ -135,7 +135,7 @@ void TelemetryManager::reconstructMsg() {
     }
 }
 
-void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) {
+void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) const {
     switch (msg.msgid) {
         case MAVLINK_MSG_ID_PARAM_SET: {
             float valueToSet = mavlink_msg_param_set_get_param_value(&msg);

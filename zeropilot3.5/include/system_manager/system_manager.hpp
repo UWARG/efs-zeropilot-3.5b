@@ -40,8 +40,8 @@ class SystemManager {
 
         uint8_t smSchedulingCounter;
 
-        void sendRCDataToAttitudeManager(const RCControl &rcData);
-        void sendRCDataToTelemetryManager(const RCControl &rcData);
-        void sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
-        void sendMessagesToLogger();
+        void sendRCDataToAttitudeManager(const RCControl &rcData) const;
+        void sendRCDataToTelemetryManager(const RCControl &rcData) const;
+        void sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) const;
+        void sendMessagesToLogger() const;
 };
