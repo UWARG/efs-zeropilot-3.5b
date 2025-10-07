@@ -4,7 +4,6 @@
 #include "systemutils_iface.hpp"
 #include "flightmode.hpp"
 #include "queue_iface.hpp"
-#include "motor_iface.hpp"
 #include "motor_datatype.hpp"
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
@@ -49,7 +48,7 @@ class AttitudeManager {
         IMessageQueue<char[100]> *smLoggerQueue;
 
         Flightmode *controlAlgorithm;
-        RCMotorControlMessage_t controlMsg;
+        RCMotorControlMessage_t controlMsg = {};
         int noDataCount = 0;
 
         MotorGroupInstance_t *rollMotors;
@@ -64,9 +63,9 @@ class AttitudeManager {
 
         uint8_t amSchedulingCounter;
 
-        bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
+        bool getControlInputs(RCMotorControlMessage_t *pControlMsg) const;
 
-        void outputToMotor(ControlAxis_t axis, uint8_t percent);
+        void outputToMotor(ControlAxis_t AXIS, uint8_t PERCENT) const;
 
         void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 };

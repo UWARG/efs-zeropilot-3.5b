@@ -9,7 +9,7 @@
 class RCControl {
     public:
 
-        float controlSignals[SBUS_INPUT_CHANNELS];
+        float controlSignals[SBUS_INPUT_CHANNELS] = {};
         bool isDataNew;
 
         float &roll     = controlSignals[0];
@@ -30,7 +30,7 @@ class RCControl {
         float &aux11    = controlSignals[15];
 
         RCControl operator=(const RCControl& other){
-            std::copy(other.controlSignals, other.controlSignals + SBUS_INPUT_CHANNELS, this->controlSignals);
+            std::copy_n(other.controlSignals, SBUS_INPUT_CHANNELS, this->controlSignals);
             this->isDataNew = other.isDataNew; // Add this line to copy the isDataNew flag
             return *this;
         }
