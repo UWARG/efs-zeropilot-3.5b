@@ -88,7 +88,7 @@ void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) const 
     tmQueue->push(&rcDataMsg);
 }
 
-void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) const {
+void SystemManager::sendHeartbeatDataToTelemetryManager(const uint8_t baseMode, uint32_t customMode, const MAV_STATE systemStatus) const {
     TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
     tmQueue->push(&hbDataMsg);
 }

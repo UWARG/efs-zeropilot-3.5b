@@ -102,7 +102,7 @@ bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) con
     return true;
 }
 
-void AttitudeManager::outputToMotor(ControlAxis_t axis, uint8_t percent) const {
+void AttitudeManager::outputToMotor(const ControlAxis_t axis, const uint8_t percent) const {
     const MotorGroupInstance_t *motorGroup = nullptr;
 
     switch (axis) {
