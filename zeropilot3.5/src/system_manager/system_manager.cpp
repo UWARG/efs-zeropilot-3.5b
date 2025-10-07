@@ -66,11 +66,11 @@ void SystemManager::smUpdate() {
         systemStatus = MAV_STATE_STANDBY;
     }
 
-    // Custom mode not used, set to 0
-    uint32_t customMode = 0;
-
     // Send Heartbeat data to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
+        // Custom mode not used, set to 0
+        uint32_t customMode = 0;
+
         sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
     }
 
