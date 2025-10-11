@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config_keys.hpp"
+#include "config_utils/config_keys.hpp"
 #include "textio_iface.hpp"
 
 #define MAX_LINE_LENGTH 128
