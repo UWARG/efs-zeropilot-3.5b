@@ -61,7 +61,6 @@ void initDrivers()
 
     iwdgHandle = new IndependentWatchdog(&hiwdg);
     textIOHandle = new SDIO();
-    configTextIOHandle = new SDIO();
     loggerHandle = new Logger(); // Initialized in a RTOS task
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);

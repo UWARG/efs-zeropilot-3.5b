@@ -19,7 +19,6 @@ extern SystemUtils *systemUtilsHandle;
 
 extern IndependentWatchdog *iwdgHandle;
 extern SDIO *textIOHandle;
-extern SDIO *configTextIOHandle;
 
 extern MotorControl *leftAileronMotorHandle;
 extern MotorControl *rightAileronMotorHandle;

@@ -25,7 +25,7 @@ void initManagers()
 
     // SM initialization
     loggerHandle = new Logger(textIOHandle);
-    configHandle = new Config(configTextIOHandle);
+    configHandle = new Config(textIOHandle);
     smConfigRouteQueueHandle[static_cast<size_t>(Owner::ATTITUDE_MANAGER)] = smConfigAttitudeQueueHandle;
     smHandle = new SystemManager(systemUtilsHandle, iwdgHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle, smConfigQueueHandle, smConfigRouteQueueHandle, loggerHandle, configHandle);
 
