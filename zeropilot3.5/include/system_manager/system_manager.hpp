@@ -27,7 +27,7 @@ class SystemManager {
             IMessageQueue<ConfigMessage_t> *smConfigQueue,
             IMessageQueue<ConfigMessage_t> *smConfigRouteQueue[static_cast<size_t>(Owner::COUNT)],
             Logger *logger,
-            Config *config,
+            Config *config
         );
 
         void smUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.

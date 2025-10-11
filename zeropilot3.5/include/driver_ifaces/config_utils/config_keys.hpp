@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "config_keys.inc"
 
 enum class ConfigKey : size_t {

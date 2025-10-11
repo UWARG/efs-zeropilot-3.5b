@@ -9,7 +9,7 @@ Logger::Logger(ITextIO *textIO) : textIO(textIO) {
 
 int Logger::init() {
 #if defined(SD_CARD_LOGGING)
-    sysUtils->delay(1000);
+    sysUtils->delayMs(1000); //wait for SD card to stabilize
 
     int res;
 
@@ -37,7 +37,7 @@ int Logger::init() {
 int Logger::log(const char message[100]) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
-    uint32_t ts = sysUtils->getCurrentTimestamp();
+    uint32_t ts = sysUtils->getCurrentTimestampMs() / 1000;
     int tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
 
 #if defined(SD_CARD_LOGGING)
@@ -62,7 +62,7 @@ int Logger::log(const char message[100]) {
 int Logger::log(const char message[][100], int count) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
-    uint32_t ts = sysUtils->getCurrentTimestamp();
+    uint32_t ts = sysUtils->getCurrentTimestampMs() / 1000;
     int tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
 
 #if defined(SD_CARD_LOGGING)
