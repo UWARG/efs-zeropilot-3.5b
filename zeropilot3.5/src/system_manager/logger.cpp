@@ -38,7 +38,7 @@ int Logger::log(const char message[100]) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
     uint32_t ts = sysUtils->getCurrentTimestampMs() / 1000;
-    int tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
+    int tsStrLen = snprintf(msgToSend, 10, "%us: ", ts);
 
 #if defined(SD_CARD_LOGGING)
     int res;
@@ -63,7 +63,7 @@ int Logger::log(const char message[][100], int count) {
     char msgToSend[112]; //10 for timestamp, 100 for message, 2 for new line
 
     uint32_t ts = sysUtils->getCurrentTimestampMs() / 1000;
-    int tsStrLen = snprintf(msgToSend, 10, "%lus: ", ts);
+    int tsStrLen = snprintf(msgToSend, 10, "%us: ", ts);
 
 #if defined(SD_CARD_LOGGING)
     int res;
