@@ -1,6 +1,8 @@
 #include "museq.hpp"
 #include "rc_motor_control.hpp"
 #include "config_msg.hpp"
+#include "tm_queue.hpp"
+#include "mavlink.h"
 
 /* --- mutexes --- */
 /* define mutexes begin */
@@ -9,6 +11,8 @@ osMessageQueueId_t amQueueId;
 osMessageQueueId_t smLoggerQueueId;
 osMessageQueueId_t smConfigQueueId;
 osMessageQueueId_t smConfigAttitudeQueueId;
+osMessageQueueId_t tmQueueId;
+osMessageQueueId_t messageBufferId;
 
 static const osMutexAttr_t itmMutexAttr = {
   "itmMutex",
@@ -42,4 +46,6 @@ void initQueues()
   smLoggerQueueId = osMessageQueueNew(16, sizeof(char[100]), NULL);
   smConfigQueueId = osMessageQueueNew(16, sizeof(ConfigMessage_t), NULL);
   smConfigAttitudeQueueId = osMessageQueueNew(16, sizeof(ConfigMessage_t), NULL);
+  tmQueueId = osMessageQueueNew(16, sizeof(TMMessage_t), NULL);
+  messageBufferId = osMessageQueueNew(16, sizeof(mavlink_message_t), NULL);
 }

@@ -9,6 +9,6 @@ class ISystemUtils {
     public:
         virtual ~ISystemUtils() = default;
         
-        virtual void delay(uint32_t delay_ms) = 0;
-        virtual uint32_t getCurrentTimestamp() = 0;
+        virtual void delayMs(uint32_t delay_ms) = 0;
+        virtual uint32_t getCurrentTimestampMs() = 0;
 };

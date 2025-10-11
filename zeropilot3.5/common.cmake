@@ -16,14 +16,30 @@ set(SM_INC
     "include/system_manager/"
 )
 
+# telemetry manager files
+set(TM_SRC
+    "src/telemetry_manager/telemetry_manager.cpp"
+)
+set(TM_INC
+    "include/telemetry_manager/"
+    "include/thread_msgs/"
+)
+
+# external library files (does not apply compiler warnings)
+set(EXTERNAL_INC
+    "../external/c_library_v2/all/"
+)
+
 # combined files
 set(ZP_SRC
     ${AM_SRC}
     ${SM_SRC}
+    ${TM_SRC}
 )
 set(ZP_INC
     "include/driver_ifaces/"
     "include/thread_msgs/"
     ${AM_INC}
     ${SM_INC}
+    ${TM_INC}
 )

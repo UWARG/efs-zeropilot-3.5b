@@ -1,11 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include "systemutils_iface.hpp"
 #include "flightmode.hpp"
 #include "queue_iface.hpp"
 #include "motor_iface.hpp"
 #include "motor_datatype.hpp"
 #include "config_msg.hpp"
+#include "gps_iface.hpp"
+#include "tm_queue.hpp"
 
 #define AM_MAIN_DELAY 50
 
@@ -16,15 +19,18 @@ typedef enum {
     THROTTLE,
     FLAP_ANGLE,
     STEERING
-} ControlAxis_e;
+} ControlAxis_t;
 
 class AttitudeManager {
     public:
         AttitudeManager(
+            ISystemUtils *systemUtilsDriver,
+            IGPS *gpsDriver,
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
+            IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
             IMessageQueue<ConfigMessage_t> *smConfigAttitudeQueue,
-            Flightmode *controlAlgorithm,  
+            Flightmode *controlAlgorithm,
             MotorGroupInstance_t *rollMotors,
             MotorGroupInstance_t *pitchMotors,
             MotorGroupInstance_t *yawMotors,
@@ -36,7 +42,12 @@ class AttitudeManager {
         void runControlLoopIteration();
 
     private:
+        ISystemUtils *systemUtilsDriver;
+
+        IGPS *gpsDriver;
+
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
+        IMessageQueue<TMMessage_t> *tmQueue;
         IMessageQueue<char[100]> *smLoggerQueue;
         IMessageQueue<ConfigMessage_t> *smConfigAttitudeQueue;
 
@@ -51,9 +62,16 @@ class AttitudeManager {
         MotorGroupInstance_t *flapMotors;
         MotorGroupInstance_t *steeringMotors;
 
+        bool previouslyArmed;
+        float armAltitude;
+
+        uint8_t amSchedulingCounter;
+
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
         void handleConfigChanges();
 
-        void outputToMotor(ControlAxis_e axis, uint8_t percent);
+        void outputToMotor(ControlAxis_t axis, uint8_t percent);
+
+        void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 };

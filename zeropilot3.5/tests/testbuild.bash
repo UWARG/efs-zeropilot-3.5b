@@ -49,7 +49,7 @@ if [[ ! -f "CMakeCache.txt" ]]; then
 
     echo "generating cmake..."
     echo "generator: $generator"
-    cmake -G "$generator" ..
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G "$generator" ..
 fi
 
 echo && echo "building..."

@@ -9,28 +9,28 @@
 class RCControl {
     public:
 
-        float ControlSignals[SBUS_INPUT_CHANNELS];
+        float controlSignals[SBUS_INPUT_CHANNELS];
         bool isDataNew;
 
-        float &roll     = ControlSignals[0];
-        float &pitch    = ControlSignals[1];
-        float &throttle = ControlSignals[2];
-        float &yaw      = ControlSignals[3];
-        float &arm      = ControlSignals[4];
-        float &aux1     = ControlSignals[5];
-        float &aux2     = ControlSignals[6];
-        float &aux3     = ControlSignals[7];
-        float &aux4     = ControlSignals[8];
-        float &aux5     = ControlSignals[9];
-        float &aux6     = ControlSignals[10];
-        float &aux7     = ControlSignals[11];
-        float &aux8     = ControlSignals[12];
-        float &aux9     = ControlSignals[13];
-        float &aux10    = ControlSignals[14];
-        float &aux11    = ControlSignals[15];
-    
+        float &roll     = controlSignals[0];
+        float &pitch    = controlSignals[1];
+        float &throttle = controlSignals[2];
+        float &yaw      = controlSignals[3];
+        float &arm      = controlSignals[4];
+        float &aux1     = controlSignals[5];
+        float &aux2     = controlSignals[6];
+        float &aux3     = controlSignals[7];
+        float &aux4     = controlSignals[8];
+        float &aux5     = controlSignals[9];
+        float &aux6     = controlSignals[10];
+        float &aux7     = controlSignals[11];
+        float &aux8     = controlSignals[12];
+        float &aux9     = controlSignals[13];
+        float &aux10    = controlSignals[14];
+        float &aux11    = controlSignals[15];
+
         RCControl operator=(const RCControl& other){
-            std::copy(other.ControlSignals, other.ControlSignals + SBUS_INPUT_CHANNELS, this->ControlSignals);
+            std::copy(other.controlSignals, other.controlSignals + SBUS_INPUT_CHANNELS, this->controlSignals);
             this->isDataNew = other.isDataNew; // Add this line to copy the isDataNew flag
             return *this;
         }
