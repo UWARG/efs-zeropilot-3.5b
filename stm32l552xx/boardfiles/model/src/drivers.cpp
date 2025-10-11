@@ -31,6 +31,8 @@ RFD *rfdHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
+MessageQueue<ConfigMessage_t> *smConfigQueueHandle = nullptr;
+MessageQueue<ConfigMessage_t> *smConfigAttitudeQueueHandle = nullptr;
 MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
 MessageQueue<mavlink_message_t> *messageBufferHandle = nullptr;
 
@@ -58,6 +60,7 @@ void initDrivers()
     systemUtilsHandle = new SystemUtils();
 
     iwdgHandle = new IndependentWatchdog(&hiwdg);
+    textIOHandle = new SDIO();
     loggerHandle = new Logger(); // Initialized in a RTOS task
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
@@ -76,6 +79,10 @@ void initDrivers()
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
+    smConfigQueueHandle = new MessageQueue<ConfigMessage_t>(&smConfigQueueId);
+    smConfigAttitudeQueueHandle = new MessageQueue<ConfigMessage_t>(&smConfigAttitudeQueueId);
+
+    loggerHandle->init();
     tmQueueHandle = new MessageQueue<TMMessage_t>(&tmQueueId);
     messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
 
