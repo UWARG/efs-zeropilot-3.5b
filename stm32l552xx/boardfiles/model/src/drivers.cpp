@@ -29,6 +29,8 @@ RCReceiver *rcHandle = nullptr;
 
 RFD *rfdHandle = nullptr;
 
+IMU *imuHandle = nullptr;
+
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
 MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
@@ -73,6 +75,7 @@ void initDrivers()
     rcHandle = new RCReceiver(&huart4);
 
     rfdHandle = new RFD(&huart3);
+    imuHandle = new IMU(&hspi1, GPIOA, GPIO_PIN_4);
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
@@ -90,6 +93,7 @@ void initDrivers()
 
     rcHandle->init();
     gpsHandle->init();
+    imuHandle->init();
 
     rollLeftMotorInstance = {leftAileronMotorHandle, true};
     rollRightMotorInstance = {rightAileronMotorHandle, true};

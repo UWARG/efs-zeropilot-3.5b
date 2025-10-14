@@ -8,6 +8,7 @@
 #include "motor_datatype.hpp"
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
+#include "imu_iface.hpp"
 
 #define AM_MAIN_DELAY 50
 
@@ -25,6 +26,7 @@ class AttitudeManager {
         AttitudeManager(
             ISystemUtils *systemUtilsDriver,
             IGPS *gpsDriver,
+            IIMU *imuDriver,
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
             IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
