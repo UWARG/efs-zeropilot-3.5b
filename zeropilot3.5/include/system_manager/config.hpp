@@ -4,7 +4,7 @@
 #include "textio_iface.hpp"
 
 #define MAX_LINE_LENGTH 128
-#define MAX_VALUE_LENGTH 32
+#define MAX_VALUE_LENGTH 10
 #define MAX_KEY_LENGTH (MAX_LINE_LENGTH-MAX_VALUE_LENGTH)
 
 typedef struct {
@@ -35,6 +35,8 @@ class Config {
         int findParam(const char param[100], float &val, int &tableIdx);
         int findParam(const char param[100], float &val);
         int findParam(const char param[100], int &tableIdx);
+
+        void getXCharNum(float num, char final[MAX_VALUE_LENGTH + 1]);
 
     public:
         Config(ITextIO *textIO);

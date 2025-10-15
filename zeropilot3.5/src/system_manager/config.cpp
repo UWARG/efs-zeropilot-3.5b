@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "config_utils/config_defines.hpp"
 #include <cstring>
 #include <cstdio>
 #include <string>
@@ -7,10 +8,38 @@ Config::Config(ITextIO* textIO) : textIO(textIO) {
   //blank
 }
 
-int Config::init() {
+void Config::getXCharNum(float num, char final[MAX_VALUE_LENGTH + 1]) {
+    char temp[128];
+    if (num > 1e-6) {
+      snprintf(temp, 128, "%f", num);
 
+      //Remove trailing zeros after decimal
+      char* dot = strchr(temp, '.');
+      if (dot) {
+          char* end = temp + strlen(temp) - 1;
+          while(end > dot && *end == '0') --end;
+          if (*end == '.') --end;
+          *(end + 1) = '\0';
+      }
+    } else {
+      snprintf(temp, 128, "%g", num);
+    }
+
+    if (strlen(temp) <= MAX_VALUE_LENGTH) {
+        int len = snprintf(final, MAX_VALUE_LENGTH + 1, temp);
+        // Add spaces
+        for (int i = len; i < MAX_VALUE_LENGTH; i++) {
+            final[i] = ' ';
+        }
+        final[MAX_VALUE_LENGTH] = '\0';
+    } else {
+        snprintf(final, MAX_VALUE_LENGTH + 1, "%.4e", num);
+    }
+}
+
+int Config::init() {
   snprintf(configFile, 100, "config.txt");
-  if (textIO->open(configFile) != 0) {
+  if (textIO->open(configFile, FA_OPEN_EXISTING) != 0) {
     return 1; // Error opening file
   }
 
@@ -25,11 +54,12 @@ int Config::init() {
   if (textIO->close() != 0) {
     return 2; // Error closing file
   }
+  return 0;
 }
 
 int Config::findParam(const char param[MAX_KEY_LENGTH], float &val, int &tableIdx) {
   // move read/write pointer to param value
-  char *key, *value;
+  char *key = nullptr, *value = nullptr;
   char msg[MAX_LINE_LENGTH];
   int length;
   
@@ -40,6 +70,7 @@ int Config::findParam(const char param[MAX_KEY_LENGTH], float &val, int &tableId
     if (!strcmp(param, key)) break;
   }
 
+  if (key == nullptr || value == nullptr) return 2;
   if (strcmp(param, key)) return 2;
 
   length = (textIO->eof() != 0) ? strlen(value) : strlen(value) + 2; //accounting for \n
@@ -70,7 +101,7 @@ int Config::findParam(const char param[100], int &tableIdx)  {
 }
 
 int Config::readParam(ConfigKey key, float &val) {
-  if (textIO->open(configFile) != 0) {
+  if (textIO->open(configFile, FA_READ | FA_WRITE) != 0) {
       return 1;
   }
   
@@ -86,27 +117,29 @@ int Config::readParam(ConfigKey key, float &val) {
 }
 
 int Config::writeParam(ConfigKey key, float newValue) {
-  char strvalue[MAX_LINE_LENGTH];
-  if (textIO->open(configFile) != 0) {
+  char strValue[MAX_VALUE_LENGTH + 1];
+  getXCharNum(newValue, strValue);
+
+  if (textIO->open(configFile, FA_READ | FA_WRITE) != 0) {
     return 1;
   }
 
   float val;
   int tblIdx;
-  findParam(config_table[static_cast<size_t>(key)].key, val, tblIdx);
+  int writeRes;
+  if (findParam(config_table[static_cast<size_t>(key)].key, val, tblIdx) == 0) {
+    writeRes = textIO->write(strValue);
+  } else {
+    char keyStr[MAX_KEY_LENGTH];
+    snprintf(keyStr, MAX_KEY_LENGTH, "%s,", key);
 
-  snprintf(strvalue, MAX_LINE_LENGTH, "%g", newValue);
-
-  if (strlen(strvalue) > MAX_VALUE_LENGTH) {
-    strvalue[MAX_VALUE_LENGTH] = '\0';
-  }
-
-  int writeRes = textIO->write(strvalue);
-
-  if (strlen(strvalue) < MAX_VALUE_LENGTH) {
-    for (int i = 0; i < 8 - static_cast<int>(strlen(strvalue)); i++) {
-      textIO->write(" ");
+    textIO->seek(textIO->fsize());
+    if (textIO->tell() != 0) {
+      textIO->write("\n");
     }
+
+    textIO->write(keyStr);
+    writeRes = textIO->write(strValue);
   }
 
   textIO->close();

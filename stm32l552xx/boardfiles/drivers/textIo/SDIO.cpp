@@ -1,19 +1,23 @@
 #include "SDIO.hpp"
 #include <cstring>
 
+SDIO::SDIO() {
+  //blank
+}
+
 int SDIO::mountFile() {
     return f_mount(&FatFs, "", 1);
 }
 
-int SDIO::open(char *file) {
-    if (f_open(&fil, file, FA_READ | FA_WRITE) != 0) {
+int SDIO::open(char *file, int modes) {
+    if (f_open(&fil, file, modes) != FR_OK) {
         return 1; // Error opening file
     }
     return 0; // Success
 }
 
 int SDIO::close() {
-    if (f_close(&fil) != 0) {
+    if (f_close(&fil) != FR_OK) {
         return 1; // Error closing file
     }
     return 0; // Success
@@ -34,6 +38,10 @@ int SDIO::seek(int offset) {
     return 0; // Success
 }
 
+uint64_t SDIO::fsize() {
+  return f_size(&fil);
+}
+
 uint64_t SDIO::tell() {
     return f_tell(&fil); // Returns the current position in the file
 }
@@ -43,5 +51,6 @@ int SDIO::eof() {
 }
 
 bool SDIO::checkFileExist(char *file) {
-    return (f_stat(file, nullptr) == FR_NO_FILE);
+    FILINFO fno;
+    return (f_stat(file, &fno) == FR_OK);
 }
