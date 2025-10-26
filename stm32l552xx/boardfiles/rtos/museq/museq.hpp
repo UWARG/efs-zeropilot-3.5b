@@ -7,20 +7,28 @@
 extern osMutexId_t itmMutex;
 /* declare mutexes end*/
 
-void initMutexes();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* --- semaphores --- */
-/* declare semaphores begin */
-/* declare semaphores end */
+    void initMutexes();
 
-void initSemphrs();
+    /* --- semaphores --- */
+    /* declare semaphores begin */
+    /* declare semaphores end */
 
-/* --- queues --- */
-/* declare queues begin */
-extern osMessageQueueId_t amQueueId;
-extern osMessageQueueId_t smLoggerQueueId;
-extern osMessageQueueId_t tmQueueId;
-extern osMessageQueueId_t messageBufferId;
-/* declare queues end */
+    void initSemphrs();
 
-void initQueues();
+    /* --- queues --- */
+    /* declare queues begin */
+    extern osMessageQueueId_t amQueueId;
+    extern osMessageQueueId_t smLoggerQueueId;
+    extern osMessageQueueId_t tmQueueId;
+    extern osMessageQueueId_t messageBufferId;
+    /* declare queues end */
+
+    void initQueues();
+
+#ifdef __cplusplus
+}
+#endif
