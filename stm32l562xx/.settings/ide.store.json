@@ -1,0 +1,6 @@
+{
+  "device": "STM32L562ZET6Q",
+  "core": "Cortex-M33",
+  "order": 0,
+  "toolchain": "CLANG_GCC"
+}
