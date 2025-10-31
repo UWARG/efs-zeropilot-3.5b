@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "error.h"
 #include "systemutils_iface.hpp"
 #include "mavlink.h"
 #include "logger_iface.hpp"
@@ -25,7 +26,7 @@ class SystemManager {
             IMessageQueue<char[100]> *smLoggerQueue
         );
 
-        void smUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
+        ZP_ERROR_e smUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
         ISystemUtils *systemUtilsDriver; // System utilities instance
@@ -33,15 +34,15 @@ class SystemManager {
         IIndependentWatchdog *iwdgDriver; // Independent Watchdog driver
         ILogger *loggerDriver; // Logger driver
         IRCReceiver *rcDriver; // RC receiver driver
-        
+
         IMessageQueue<RCMotorControlMessage_t> *amRCQueue; // Queue driver for tx communication to the Attitude Manager
         IMessageQueue<TMMessage_t> *tmQueue; // Queue driver for tx communication to the Telemetry Manager
         IMessageQueue<char[100]> *smLoggerQueue; // Queue driver for rx communication from other modules to the System Manager for logging
 
         uint8_t smSchedulingCounter;
 
-        void sendRCDataToAttitudeManager(const RCControl &rcData);
-        void sendRCDataToTelemetryManager(const RCControl &rcData);
-        void sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
-        void sendMessagesToLogger();
+        ZP_ERROR_e sendRCDataToAttitudeManager(const RCControl &rcData);
+        ZP_ERROR_e sendRCDataToTelemetryManager(const RCControl &rcData);
+        ZP_ERROR_e sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
+        ZP_ERROR_e sendMessagesToLogger();
 };

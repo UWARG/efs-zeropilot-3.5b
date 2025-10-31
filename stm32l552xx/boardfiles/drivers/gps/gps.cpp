@@ -4,21 +4,29 @@
 
 GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
 
-bool GPS::init() {
+ZP_ERROR_e GPS::init() {
     HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
 		huart,
 		rxBuffer,
 		MAX_NMEA_DATA_LENGTH
     );
 
+    if (success != HAL_OK) {
+        return ZP_ERROR_FAIL;
+    }
+
     __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 
-    HAL_StatusTypeDef messagesuccess = enableMessage(0x01, 0x11); //enable ubx velecef messages
+    ZP_ERROR_e messagesuccess = enableMessage(0x01, 0x11); //enable ubx velecef messages
 
-    return (success == HAL_OK) & (messagesuccess == HAL_OK);
+    if (messagesuccess != ZP_ERROR_OK) {
+        return messagesuccess;
+    }
+
+    return ZP_ERROR_OK;
 }
 
-HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId) {
+ZP_ERROR_e GPS::enableMessage(uint8_t msgClass, uint8_t msgId) {
     uint8_t cfgMsg[] = {
         0xB5, 0x62,         //sync chars
         0x06, 0x01,         //class and id
@@ -28,14 +36,15 @@ HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId) {
         0x00, 0x00          //placeholder
     };
 
-    if(sendUBX(cfgMsg, sizeof(cfgMsg))) {
-        return HAL_OK;
-    } else {
-        return HAL_ERROR;
-    }
+    ZP_ERROR_e result = sendUBX(cfgMsg, sizeof(cfgMsg));
+    return result;
 }
 
-void GPS::calcChecksum(uint8_t *msg, uint16_t len) {
+ZP_ERROR_e GPS::calcChecksum(uint8_t *msg, uint16_t len) {
+    if (msg == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
     uint8_t ckA = 0, ckB = 0;
     for (int i = 2; i < len - 2; i++) {
         ckA += msg[i];
@@ -43,47 +52,79 @@ void GPS::calcChecksum(uint8_t *msg, uint16_t len) {
     }
     msg[len - 2] = ckA;
     msg[len - 1] = ckB;
+
+    return ZP_ERROR_OK;
 }
 
-bool GPS::sendUBX(uint8_t *msg, uint16_t len) {
-    calcChecksum(msg, len);
-    return (HAL_UART_Transmit(huart, msg, len, HAL_MAX_DELAY) == HAL_OK);
+ZP_ERROR_e GPS::sendUBX(uint8_t *msg, uint16_t len) {
+    ZP_ERROR_e result = calcChecksum(msg, len);
+    if (result != ZP_ERROR_OK) {
+        return result;
+    }
+
+    HAL_StatusTypeDef status = HAL_UART_Transmit(huart, msg, len, HAL_MAX_DELAY);
+    if (status != HAL_OK) {
+        return ZP_ERROR_FAIL;
+    }
+
+    return ZP_ERROR_OK;
 }
 
-GpsData_t GPS::readData() {
+ZP_ERROR_e GPS::readData(GpsData_t *data) {
+    if (data == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
     __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_TC);
 
-    GpsData_t data = validData;
+    *data = validData;
     validData.isNew = false;
 
     __HAL_DMA_ENABLE_IT(huart->hdmarx, DMA_IT_TC);
 
-    return data;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::processGPSData() {
+ZP_ERROR_e GPS::processGPSData() {
     __HAL_DMA_DISABLE(huart->hdmarx);
 
-    bool success = parseRMC() && parseGGA() && parseUBX();
-    tempData.isNew = success;
+    ZP_ERROR_e result = parseRMC();
+    if (result != ZP_ERROR_OK) {
+        __HAL_DMA_ENABLE(huart->hdmarx);
+        return result;
+    }
+
+    result = parseGGA();
+    if (result != ZP_ERROR_OK) {
+        __HAL_DMA_ENABLE(huart->hdmarx);
+        return result;
+    }
+
+    result = parseUBX();
+    if (result != ZP_ERROR_OK) {
+        __HAL_DMA_ENABLE(huart->hdmarx);
+        return result;
+    }
+
+    tempData.isNew = true;
     validData = tempData;
 
     __HAL_DMA_ENABLE(huart->hdmarx);
 
-    return success;
+    return ZP_ERROR_OK;
 }
 //
-bool GPS::parseUBX() {
+ZP_ERROR_e GPS::parseUBX() {
     int idx = 0;
 
     // find sync
     while (!(rxBuffer[idx] == 0xB5 && rxBuffer[idx+1] == 0x62)) {
         idx++;
-        if (idx >= MAX_NMEA_DATA_LENGTH) return false;  // not found
+        if (idx >= MAX_NMEA_DATA_LENGTH) return ZP_ERROR_PARSE;  // not found
     }
     // check class
     if (rxBuffer[idx+2] != 0x01 || rxBuffer[idx+3] != 0x11) {
-        return false;
+        return ZP_ERROR_PARSE;
     }
 
     // payload
@@ -91,42 +132,46 @@ bool GPS::parseUBX() {
 
     idx += 4;
 
-    if(getVx(idx) == false) {
-    	return false;
+    ZP_ERROR_e result = getVx(idx);
+    if (result != ZP_ERROR_OK) {
+    	return result;
     }
 
     idx += 4;
 
-    if(getVy(idx) == false) {
-    	return false;
+    result = getVy(idx);
+    if (result != ZP_ERROR_OK) {
+    	return result;
     }
 
     idx += 4;
 
-    if (getVz(idx) == false) {
-    	return false;
+    result = getVz(idx);
+    if (result != ZP_ERROR_OK) {
+    	return result;
     }
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
 
-bool GPS::parseRMC() {
+ZP_ERROR_e GPS::parseRMC() {
     int idx = 0;
     while (!(rxBuffer[idx] == 'R' && rxBuffer[idx+1] == 'M' && rxBuffer[idx+2] == 'C')) {
         idx++;
-        if (idx == MAX_NMEA_DATA_LENGTH) return false;
+        if (idx == MAX_NMEA_DATA_LENGTH) return ZP_ERROR_PARSE;
     }
 
     idx += 4;
 
     // Check if data exists
     if (rxBuffer[idx] == ',') {
-        return false;
+        return ZP_ERROR_PARSE;
     }
 
-    if (getTimeRMC(idx) == false) {
-        return false;
+    ZP_ERROR_e result = getTimeRMC(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
     // Skip to status
@@ -136,55 +181,60 @@ bool GPS::parseRMC() {
     idx++;
 
     // Check if data valid
-    if (rxBuffer[idx] == 'V') return false;
+    if (rxBuffer[idx] == 'V') return ZP_ERROR_PARSE;
     // End status
 
     idx += 2;
 
-    if (getLatitudeRMC(idx) == false) {
-        return false;
+    result = getLatitudeRMC(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
     idx += 2;
 
-    if (getLongitudeRMC(idx) == false) {
-        return false;
+    result = getLongitudeRMC(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
     idx += 2;
 
-    if (getSpeedRMC(idx) == false) {
-        return false;
+    result = getSpeedRMC(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
     while (rxBuffer[idx] != ',') idx++;
     idx++;
 
-    if (getTrackAngleRMC(idx) == false) {
-        return false;
+    result = getTrackAngleRMC(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
     while (rxBuffer[idx] != ',') idx++;
     while (rxBuffer[idx] == ',') idx++;
 
-    if (getDateRMC(idx) == false) {
-        return false;
+    result = getDateRMC(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::parseGGA() {
+ZP_ERROR_e GPS::parseGGA() {
     int idx = 0;
     while (!(rxBuffer[idx] == 'G' && rxBuffer[idx + 1] == 'G' && rxBuffer[idx + 2] == 'A')) {
         idx++;
-        if (idx == MAX_NMEA_DATA_LENGTH) return false;
+        if (idx == MAX_NMEA_DATA_LENGTH) return ZP_ERROR_PARSE;
     }
     idx+=4; // Skip to data
 
     // Check if data exists
     if (rxBuffer[idx] == ',') {
-        return false;
+        return ZP_ERROR_PARSE;
     }
 
     // Skip 7 sections of data
@@ -192,22 +242,24 @@ bool GPS::parseGGA() {
         while (rxBuffer[idx] != ',') idx++;
     }
 
-    if (getNumSatellitesGGA(idx) == false) {
-        return false;
+    ZP_ERROR_e result = getNumSatellitesGGA(idx);
+    if (result != ZP_ERROR_OK) {
+        return result;
     }
 
     for (int i = 0; i < 2; i++, idx++) {
     	while (rxBuffer[idx] != ',') idx++;
     }
 
-    if(getAltitudeGGA(idx) == false) {
-    	return false;
+    result = getAltitudeGGA(idx);
+    if (result != ZP_ERROR_OK) {
+    	return result;
     }
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getTimeRMC(int &idx) {
+ZP_ERROR_e GPS::getTimeRMC(int &idx) {
     uint8_t hour = (rxBuffer[idx] - '0') * 10 + (rxBuffer[idx + 1] - '0');
     idx += 2;
     uint8_t minute = (rxBuffer[idx] - '0') * 10 + (rxBuffer[idx + 1] - '0');
@@ -218,10 +270,10 @@ bool GPS::getTimeRMC(int &idx) {
     tempData.time.minute = minute;
     tempData.time.second = second;
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getLatitudeRMC(int &idx) {
+ZP_ERROR_e GPS::getLatitudeRMC(int &idx) {
     float lat = 0;
     for (int i = 0; i < 2; i++, idx++) {
         lat *= 10;
@@ -253,10 +305,10 @@ bool GPS::getLatitudeRMC(int &idx) {
     idx++; // Skip over comma
     tempData.latitude *= (rxBuffer[idx] == 'N') ? 1 : -1;
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getLongitudeRMC(int &idx) {
+ZP_ERROR_e GPS::getLongitudeRMC(int &idx) {
     float lon = 0;
     for (int i = 0; i < 3; i++, idx++) {
         lon *= 10;
@@ -287,10 +339,10 @@ bool GPS::getLongitudeRMC(int &idx) {
     idx++;
     tempData.longitude *= (rxBuffer[idx] == 'E') ? 1 : -1;
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getSpeedRMC(int &idx) {
+ZP_ERROR_e GPS::getSpeedRMC(int &idx) {
     float spd = 0;
     while (rxBuffer[idx] != '.') {
         spd *= 10;
@@ -307,10 +359,10 @@ bool GPS::getSpeedRMC(int &idx) {
 
     tempData.groundSpeed = spd * 51.4444; // Convert from kt to cm/s
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getTrackAngleRMC(int &idx) {
+ZP_ERROR_e GPS::getTrackAngleRMC(int &idx) {
     float cog = 0;
     // Check if cog was calculated
     if (rxBuffer[idx] != ',') {
@@ -333,10 +385,10 @@ bool GPS::getTrackAngleRMC(int &idx) {
 
     tempData.trackAngle = cog;
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getDateRMC(int &idx) {
+ZP_ERROR_e GPS::getDateRMC(int &idx) {
     int day = (rxBuffer[idx] - '0') * 10 + rxBuffer[idx + 1] - '0';
     idx += 2;
     int month = (rxBuffer[idx] - '0') * 10 + rxBuffer[idx + 1] - '0';
@@ -347,10 +399,10 @@ bool GPS::getDateRMC(int &idx) {
     tempData.time.month= month;
     tempData.time.year = year;
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getNumSatellitesGGA(int &idx) {
+ZP_ERROR_e GPS::getNumSatellitesGGA(int &idx) {
     int numSats = 0;
     while (rxBuffer[idx] != ',') {
         numSats *= 10;
@@ -360,10 +412,10 @@ bool GPS::getNumSatellitesGGA(int &idx) {
 
     tempData.numSatellites = numSats;
 
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getAltitudeGGA(int &idx) {
+ZP_ERROR_e GPS::getAltitudeGGA(int &idx) {
     float altitude = 0;
     while (rxBuffer[idx] != '.') {
         altitude *= 10;
@@ -379,36 +431,36 @@ bool GPS::getAltitudeGGA(int &idx) {
     }
 
     tempData.altitude = altitude;
-    return true;
+    return ZP_ERROR_OK;
 }
 
 
-bool GPS::getVx(int &idx) {
+ZP_ERROR_e GPS::getVx(int &idx) {
     int32_t ecefVX = (int32_t)((uint32_t)rxBuffer[idx] |
                                ((uint32_t)rxBuffer[idx+1] << 8) |
                                ((uint32_t)rxBuffer[idx+2] << 16) |
                                ((uint32_t)rxBuffer[idx+3] << 24));
 
     tempData.vx = ecefVX / 100.0f;
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getVy(int &idx) {
+ZP_ERROR_e GPS::getVy(int &idx) {
     int32_t ecefVY = (int32_t)((uint32_t)rxBuffer[idx] |
                                ((uint32_t)rxBuffer[idx+1] << 8) |
                                ((uint32_t)rxBuffer[idx+2] << 16) |
                                ((uint32_t)rxBuffer[idx+3] << 24));
 
     tempData.vy = ecefVY / 100.0f;
-    return true;
+    return ZP_ERROR_OK;
 }
 
-bool GPS::getVz(int &idx) {
+ZP_ERROR_e GPS::getVz(int &idx) {
     int32_t ecefVZ = (int32_t)((uint32_t)rxBuffer[idx] |
                                ((uint32_t)rxBuffer[idx+1] << 8) |
                                ((uint32_t)rxBuffer[idx+2] << 16) |
                                ((uint32_t)rxBuffer[idx+3] << 24));
 
     tempData.vz = ecefVZ / 100.0f;
-    return true;
+    return ZP_ERROR_OK;
 }
