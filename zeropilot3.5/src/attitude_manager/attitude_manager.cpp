@@ -207,14 +207,14 @@ ZP_ERROR_e AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsDa
     // calculate relative altitude
     float relativeAltitude = previouslyArmed ? (gpsData.altitude - armAltitude) : 0.0f;
 
-    uint32_t timestamp_ms = 0;
-    ZP_ERROR_e err = systemUtilsDriver->getCurrentTimestampMs(&timestamp_ms);
+    uint32_t timestampMs = 0;
+    ZP_ERROR_e err = systemUtilsDriver->getCurrentTimestampMs(&timestampMs);
     if (err != ZP_ERROR_OK) {
         return err;
     }
 
     TMMessage_t gpsDataMsg = gposDataPack(
-        timestamp_ms, // time_boot_ms
+        timestampMs, // time_boot_ms
         gpsData.altitude * 1000, // altitude in mm
         gpsData.latitude * 1e7,
         gpsData.longitude * 1e7,
