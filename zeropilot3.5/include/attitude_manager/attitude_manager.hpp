@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "error.h"
 #include "systemutils_iface.hpp"
 #include "flightmode.hpp"
 #include "queue_iface.hpp"
@@ -37,7 +38,7 @@ class AttitudeManager {
             MotorGroupInstance_t *steeringMotors
         );
 
-        void runControlLoopIteration();
+        ZP_ERROR_e runControlLoopIteration();
 
     private:
         ISystemUtils *systemUtilsDriver;
@@ -64,9 +65,9 @@ class AttitudeManager {
 
         uint8_t amSchedulingCounter;
 
-        bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
+        ZP_ERROR_e getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
-        void outputToMotor(ControlAxis_t axis, uint8_t percent);
+        ZP_ERROR_e outputToMotor(ControlAxis_t axis, uint8_t percent);
 
-        void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
+        ZP_ERROR_e sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 };

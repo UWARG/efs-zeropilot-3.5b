@@ -59,47 +59,82 @@ RCReceiver::RCReceiver(UART_HandleTypeDef* uart) : uart_(uart) {
     memset(rawSbus_, 0, SBUS_BYTE_COUNT);
 }
 
-RCControl RCReceiver::getRCData() {
-    RCControl tmp = rcData_;
+ZP_ERROR_e RCReceiver::getRCData(RCControl *data) {
+    if (data == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
+    *data = rcData_;
     rcData_.isDataNew = false;
-    return tmp;
+    return ZP_ERROR_OK;
 }
 
-void RCReceiver::init() {
+ZP_ERROR_e RCReceiver::init() {
+    if (uart_ == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
     // start circular DMA
     rcData_.isDataNew = false;
-    HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+    HAL_StatusTypeDef hal_status = HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+    if (hal_status != HAL_OK) {
+        return ZP_ERROR_FAIL;
+    }
+
+    return ZP_ERROR_OK;
 }
 
-void RCReceiver::startDMA() {
+ZP_ERROR_e RCReceiver::startDMA() {
+    if (uart_ == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
     // start circular DMA
-    HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+    HAL_StatusTypeDef hal_status = HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_BYTE_COUNT);
+    if (hal_status != HAL_OK) {
+        return ZP_ERROR_FAIL;
+    }
+
+    return ZP_ERROR_OK;
 }
 
-void RCReceiver::parse() {
-
+ZP_ERROR_e RCReceiver::parse() {
     uint8_t *buf = rawSbus_;
 
     if ((buf[0] == HEADER_) && (buf[24] == FOOTER_)) {
-
         for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
-            rcData_.controlSignals[i] = sbusToRCControl(buf, i);
+            ZP_ERROR_e err = sbusToRCControl(&rcData_.controlSignals[i], buf, i);
+            if (err != ZP_ERROR_OK) {
+                return err;
+            }
         }
 
         rcData_.isDataNew = true;
+    } else {
+        return ZP_ERROR_PARSE;
     }
+
+    return ZP_ERROR_OK;
 }
 
-float RCReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx) {
+ZP_ERROR_e RCReceiver::sbusToRCControl(float *value, uint8_t *buf, int channelMappingIdx) {
+    if (value == nullptr || buf == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
+    if (channelMappingIdx < 0 || channelMappingIdx >= SBUS_CHANNEL_COUNT) {
+        return ZP_ERROR_INVALID_PARAM;
+    }
+
     uint16_t res = 0;
 
     for (int i = 0; i < SBUS_MAX_BTYES_PER_CHANNEL; i++) {
         DataChunk_t d = channelMappings[channelMappingIdx][i];
-        
+
         uint16_t tmp = d.bitshift >= 0 ?
             (buf[d.dataOffset] & d.mask) << d.bitshift :
             (buf[d.dataOffset] & d.mask) >> abs(d.bitshift);
-        
+
         res |= tmp;
     }
 
@@ -113,5 +148,6 @@ float RCReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx) {
         // continue
     }
 
-    return static_cast<float>((res - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
+    *value = static_cast<float>((res - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
+    return ZP_ERROR_OK;
 }

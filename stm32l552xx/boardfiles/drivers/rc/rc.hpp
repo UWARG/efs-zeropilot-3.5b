@@ -3,6 +3,7 @@
 #include "rc_defines.hpp"
 #include "rc_iface.hpp"
 #include "stm32l5xx_hal.h"
+#include "error.h"
 
 typedef struct {
     int dataOffset;
@@ -14,17 +15,17 @@ class RCReceiver : public IRCReceiver {
     public:
         RCReceiver(UART_HandleTypeDef *uart);
 
-        RCControl getRCData() override;
+        ZP_ERROR_e getRCData(RCControl *data) override;
 
-        void init();
-        void startDMA();
+        ZP_ERROR_e init();
+        ZP_ERROR_e startDMA();
 
-        void parse();
-       
+        ZP_ERROR_e parse();
+
     private:
         UART_HandleTypeDef *uart_;
         RCControl rcData_;
         uint8_t rawSbus_[SBUS_BYTE_COUNT];
 
-        float sbusToRCControl(uint8_t *buf, int channelMappingIdx);
+        ZP_ERROR_e sbusToRCControl(float *value, uint8_t *buf, int channelMappingIdx);
 };
