@@ -64,8 +64,8 @@ int Config::findParam(const char param[MAX_KEY_LENGTH], float &val, int &tableId
   int length;
   
   while (textIO->read(msg, sizeof(msg)) != nullptr) {
-    key = strtok(msg, ",\n");
-    value = strtok(NULL, ",\n");
+    key = strtok(msg, ",");
+    value = strtok(NULL, ",");
 
     if (!strcmp(param, key)) break;
   }
@@ -80,19 +80,21 @@ int Config::findParam(const char param[MAX_KEY_LENGTH], float &val, int &tableId
   val = std::atof(value);
 
   // find idx of param in config table
-  int idx = 0;
-  while (strcmp(config_table[idx].key, param)) {
-    idx++;
+  if (tableIdx != -1) {
+    for (size_t i = 0; i < static_cast<size_t>(ConfigKey::COUNT); i++) {
+      if (!strcmp(param, config_table[i].key)) {
+        tableIdx = static_cast<int>(i);
+        break;
+      }
+    }
   }
-
-  tableIdx = idx;
 
   return 0;
 }
 
 int Config::findParam(const char param[100], float &val)  {
-  int tblIdx;
-  return findParam(param, val, tblIdx);
+  int tableIdx = -1;
+  return findParam(param, val, tableIdx);
 }
 
 int Config::findParam(const char param[100], int &tableIdx)  {
@@ -152,12 +154,42 @@ int Config::writeParam(ConfigKey key, float newValue) {
   return 0;
 }
 
+int Config::writeParamByName(const char param[MAX_KEY_LENGTH], float newValue) {
+  for (size_t i = 0; i < static_cast<size_t>(ConfigKey::COUNT); i++) {
+    if (!strcmp(param, config_table[i].key)) {
+      return writeParam(static_cast<ConfigKey>(i), newValue);
+    }
+  }
+  return 2; // Parameter not found
+}
+
+ConfigKey Config::getParamConfigKey(const char param[MAX_KEY_LENGTH]) {
+  for (size_t i = 0; i < static_cast<size_t>(ConfigKey::COUNT); i++) {
+    if (!strcmp(param, config_table[i].key)) {
+      return static_cast<ConfigKey>(i);
+    }
+  }
+  return ConfigKey::COUNT; // Invalid key
+}
+
 Owner Config::getParamOwner(ConfigKey key) {
   size_t index = static_cast<size_t>(key);
   if (index >= NUM_KEYS) {
       return Owner::COUNT; // Invalid owner
   }
   return config_table[index].owner;
+}
+
+Param_t* Config::getAllParams() {
+    return config_table;
+}
+
+Param_t Config::getParam(ConfigKey key) {
+    size_t index = static_cast<size_t>(key);
+    if (index >= NUM_KEYS) {
+        return Param_t{}; // Return default Param_t if key is invalid for now
+    }
+    return config_table[index];
 }
 
 #if defined(SWO_LOGGING)

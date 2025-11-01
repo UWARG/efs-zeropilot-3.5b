@@ -10,8 +10,8 @@ SystemManager::SystemManager(
     IRCReceiver *rcDriver, 
     IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
+    IMessageQueue<TMSMMessage_t> *tmSmQueue,
     IMessageQueue<char[100]> *smLoggerQueue,
-    IMessageQueue<ConfigMessage_t> *smConfigQueue,
     IMessageQueue<ConfigMessage_t> *smConfigRouteQueue[static_cast<size_t>(Owner::COUNT)],
     Logger *logger,
     Config *config) :
@@ -19,8 +19,8 @@ SystemManager::SystemManager(
         rcDriver(rcDriver), 
         amRCQueue(amRCQueue),
         tmQueue(tmQueue),
+        tmSmQueue(tmSmQueue),
         smLoggerQueue(smLoggerQueue),
-        smConfigQueue(smConfigQueue),
         smConfigRouteQueue(),
         logger(logger),
         config(config) {
@@ -55,6 +55,9 @@ void SystemManager::smUpdate() {
         }
     }
 
+    // Handle messages from TM
+    handleMessagesFromTelemetryManager();
+
     // Send RC data to TM
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_RC_DATA_RATE_HZ) == 0) {
         sendRCDataToTelemetryManager(rcData);
@@ -82,6 +85,11 @@ void SystemManager::smUpdate() {
         sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
     }
 
+    // Send Param data to TM if there are params left to send and the process has been initiated by a param request which sets paramAmountSent to 0
+    if (paramAmountSent >= 0 && paramAmountSent < static_cast<size_t>(ConfigKey::COUNT)) {
+        sendParamDataToTelemetryManager();
+    }
+
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
@@ -99,6 +107,21 @@ void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
 void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
     TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
     tmQueue->push(&hbDataMsg);
+}
+
+void SystemManager::sendParamDataToTelemetryManager() {
+    char buffer[100];
+    snprintf(buffer, sizeof(buffer), "Sending param index %d to TM", paramAmountSent);
+    logger->log(buffer);
+    Param_t param = config->getParam(static_cast<ConfigKey>(paramAmountSent));
+    TMMessage_t paramDataMsg = paramDataPack(
+        systemUtilsDriver->getCurrentTimestampMs(),
+        static_cast<uint16_t>(paramAmountSent),
+        static_cast<uint16_t>(static_cast<size_t>(ConfigKey::COUNT)),
+        param
+    );
+    tmQueue->push(&paramDataMsg);
+    paramAmountSent++;
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
@@ -126,27 +149,53 @@ void SystemManager::sendMessagesToLogger() {
     logger->log(messages, msgCount);
 }
 
-// Note that I am using ConfigMessage_t here as a placeholder for the parameter as we might have more things from whatever comes from Telemetry Manager that for different purposes that I dont know about yet
-void SystemManager::sendMessagesToConfigManager() {
-    static ConfigMessage_t configMessages[16];
-    int msgCount = 0;
-    while (smConfigQueue->count() > 0) {
-        smConfigQueue->get(&configMessages[msgCount]);
-        msgCount++;
-    }
-
-    for (int i = 0; i < msgCount; i++) {
-        int result = config->writeParam(static_cast<ConfigKey>(configMessages[i].key), configMessages[i].value);
-        if (result != 0) {
-            logger->log("Error writing config param " + configMessages[i].key);
-        } else {
-            // Add message to the updateParam queue for other managers to update their local copy of the param if needed
-            Owner owner = config->getParamOwner(static_cast<ConfigKey>(configMessages[i].key));
-            if (owner >= Owner::COUNT) {
-                logger->log("Invalid owner for config param " + configMessages[i].key);
-                continue;
+void SystemManager::handleMessagesFromTelemetryManager() {
+    uint16_t count = tmSmQueue->count();
+    while (count-- > 0) {
+        TMSMMessage_t msg;
+        tmSmQueue->get(&msg);
+        switch (msg.dataType) {
+            case TMSMMessage_t::PARAM_CHANGE_DATA: {
+                logger->log("Param change request received from TM");
+                int res = config->writeParamByName(
+                    msg.tmSMMessageData.paramChangeData.keyId,
+                    msg.tmSMMessageData.paramChangeData.value
+                );
+                if (res == 0) {
+                    logger->log("Param updated from TM");
+                    ConfigKey key = config->getParamConfigKey(msg.tmSMMessageData.paramChangeData.keyId);
+                    Owner owner = config->getParamOwner(key);
+                    if (owner != Owner::COUNT) {
+                        ConfigMessage_t configMsg = {
+                            .key = static_cast<size_t>(key),
+                            .value = msg.tmSMMessageData.paramChangeData.value
+                        };
+                        smConfigRouteQueue[static_cast<size_t>(owner)]->push(&configMsg);
+                        TMMessage_t paramDataMsg = paramDataPack(systemUtilsDriver->getCurrentTimestampMs(),
+                            static_cast<uint16_t>(static_cast<size_t>(key)),
+                            static_cast<uint16_t>(static_cast<size_t>(ConfigKey::COUNT)),
+                            config->getParam(key)
+                        );
+                        tmQueue->push(&paramDataMsg);
+                    } else {
+                        logger->log("Param owner invalid, cannot route update");
+                    }
+                } else {
+                    logger->log("Failed to write param from TM");
+                }
+                break;
             }
-            smConfigRouteQueue[static_cast<size_t>(owner)]->push(&configMessages[i]);
+
+            case TMSMMessage_t::REQUEST_DATA: {
+                if (msg.tmSMMessageData.requestData.requestType == TMSMRequest::REQUEST_PARAMS) {
+                    paramAmountSent = 0; // Start sending params from the beginning
+                    logger->log("Param request received from TM");
+                }
+                break;
+            }
+
+            default:
+                break;
         }
     }
 }

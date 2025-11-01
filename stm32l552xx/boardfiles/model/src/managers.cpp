@@ -10,7 +10,6 @@ AttitudeManager *amHandle = nullptr;
 
 Logger *loggerHandle = nullptr;
 Config *configHandle = nullptr;
-IMessageQueue<ConfigMessage_t> *smConfigRouteQueueHandle[static_cast<size_t>(Owner::COUNT)] = {nullptr};
 SystemManager *smHandle = nullptr;
 
 
@@ -26,9 +25,8 @@ void initManagers()
     // SM initialization
     loggerHandle = new Logger(textIOHandle);
     configHandle = new Config(textIOHandle);
-    smConfigRouteQueueHandle[static_cast<size_t>(Owner::ATTITUDE_MANAGER)] = smConfigAttitudeQueueHandle;
-    smHandle = new SystemManager(systemUtilsHandle, iwdgHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle, smConfigQueueHandle, smConfigRouteQueueHandle, loggerHandle, configHandle);
+    smHandle = new SystemManager(systemUtilsHandle, iwdgHandle, rcHandle, amRCQueueHandle, tmQueueHandle, tmSmQueueHandle, smLoggerQueueHandle, smConfigRouteQueueHandle, loggerHandle, configHandle);
 
     // TM initialization
-    tmHandle = new TelemetryManager(systemUtilsHandle, rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);
+    tmHandle = new TelemetryManager(systemUtilsHandle, rfdHandle, tmQueueHandle, tmSmQueueHandle, amRCQueueHandle, messageBufferHandle);
 }

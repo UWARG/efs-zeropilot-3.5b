@@ -3,17 +3,6 @@
 #include "config_utils/config_keys.hpp"
 #include "textio_iface.hpp"
 
-#define MAX_LINE_LENGTH 128
-#define MAX_VALUE_LENGTH 10
-#define MAX_KEY_LENGTH (MAX_LINE_LENGTH-MAX_VALUE_LENGTH)
-
-typedef struct {
-    const char key[MAX_KEY_LENGTH];
-    float value;
-    bool reboot_on_change = false;
-    Owner owner;
-} Param_t;
-
 class Config {
     private:
         char configFile[100];
@@ -64,9 +53,37 @@ class Config {
         int writeParam(ConfigKey key, float newValue);
 
         /**
+         * @brief writes parameter from config file by name
+         * @param param parameter to write too
+         * @param newValue updated value
+         * @retval Operation success
+         */
+        int writeParamByName(const char param[MAX_KEY_LENGTH], float newValue);
+
+        /**
+         * @brief gets the ConfigKey index of a parameter by name
+         * @param param parameter to get index for
+         * @retval ConfigKey of the parameter
+         */
+        ConfigKey getParamConfigKey(const char param[MAX_KEY_LENGTH]);
+
+        /**
          * @brief gets the owner of a parameter
-         * @param param parameter to get owner for
+         * @param key key of parameter to get owner for
          * @retval Owner of the parameter
          */
         Owner getParamOwner(ConfigKey key);
+
+        /**
+         * @brief gets all parameters
+         * @retval Pointer to array of all parameters
+         */
+        Param_t* getAllParams();
+
+        /**
+         * @brief gets parameter struct by key
+         * @param key parameter key to get
+         * @retval Parameter struct
+         */
+        Param_t getParam(ConfigKey key);
 };

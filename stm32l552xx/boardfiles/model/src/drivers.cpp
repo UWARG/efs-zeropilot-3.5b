@@ -79,11 +79,14 @@ void initDrivers()
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
-    smConfigQueueHandle = new MessageQueue<ConfigMessage_t>(&smConfigQueueId);
     smConfigAttitudeQueueHandle = new MessageQueue<ConfigMessage_t>(&smConfigAttitudeQueueId);
+    smConfigRouteQueueHandle = new IMessageQueue<ConfigMessage_t>*[static_cast<size_t>(Owner::COUNT)];
+    smConfigRouteQueueHandle[static_cast<size_t>(Owner::ATTITUDE_MANAGER)] = smConfigAttitudeQueueHandle;
+    // Add other manager queues to smConfigRouteQueueHandle as needed
 
     loggerHandle->init();
     tmQueueHandle = new MessageQueue<TMMessage_t>(&tmQueueId);
+    tmSmQueueHandle = new MessageQueue<TMSMMessage_t>(&tmSmQueueId);
     messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
 
     leftAileronMotorHandle->init();

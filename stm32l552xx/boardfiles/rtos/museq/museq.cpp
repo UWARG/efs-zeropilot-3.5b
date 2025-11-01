@@ -9,9 +9,9 @@
 osMutexId_t itmMutex;
 osMessageQueueId_t amQueueId;
 osMessageQueueId_t smLoggerQueueId;
-osMessageQueueId_t smConfigQueueId;
 osMessageQueueId_t smConfigAttitudeQueueId;
 osMessageQueueId_t tmQueueId;
+osMessageQueueId_t tmSmQueueId;
 osMessageQueueId_t messageBufferId;
 
 static const osMutexAttr_t itmMutexAttr = {
@@ -44,8 +44,8 @@ void initQueues()
 {
   amQueueId = osMessageQueueNew(16, sizeof(RCMotorControlMessage_t), NULL);
   smLoggerQueueId = osMessageQueueNew(16, sizeof(char[100]), NULL);
-  smConfigQueueId = osMessageQueueNew(16, sizeof(ConfigMessage_t), NULL);
   smConfigAttitudeQueueId = osMessageQueueNew(16, sizeof(ConfigMessage_t), NULL);
   tmQueueId = osMessageQueueNew(16, sizeof(TMMessage_t), NULL);
+  tmSmQueueId = osMessageQueueNew(16, sizeof(TMSMMessage_t), NULL);
   messageBufferId = osMessageQueueNew(16, sizeof(mavlink_message_t), NULL);
 }
