@@ -1,5 +1,11 @@
 #pragma once
 #include <cstdint>
+#include <mavlink.h>
+#include "../system_manager/config_utils/config_keys.hpp"
+
+enum class TMSMRequest {
+    REQUEST_PARAMS,
+};
 
 typedef union TMMessageData_u {
   struct{
@@ -35,6 +41,14 @@ typedef union TMMessageData_u {
       int32_t timeRemaining;
       uint8_t chargeState; // 1 = Normal, 2 = Low, 3 = Critical
   } bmData;
+  struct{ 
+    char key[MAX_KEY_LENGTH];
+    float value;
+    uint8_t type; // Basically always MAV_PARAM_TYPE_REAL64 which is 64bit float
+    uint16_t count;
+    uint16_t index;
+
+  } paramData;
 } TMMessageData_t;
 
 typedef struct TMMessage{
@@ -42,7 +56,8 @@ typedef struct TMMessage{
         HEARTBEAT_DATA,
         GPOS_DATA,
         RC_DATA,
-        BM_DATA
+        BM_DATA,
+        PARAM_VALUE_DATA
     } dataType;
     TMMessageData_t tmMessageData;
     uint32_t timeBootMs = 0;
@@ -81,4 +96,43 @@ inline TMMessage_t bmDataPack(uint32_t time_boot_ms, int16_t temperature, float 
     const TMMessageData_t DATA = {.bmData ={temperature, mavlinkVoltageArray, current_battery,
     current_consumed, energy_consumed, battery_remaining, time_remaining, charge_state}};
     return TMMessage_t{TMMessage_t::BM_DATA, DATA, time_boot_ms};
+}
+
+inline TMMessage_t paramDataPack(uint32_t time_boot_ms, uint16_t index, uint16_t count, Param_t param) {
+    TMMessageData_t DATA = {.paramData = { .value = param.value, .type = MAV_PARAM_TYPE_REAL64, .count = count, .index = index}};
+    strncpy(DATA.paramData.key, param.key, MAX_KEY_LENGTH - 1);
+    DATA.paramData.key[MAX_KEY_LENGTH - 1] = '\0';  // Ensure null termination
+    return TMMessage_t{TMMessage_t::PARAM_VALUE_DATA, DATA, time_boot_ms};
+}
+
+typedef union TMSMMessage_u {
+    struct {
+        char keyId[MAX_KEY_LENGTH];
+        float value;
+    } paramChangeData;
+    struct {
+        TMSMRequest requestType;
+    } requestData;
+} TMSMMessageData_t;
+
+typedef struct TMSMMessage{
+    enum{
+        PARAM_CHANGE_DATA,
+        REQUEST_DATA
+    } dataType;
+    TMSMMessageData_t tmSMMessageData;
+    uint32_t timeBootMs = 0;
+} TMSMMessage_t;
+
+inline TMSMMessage_t paramChangePack(uint32_t time_boot_ms, const char* keyId, float value) {
+    TMSMMessageData_t DATA = {.paramChangeData = {}};
+    strncpy(DATA.paramChangeData.keyId, keyId, MAX_KEY_LENGTH - 1);
+    DATA.paramChangeData.keyId[MAX_KEY_LENGTH - 1] = '\0';  // Ensure null termination
+    DATA.paramChangeData.value = value;
+    return TMSMMessage_t{TMSMMessage_t::PARAM_CHANGE_DATA, DATA, time_boot_ms};
+}
+
+inline TMSMMessage_t requestPack(uint32_t time_boot_ms, TMSMRequest requestType) {
+    const TMSMMessageData_t DATA = {.requestData={.requestType = requestType}};
+    return TMSMMessage_t{TMSMMessage_t::REQUEST_DATA, DATA, time_boot_ms};
 }

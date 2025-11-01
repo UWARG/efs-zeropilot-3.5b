@@ -15,11 +15,13 @@ class TelemetryManager {
     IRFD *rfdDriver;										                    // Driver used to actually send mavlink messages
     IMessageQueue<TMMessage_t> *tmQueueDriver;				      // Driver that receives messages from other managers
     IMessageQueue<RCMotorControlMessage_t> *amQueueDriver;	// Driver that currently is only used to set arm/disarm
-    IMessageQueue<mavlink_message_t> *messageBuffer{};	  	// GPOS, Attitude and Heartbeat/Connection Messages
+    IMessageQueue<mavlink_message_t> *messageBuffer{};	  	// GPOS, Attitude, Heartbeat/Connection, and Param Messages
+    IMessageQueue<TMSMMessage_t> *smQueueDriver;            // Driver that sends messages to system manager
     mavlink_status_t status;
     mavlink_message_t message;
     mavlink_message_t overflowBuf;
     bool overflowMsgPending;
+    bool transmittingParams = false; // Flag will be set when TM receives a param list request and unset when finished
 
     void handleRxMsg(const mavlink_message_t &msg);
     void processMsgQueue();
@@ -27,7 +29,7 @@ class TelemetryManager {
     void reconstructMsg();
 
   public:
-    TelemetryManager(ISystemUtils *systemUtilsDriver, IRFD *rfdDriver, IMessageQueue<TMMessage_t>  *tmQueueDriver,  IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,IMessageQueue<mavlink_message_t> *messageBuffer);
+    TelemetryManager(ISystemUtils *systemUtilsDriver, IRFD *rfdDriver, IMessageQueue<TMMessage_t>  *tmQueueDriver, IMessageQueue<TMSMMessage_t> *smQueueDriver, IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,IMessageQueue<mavlink_message_t> *messageBuffer);
     ~TelemetryManager();
 
     void tmUpdate();
