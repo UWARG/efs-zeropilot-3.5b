@@ -133,7 +133,7 @@ int Config::writeParam(ConfigKey key, float newValue) {
     writeRes = textIO->write(strValue);
   } else {
     char keyStr[MAX_KEY_LENGTH];
-    snprintf(keyStr, MAX_KEY_LENGTH, "%s,", key);
+    snprintf(keyStr, MAX_KEY_LENGTH, "%s,", config_table[static_cast<size_t>(key)].key);
 
     textIO->seek(textIO->fsize());
     if (textIO->tell() != 0) {

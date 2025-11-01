@@ -165,7 +165,6 @@ void TelemetryManager::handleRxMsg(const mavlink_message_t &msg) {
         case MAVLINK_MSG_ID_PARAM_SET: {
             float valueToSet;
             char paramToSet[MAVLINK_MAX_IDENTIFIER_LEN] = {};
-            uint8_t valueType;
             valueToSet = mavlink_msg_param_set_get_param_value(&msg);
             mavlink_msg_param_set_get_param_id(&msg, paramToSet);
 
