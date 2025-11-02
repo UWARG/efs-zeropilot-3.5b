@@ -54,36 +54,41 @@ DataChunk_t channelMappings[SBUS_CHANNEL_COUNT][SBUS_MAX_BTYES_PER_CHANNEL] = {
     }
 };
 
-RCReceiver::RCReceiver(UART_HandleTypeDef* uart) : uart_(uart) {
-    memset(rawSbus_, 0, SBUS_PACKET_SIZE);
+RCReceiver::RCReceiver(UART_HandleTypeDef* uart) : uart(uart) {
+    memset(rawSbus, 0, SBUS_PACKET_SIZE);
+}
+
+
+UART_HandleTypeDef* RCReceiver::getHUART() {
+    return uart;
 }
 
 RCControl RCReceiver::getRCData() {
-    RCControl tmp = rcData_;
-    rcData_.isDataNew = false;
+    RCControl tmp = rcData;
+    rcData.isDataNew = false;
     return tmp;
 }
 
 void RCReceiver::init() {
-    rcData_.isDataNew = false;
-    HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_PACKET_SIZE);
+    rcData.isDataNew = false;
+    HAL_UARTEx_ReceiveToIdle_DMA(uart, rawSbus, SBUS_PACKET_SIZE);
 }
 
 void RCReceiver::startDMA() {
-    HAL_UARTEx_ReceiveToIdle_DMA(uart_, rawSbus_, SBUS_PACKET_SIZE);
+    HAL_UARTEx_ReceiveToIdle_DMA(uart, rawSbus, SBUS_PACKET_SIZE);
 }
 
 void RCReceiver::parse() {
 
-    uint8_t *buf = rawSbus_;
+    uint8_t *buf = rawSbus;
 
     if ((buf[0] == HEADER_) && (buf[SBUS_PACKET_SIZE-1] == FOOTER_)) {
 
         for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
-            rcData_.controlSignals[i] = sbusToRCControl(buf, i);
+            rcData.controlSignals[i] = sbusToRCControl(buf, i);
         }
 
-        rcData_.isDataNew = true;
+        rcData.isDataNew = true;
     }
 }
 

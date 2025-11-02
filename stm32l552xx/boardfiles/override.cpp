@@ -46,20 +46,20 @@ void HAL_Delay(uint32_t Delay) {
 
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-    if (huart->Instance == UART4){
+    if (huart == rcHandle->getHUART()){
         rcHandle->parse();
         rcHandle->startDMA();
     } else if (RFD::instance && RFD::instance->getHuart() == huart) {
       RFD::instance->receiveCallback(Size);
     }
     // GPS dma callback
-    else if (huart->Instance == USART2) {
+    else if (huart == gpsHandle->getHUART()) {
       gpsHandle->processGPSData();
     }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-  if(huart->Instance == UART4){
+  if(huart == rcHandle->getHUART()){
     uint32_t error = HAL_UART_GetError(huart);
 
     if (error & HAL_UART_ERROR_PE) {

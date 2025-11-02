@@ -10,7 +10,6 @@ AttitudeManager::AttitudeManager(
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<char[100]> *smLoggerQueue,
-    Flightmode *controlAlgorithm,
     MotorGroupInstance_t *rollMotors,
     MotorGroupInstance_t *pitchMotors,
     MotorGroupInstance_t *yawMotors,
@@ -23,7 +22,7 @@ AttitudeManager::AttitudeManager(
     amQueue(amQueue),
     tmQueue(tmQueue),
     smLoggerQueue(smLoggerQueue),
-    controlAlgorithm(controlAlgorithm),
+    controlAlgorithm(),
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
     yawMotors(yawMotors),
@@ -34,7 +33,7 @@ AttitudeManager::AttitudeManager(
     armAltitude(0.0f),
     amSchedulingCounter(0) {}
 
-void AttitudeManager::runControlLoopIteration() {
+void AttitudeManager::amUpdate() {
     // Get data from Queue and motor outputs
     bool controlRes = getControlInputs(&controlMsg);
     
@@ -76,7 +75,7 @@ void AttitudeManager::runControlLoopIteration() {
         controlMsg.throttle = 0;
     }
 
-    RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
+    RCMotorControlMessage_t motorOutputs = controlAlgorithm.runControl(controlMsg);
 
     outputToMotor(YAW, motorOutputs.yaw);
     outputToMotor(PITCH, motorOutputs.pitch);
