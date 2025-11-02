@@ -184,12 +184,12 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
 void AttitudeManager::sendRawIMUDataToTelemetryManager(const IMUData_t &imuData, const bool &armed) { // armed functionality needed here?
     TMMessage_t imuDataMsg = imuDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
-        static_cast<int16_t>(imuData.xacc),
-        static_cast<int16_t>(imuData.yacc),
-        static_cast<int16_t>(imuData.zacc),
-        static_cast<int16_t>(imuData.xgyro),
-        static_cast<int16_t>(imuData.ygyro),
-        static_cast<int16_t>(imuData.zgyro)
+        imuData.xacc,
+        imuData.yacc,
+        imuData.zacc,
+        imuData.xgyro,
+        imuData.ygyro,
+        imuData.zgyro
     );
 
     tmQueue->push(&imuDataMsg);
