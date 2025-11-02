@@ -308,7 +308,7 @@ int IMU::init() {
     return address;
 }
 
-void IMU::getAccelGyro(float& ax, float& ay, float& az, float& gx, float& gy, float& gz) {
+IMUData_t IMU::getAccelGyro() {
     uint8_t buffer[14];
     int16_t raw[7];
     float acc_temp[3];
@@ -327,11 +327,12 @@ void IMU::getAccelGyro(float& ax, float& ay, float& az, float& gx, float& gy, fl
     gyr_temp[2] = lowPassFilter((float)raw[6] / 16.4f, 2);
 
     // NED
-    ax = (float)acc_temp[1];
-    ay = (float)acc_temp[0];
-    az = ((float)acc_temp[2]);
-    gx = ((float)-gyr_temp[1]);
-    gy = ((float)-gyr_temp[0]);
-    gz = ((float)-gyr_temp[2]);
+    IMUData_t data;
+    data.xacc = (float)acc_temp[1];
+    data.yacc = (float)acc_temp[0];
+    data.zacc = ((float)acc_temp[2]);
+    data.xgyro = ((float)-gyr_temp[1]);
+    data.ygyro = ((float)-gyr_temp[0]);
+    data.zgyro = ((float)-gyr_temp[2]);
+    return data;
 }
-

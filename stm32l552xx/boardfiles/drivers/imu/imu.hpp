@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include "imu_datatypes.hpp"
 
 class IMU : public IIMU {
 private:
@@ -59,7 +60,7 @@ public:
 	int init() override;
 
 	// Data reading
-	void getAccelGyro(float& ax, float& ay, float& az, float& gx, float& gy, float& gz) override;
+	IMUData_t getAccelGyro() override;
 };
 
 #endif

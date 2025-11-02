@@ -3,6 +3,7 @@
 
 #define AM_SCHEDULING_RATE_HZ 20
 #define AM_TELEMETRY_GPS_DATA_RATE_HZ 5
+#define AM_TELEMETRY_IMU_DATA_RATE_HZ 5
 
 AttitudeManager::AttitudeManager(
     ISystemUtils *systemUtilsDriver,
@@ -21,6 +22,7 @@ AttitudeManager::AttitudeManager(
 ) :
     systemUtilsDriver(systemUtilsDriver),
     gpsDriver(gpsDriver),
+    imuDriver(imuDriver),
     amQueue(amQueue),
     tmQueue(tmQueue),
     smLoggerQueue(smLoggerQueue),
@@ -89,6 +91,12 @@ void AttitudeManager::runControlLoopIteration() {
     GpsData_t gpsData = gpsDriver->readData();
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
         sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
+    }
+
+    // Send IMU raw data to telemetry manager
+    IMUData_t imuData = imuDriver->getAccelGyro();
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_IMU_DATA_RATE_HZ) == 0) {
+        sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
     }
 
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
@@ -171,4 +179,18 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
     );
 
     tmQueue->push(&gpsDataMsg);
+}
+
+void AttitudeManager::sendRawIMUDataToTelemetryManager(const IMUData_t &imuData, const bool &armed) { // armed functionality needed here?
+    TMMessage_t imuDataMsg = imuDataPack(
+        systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
+        static_cast<int16_t>(imuData.xacc),
+        static_cast<int16_t>(imuData.yacc),
+        static_cast<int16_t>(imuData.zacc),
+        static_cast<int16_t>(imuData.xgyro),
+        static_cast<int16_t>(imuData.ygyro),
+        static_cast<int16_t>(imuData.zgyro)
+    );
+
+    tmQueue->push(&imuDataMsg);
 }

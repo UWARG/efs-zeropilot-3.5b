@@ -45,6 +45,7 @@ class AttitudeManager {
         ISystemUtils *systemUtilsDriver;
 
         IGPS *gpsDriver;
+        IIMU *imuDriver;
 
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
         IMessageQueue<TMMessage_t> *tmQueue;
@@ -71,4 +72,6 @@ class AttitudeManager {
         void outputToMotor(ControlAxis_t axis, uint8_t percent);
 
         void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
+
+        void sendRawIMUDataToTelemetryManager(const IMUData_t &imuData, const bool &armed);
 };
