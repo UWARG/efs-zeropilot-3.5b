@@ -6,8 +6,6 @@ DirectMapping *flightMode = nullptr;
 AttitudeManager *amHandle = nullptr;
 SystemManager *smHandle = nullptr;
 TelemetryManager *tmHandle = nullptr;
-DirectMapping *flightMode = nullptr;
-
 
 void initManagers()
 {

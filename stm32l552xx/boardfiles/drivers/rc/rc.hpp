@@ -32,7 +32,7 @@ class RCReceiver : public IRCReceiver {
     private:
         UART_HandleTypeDef *uart_;
         RCControl rcData_;
-        uint8_t rawSbus_[SBUS_BYTE_COUNT];
+        uint8_t rawSbus_[SBUS_PACKET_SIZE];
 
         float sbusToRCControl(uint8_t *buf, int channelMappingIdx);
 };
