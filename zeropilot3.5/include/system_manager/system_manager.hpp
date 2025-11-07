@@ -1,17 +1,17 @@
 #pragma once
 
-#include <cstdint>
+#include "iwdg_iface.hpp"
 #include "systemutils_iface.hpp"
 #include "mavlink.h"
 #include "logger_iface.hpp"
-#include "queue_iface.hpp"
 #include "rc_iface.hpp"
-#include "rc_datatypes.hpp"
 #include "rc_motor_control.hpp"
 #include "iwdg_iface.hpp"
 #include "tm_queue.hpp"
+#include "queue_iface.hpp"
 
-#define SM_MAIN_DELAY 50
+#define SM_CONTROL_LOOP_DELAY 50
+#define SM_RC_TIMEOUT 500 
 
 class SystemManager {
     public:

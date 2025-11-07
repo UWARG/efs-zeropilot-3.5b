@@ -2,14 +2,14 @@
 
 #include <cstdint>
 #include "systemutils_iface.hpp"
-#include "flightmode.hpp"
-#include "queue_iface.hpp"
-#include "motor_iface.hpp"
+#include "direct_mapping.hpp"
 #include "motor_datatype.hpp"
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
+#include "queue_iface.hpp"
 
-#define AM_MAIN_DELAY 50
+#define AM_CONTROL_LOOP_DELAY 50
+#define AM_FAILSAFE_TIMEOUT 1000
 
 typedef enum {
     YAW = 0,
@@ -28,7 +28,6 @@ class AttitudeManager {
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
             IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
-            Flightmode *controlAlgorithm,
             MotorGroupInstance_t *rollMotors,
             MotorGroupInstance_t *pitchMotors,
             MotorGroupInstance_t *yawMotors,
@@ -37,7 +36,7 @@ class AttitudeManager {
             MotorGroupInstance_t *steeringMotors
         );
 
-        void runControlLoopIteration();
+        void amUpdate();
 
     private:
         ISystemUtils *systemUtilsDriver;
@@ -48,9 +47,8 @@ class AttitudeManager {
         IMessageQueue<TMMessage_t> *tmQueue;
         IMessageQueue<char[100]> *smLoggerQueue;
 
-        Flightmode *controlAlgorithm;
+        DirectMapping controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
-        int noDataCount = 0;
 
         MotorGroupInstance_t *rollMotors;
         MotorGroupInstance_t *pitchMotors;

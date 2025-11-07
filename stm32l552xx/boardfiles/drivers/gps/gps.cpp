@@ -4,6 +4,10 @@
 
 GPS::GPS(UART_HandleTypeDef* huart) : huart(huart) {}
 
+UART_HandleTypeDef* GPS::getHUART() {
+    return huart;
+}
+
 bool GPS::init() {
     HAL_StatusTypeDef success = HAL_UARTEx_ReceiveToIdle_DMA(
 		huart,
