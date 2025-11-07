@@ -2,6 +2,7 @@
 #include "museq.hpp"
 #include "stm32l5xx_hal.h"
 
+// External hardware handles
 extern IWDG_HandleTypeDef hiwdg;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
@@ -10,8 +11,35 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 
-SystemUtils *systemUtilsHandle = nullptr;
+// ----------------------------------------------------------------------------
+// Static storage for each driver (aligned for correct type)
+// ----------------------------------------------------------------------------
+alignas(SystemUtils) static uint8_t systemUtilsStorage[sizeof(SystemUtils)];
+alignas(IndependentWatchdog) static uint8_t iwdgStorage[sizeof(IndependentWatchdog)];
+alignas(Logger) static uint8_t loggerStorage[sizeof(Logger)];
 
+alignas(MotorControl) static uint8_t leftAileronMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t rightAileronMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t elevatorMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t rudderMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t throttleMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t leftFlapMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t rightFlapMotorStorage[sizeof(MotorControl)];
+alignas(MotorControl) static uint8_t steeringMotorStorage[sizeof(MotorControl)];
+
+alignas(GPS) static uint8_t gpsStorage[sizeof(GPS)];
+alignas(RCReceiver) static uint8_t rcStorage[sizeof(RCReceiver)];
+alignas(RFD) static uint8_t rfdStorage[sizeof(RFD)];
+
+alignas(MessageQueue<RCMotorControlMessage_t>) static uint8_t amRCQueueStorage[sizeof(MessageQueue<RCMotorControlMessage_t>)];
+alignas(MessageQueue<char[100]>) static uint8_t smLoggerQueueStorage[sizeof(MessageQueue<char[100]>)];
+alignas(MessageQueue<TMMessage_t>) static uint8_t tmQueueStorage[sizeof(MessageQueue<TMMessage_t>)];
+alignas(MessageQueue<mavlink_message_t>) static uint8_t messageBufferStorage[sizeof(MessageQueue<mavlink_message_t>)];
+
+// ----------------------------------------------------------------------------
+// Global handles
+// ----------------------------------------------------------------------------
+SystemUtils *systemUtilsHandle = nullptr;
 IndependentWatchdog *iwdgHandle = nullptr;
 Logger *loggerHandle = nullptr;
 
@@ -26,7 +54,6 @@ MotorControl *steeringMotorHandle = nullptr;
 
 GPS *gpsHandle = nullptr;
 RCReceiver *rcHandle = nullptr;
-
 RFD *rfdHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
@@ -34,8 +61,11 @@ MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
 MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
 MessageQueue<mavlink_message_t> *messageBufferHandle = nullptr;
 
-MotorInstance_t rollLeftMotorInstance;
-MotorInstance_t rollRightMotorInstance;
+// ----------------------------------------------------------------------------
+// Motor instances & groups
+// ----------------------------------------------------------------------------
+MotorInstance_t leftAileronMotorInstance;
+MotorInstance_t rightAileronMotorInstance;
 MotorInstance_t elevatorMotorInstance;
 MotorInstance_t rudderMotorInstance;
 MotorInstance_t throttleMotorInstance;
@@ -43,8 +73,8 @@ MotorInstance_t leftFlapMotorInstance;
 MotorInstance_t rightFlapMotorInstance;
 MotorInstance_t steeringMotorInstance;
 
-MotorInstance_t rollMotorInstance[2];
-MotorInstance_t flapMotorInstance[2];
+MotorInstance_t aileronMotorInstances[2];
+MotorInstance_t flapMotorInstances[2];
 
 MotorGroupInstance_t rollMotors;
 MotorGroupInstance_t pitchMotors;
@@ -53,32 +83,38 @@ MotorGroupInstance_t throttleMotors;
 MotorGroupInstance_t flapMotors;
 MotorGroupInstance_t steeringMotors;
 
+// ----------------------------------------------------------------------------
+// Initialization (no heap allocations)
+// ----------------------------------------------------------------------------
 void initDrivers()
 {
-    systemUtilsHandle = new SystemUtils();
+    // Core utilities
+    systemUtilsHandle = new (&systemUtilsStorage) SystemUtils();
+    iwdgHandle = new (&iwdgStorage) IndependentWatchdog(&hiwdg);
+    loggerHandle = new (&loggerStorage) Logger(); // Initialized later in RTOS task
 
-    iwdgHandle = new IndependentWatchdog(&hiwdg);
-    loggerHandle = new Logger(); // Initialized in a RTOS task
+    // Motors
+    leftAileronMotorHandle = new (&leftAileronMotorStorage) MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
+    rightAileronMotorHandle = new (&rightAileronMotorStorage) MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
+    elevatorMotorHandle = new (&elevatorMotorStorage) MotorControl(&htim3, TIM_CHANNEL_3, 5, 10);
+    rudderMotorHandle = new (&rudderMotorStorage) MotorControl(&htim3, TIM_CHANNEL_4, 5, 10);
+    throttleMotorHandle = new (&throttleMotorStorage) MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
+    leftFlapMotorHandle = new (&leftFlapMotorStorage) MotorControl(&htim1, TIM_CHANNEL_1, 5, 10);
+    rightFlapMotorHandle = new (&rightFlapMotorStorage) MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
+    steeringMotorHandle = new (&steeringMotorStorage) MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
 
-    leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
-    rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
-    elevatorMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_3, 5, 10);
-    rudderMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_4, 5, 10);
-    throttleMotorHandle = new MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
-    leftFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_1, 5, 10);
-    rightFlapMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
-    steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
-    
-    gpsHandle = new GPS(&huart2);
-    rcHandle = new RCReceiver(&huart4);
+    // Peripherals
+    gpsHandle = new (&gpsStorage) GPS(&huart2);
+    rcHandle = new (&rcStorage) RCReceiver(&huart4);
+    rfdHandle = new (&rfdStorage) RFD(&huart3);
 
-    rfdHandle = new RFD(&huart3);
+    // Queues
+    amRCQueueHandle = new (&amRCQueueStorage) MessageQueue<RCMotorControlMessage_t>(&amQueueId);
+    smLoggerQueueHandle = new (&smLoggerQueueStorage) MessageQueue<char[100]>(&smLoggerQueueId);
+    tmQueueHandle = new (&tmQueueStorage) MessageQueue<TMMessage_t>(&tmQueueId);
+    messageBufferHandle = new (&messageBufferStorage) MessageQueue<mavlink_message_t>(&messageBufferId);
 
-    amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
-    smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);
-    tmQueueHandle = new MessageQueue<TMMessage_t>(&tmQueueId);
-    messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
-
+    // Initialize hardware components
     leftAileronMotorHandle->init();
     rightAileronMotorHandle->init();
     elevatorMotorHandle->init();
@@ -91,8 +127,9 @@ void initDrivers()
     rcHandle->init();
     gpsHandle->init();
 
-    rollLeftMotorInstance = {leftAileronMotorHandle, true};
-    rollRightMotorInstance = {rightAileronMotorHandle, true};
+    // Motor instance bindings
+    leftAileronMotorInstance = {leftAileronMotorHandle, true};
+    rightAileronMotorInstance = {rightAileronMotorHandle, true};
     elevatorMotorInstance = {elevatorMotorHandle, false};
     rudderMotorInstance = {rudderMotorHandle, false};
     throttleMotorInstance = {throttleMotorHandle, false};
@@ -100,16 +137,16 @@ void initDrivers()
     rightFlapMotorInstance = {rightFlapMotorHandle, true};
     steeringMotorInstance = {steeringMotorHandle, true};
 
-    rollMotorInstance[0] = rollLeftMotorInstance;
-    rollMotorInstance[1] = rollRightMotorInstance;
+    aileronMotorInstances[0] = leftAileronMotorInstance;
+    aileronMotorInstances[1] = rightAileronMotorInstance;
 
-    flapMotorInstance[0] = leftFlapMotorInstance;
-    flapMotorInstance[1] = rightFlapMotorInstance;
+    flapMotorInstances[0] = leftFlapMotorInstance;
+    flapMotorInstances[1] = rightFlapMotorInstance;
 
-    rollMotors = {rollMotorInstance, 2};
+    rollMotors = {aileronMotorInstances, 2};
     pitchMotors = {&elevatorMotorInstance, 1};
     yawMotors = {&rudderMotorInstance, 1};
     throttleMotors = {&throttleMotorInstance, 1};
-    flapMotors = {flapMotorInstance, 2};
+    flapMotors = {flapMotorInstances, 2};
     steeringMotors = {&steeringMotorInstance, 1};
 }

@@ -9,6 +9,8 @@
 class GPS : public IGPS {
 
 public:
+    UART_HandleTypeDef* getHUART();
+
     GpsData_t readData() override;
 
     GPS(UART_HandleTypeDef *huart);
