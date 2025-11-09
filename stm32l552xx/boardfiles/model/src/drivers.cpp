@@ -23,7 +23,7 @@ MotorControl *rightFlapMotorHandle = nullptr;
 MotorControl *steeringMotorHandle = nullptr;
 
 GPS *gpsHandle = nullptr;
-RCReceiver *rcHandle = nullptr;
+CRSFReceiver *rcHandle = nullptr;
 
 RFD *rfdHandle = nullptr;
 
@@ -66,7 +66,7 @@ void initDrivers()
     steeringMotorHandle = new MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     
     gpsHandle = new GPS(&huart2);
-    rcHandle = new RCReceiver(&huart4);
+    rcHandle = new CRSFReceiver(&huart4);
 
     rfdHandle = new RFD(&huart3);
 
