@@ -15,6 +15,7 @@ set(SM_SRC
 )
 set(SM_INC
     "include/system_manager/"
+    "include/system_manager/config_utils/"
 )
 
 # telemetry manager files

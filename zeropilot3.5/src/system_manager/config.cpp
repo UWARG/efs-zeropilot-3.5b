@@ -132,8 +132,8 @@ int Config::writeParam(ConfigKey key, float newValue) {
   if (findParam(config_table[static_cast<size_t>(key)].key, val, tblIdx) == 0) {
     writeRes = textIO->write(strValue);
   } else {
-    char keyStr[MAX_KEY_LENGTH];
-    snprintf(keyStr, MAX_KEY_LENGTH, "%s,", config_table[static_cast<size_t>(key)].key);
+    char keyStr[MAX_KEY_LENGTH + 1]; // 1 extra space for the comma
+    snprintf(keyStr, MAX_KEY_LENGTH + 1, "%s,", config_table[static_cast<size_t>(key)].key);
 
     textIO->seek(textIO->fsize());
     if (textIO->tell() != 0) {

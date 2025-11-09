@@ -12,7 +12,7 @@ SystemManager::SystemManager(
     IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<TMSMMessage_t> *tmSmQueue,
     IMessageQueue<char[100]> *smLoggerQueue,
-    IMessageQueue<ConfigMessage_t> *smConfigRouteQueue[static_cast<size_t>(Owner::COUNT)],
+    IMessageQueue<ConfigMessage_t> **smConfigRouteQueue,
     Logger *logger,
     Config *config) :
         iwdgDriver(iwdgDriver),

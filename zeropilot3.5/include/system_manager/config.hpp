@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config_utils/config_keys.hpp"
+#include "config_keys.hpp"
 #include "textio_iface.hpp"
 
 class Config {

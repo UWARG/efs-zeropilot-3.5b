@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <mavlink.h>
-#include "../system_manager/config_utils/config_keys.hpp"
+#include "config_keys.hpp"
 
 enum class TMSMRequest {
     REQUEST_PARAMS,

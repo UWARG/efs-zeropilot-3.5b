@@ -13,6 +13,7 @@ extern UART_HandleTypeDef huart4;
 SystemUtils *systemUtilsHandle = nullptr;
 
 IndependentWatchdog *iwdgHandle = nullptr;
+SDIO *textIOHandle = nullptr;
 Logger *loggerHandle = nullptr;
 
 MotorControl *leftAileronMotorHandle = nullptr;
@@ -31,9 +32,10 @@ RFD *rfdHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
-MessageQueue<ConfigMessage_t> *smConfigQueueHandle = nullptr;
+IMessageQueue<ConfigMessage_t> **smConfigRouteQueueHandle = nullptr;
 MessageQueue<ConfigMessage_t> *smConfigAttitudeQueueHandle = nullptr;
 MessageQueue<TMMessage_t> *tmQueueHandle = nullptr;
+MessageQueue<TMSMMessage_t> *tmSmQueueHandle = nullptr;
 MessageQueue<mavlink_message_t> *messageBufferHandle = nullptr;
 
 MotorInstance_t rollLeftMotorInstance;
@@ -61,7 +63,7 @@ void initDrivers()
 
     iwdgHandle = new IndependentWatchdog(&hiwdg);
     textIOHandle = new SDIO();
-    loggerHandle = new Logger(); // Initialized in a RTOS task
+    loggerHandle = new Logger(textIOHandle); // Initialized in a RTOS task
 
     leftAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
     rightAileronMotorHandle = new MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);

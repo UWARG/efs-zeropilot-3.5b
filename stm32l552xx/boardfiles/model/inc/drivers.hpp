@@ -7,7 +7,8 @@
 #include "motor_datatype.hpp"
 #include "rc.hpp"
 #include "rc_motor_control.hpp"
-#include "system_manager/config_utils/config_keys.hpp"
+#include "config_keys.hpp"
+#include "config_msg.hpp"
 #include "SDIO.hpp"
 #include "tm_queue.hpp"
 #include "mavlink.h"
@@ -19,6 +20,7 @@ extern SystemUtils *systemUtilsHandle;
 
 extern IndependentWatchdog *iwdgHandle;
 extern SDIO *textIOHandle;
+extern Logger *loggerHandle;
 
 extern MotorControl *leftAileronMotorHandle;
 extern MotorControl *rightAileronMotorHandle;
@@ -37,7 +39,7 @@ extern RFD *rfdHandle;
 extern MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle;
 extern MessageQueue<char[100]> *smLoggerQueueHandle;
 extern MessageQueue<ConfigMessage_t> *smConfigAttitudeQueueHandle;
-extern MessageQueue<ConfigMessage_t> *smConfigRouteQueueHandle[static_cast<size_t>(Owner::COUNT)];
+extern IMessageQueue<ConfigMessage_t> **smConfigRouteQueueHandle;
 extern MessageQueue<TMMessage_t> *tmQueueHandle;
 extern MessageQueue<TMSMMessage_t> *tmSmQueueHandle;
 extern MessageQueue<mavlink_message_t> *messageBufferHandle;
