@@ -93,6 +93,9 @@ void AttitudeManager::runControlLoopIteration() {
     }
 
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
+
+    // Handle config changes
+    handleConfigChanges();
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -111,6 +114,9 @@ void AttitudeManager::handleConfigChanges() {
     ConfigMessage_t *pConfigMsg = new ConfigMessage_t;
     smConfigAttitudeQueue->get(pConfigMsg);
     // Handle config changes here for whatever config keys the attitude manager owns
+    char logMsg[100];
+    snprintf(logMsg, 100, "AttitudeManager: Config key %zu changed to value %f", pConfigMsg->key, pConfigMsg->value);
+    smLoggerQueue->push(&logMsg);
 
     delete pConfigMsg;
     return;
