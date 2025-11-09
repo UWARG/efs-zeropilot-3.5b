@@ -1,4 +1,5 @@
 #include "logger.hpp"
+#include "config_utils/config_defines.hpp"
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
@@ -42,7 +43,7 @@ int Logger::log(const char message[100]) {
 
 #if defined(SD_CARD_LOGGING)
     int res;
-    res = textIO->open(logFile);
+    res = textIO->open(logFile, FA_WRITE | FA_OPEN_APPEND);
 
     snprintf(msgToSend + tsStrLen, 100, message);
     snprintf(msgToSend + tsStrLen + strlen(message), 3, "\r\n");
@@ -67,7 +68,7 @@ int Logger::log(const char message[][100], int count) {
 
 #if defined(SD_CARD_LOGGING)
     int res;
-    textIO->open(logFile);
+    textIO->open(logFile, FA_WRITE | FA_OPEN_APPEND);
 
     for (int i = 0; i < count; i++) {
       snprintf(msgToSend + tsStrLen, 100, message[i]);
