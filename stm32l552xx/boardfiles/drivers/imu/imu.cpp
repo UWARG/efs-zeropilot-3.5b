@@ -11,17 +11,6 @@
 #define UB0_REG_TEMP_DATA1    0x1D
 
 
-// IMU::IMU(SPI_HandleTypeDef* spiHandle, GPIO_TypeDef* csPort, uint16_t csPin)
-//     : _spi(spiHandle), _csPort(csPort), _csPin(csPin),
-//       _gyroScale(0), _accelScale(0), _gyroFS(0), _accelFS(0),
-//       _alpha(0.1f)
-// {
-//     _gyrB[0] = _gyrB[1] = _gyrB[2] = 0.0f;
-//     _accB[0] = _accB[1] = _accB[2] = 0.0f;
-//     _filteredGyro[0] = _filteredGyro[1] = _filteredGyro[2] = 0.0f;
-// }
-
-
 IMU::IMU(SPI_HandleTypeDef* spiHandle, GPIO_TypeDef* csPort, uint16_t csPin)
     : _spi(spiHandle), _csPort(csPort), _csPin(csPin),
       _alpha(0.1f)
@@ -185,6 +174,17 @@ void IMU::processData() {
 
 // TODO: verify correctness of below functions
 /*
+IMU::IMU(SPI_HandleTypeDef* spiHandle, GPIO_TypeDef* csPort, uint16_t csPin)
+    : _spi(spiHandle), _csPort(csPort), _csPin(csPin),
+      _gyroScale(0), _accelScale(0), _gyroFS(0), _accelFS(0),
+      _alpha(0.1f)
+{
+    _gyrB[0] = _gyrB[1] = _gyrB[2] = 0.0f;
+    _accB[0] = _accB[1] = _accB[2] = 0.0f;
+    _filteredGyro[0] = _filteredGyro[1] = _filteredGyro[2] = 0.0f;
+}
+
+
 void IMU::setGyroFS(uint8_t fssel) {
     setBank(0);
     uint8_t reg;
