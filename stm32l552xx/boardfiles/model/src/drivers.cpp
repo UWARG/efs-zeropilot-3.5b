@@ -9,6 +9,7 @@ extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
+extern SPI_HandleTypeDef hspi2;
 
 SystemUtils *systemUtilsHandle = nullptr;
 
@@ -75,7 +76,7 @@ void initDrivers()
     rcHandle = new RCReceiver(&huart4);
 
     rfdHandle = new RFD(&huart3);
-    imuHandle = new IMU(&hspi1, GPIOA, GPIO_PIN_4);
+    imuHandle = new IMU(&hspi2, GPIOD, GPIO_PIN_0);
 
     amRCQueueHandle = new MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new MessageQueue<char[100]>(&smLoggerQueueId);

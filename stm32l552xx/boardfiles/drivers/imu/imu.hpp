@@ -18,7 +18,7 @@ private:
 	GPIO_TypeDef* _csPort;
 	uint16_t _csPin;
 
-	inline static constexpr int RX_BUFFER_SIZE = 15; // inline static constexpr so it doesn't polluate namespace
+	static constexpr int RX_BUFFER_SIZE = 15; // inline static constexpr so it doesn't polluate namespace
 	uint8_t imu_tx_buffer[RX_BUFFER_SIZE]; // only first bit register addr to read sensor data, rest 0
 	uint8_t imu_rx_buffer[RX_BUFFER_SIZE]; // first byte is dummy, next 14 bytes are data received
 
