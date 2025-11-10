@@ -94,7 +94,7 @@ void AttitudeManager::runControlLoopIteration() {
     }
 
     // Send IMU raw data to telemetry manager
-    IMUData_t imuData = imuDriver->getAccelGyro();
+    IMUData_t imuData = imuDriver->readRawData();
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_IMU_DATA_RATE_HZ) == 0) {
         sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
     }

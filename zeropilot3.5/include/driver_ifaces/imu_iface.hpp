@@ -11,5 +11,5 @@ protected:
 public:
     virtual ~IIMU() = default;
 	virtual int init() = 0;
-	virtual IMUData_t getAccelGyro() = 0;
+	virtual IMUData_t readRawData() = 0;
 };
