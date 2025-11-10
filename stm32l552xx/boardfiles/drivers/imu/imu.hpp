@@ -22,9 +22,8 @@ private:
 	uint8_t imu_tx_buffer[RX_BUFFER_SIZE]; // only first bit register addr to read sensor data, rest 0
 	uint8_t imu_rx_buffer[RX_BUFFER_SIZE]; // first byte is dummy, next 14 bytes are data received
 
-	uint8_t curr_register_bank = 0;
-	uint8_t state = 0;
-	volatile uint8_t spi_tx_rx_flag = 0;
+	uint8_t curr_register_bank = 5; // invalid initial state
+	volatile uint8_t spi_tx_rx_flag = 1; // set to 1 to initiate first read
 	IMUData_t imu_data = {}; // zero-initialize all floats
 
 	
@@ -80,6 +79,7 @@ public:
 	int init() override;
 
 	// Data reading
+	// First read returns all 0s, subsequent reads return latest data
 	IMUData_t readRawData() override; // non-blocking
 
 	// put this in void HAL_SPI_TxRxCpltCallback (SPI_HandleTypeDef * hspi)
