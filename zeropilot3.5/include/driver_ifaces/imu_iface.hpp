@@ -11,5 +11,6 @@ protected:
 public:
     virtual ~IIMU() = default;
 	virtual int init() = 0;
-	virtual IMUData_t readRawData() = 0;
+	virtual RAW_IMU_t readRawData() = 0;
+	virtual SCALED_IMU_t scaleIMUData(const RAW_IMU_t &rawData) = 0;
 };

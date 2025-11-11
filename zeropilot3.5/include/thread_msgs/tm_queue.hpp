@@ -95,16 +95,10 @@ inline TMMessage_t bmDataPack(uint32_t time_boot_ms, int16_t temperature, float 
     return TMMessage_t{TMMessage_t::BM_DATA, DATA, time_boot_ms};
 }
 
-inline TMMessage_t imuDataPack(uint32_t time_boot_ms, float xacc, float yacc, float zacc, float xgyro, float ygyro, float zgyro) {
-    auto xaccInt16 = static_cast<int16_t>(xacc * 1000);
-    auto yaccInt16 = static_cast<int16_t>(yacc * 1000);
-    auto zaccInt16 = static_cast<int16_t>(zacc * 1000);
-    auto xgyroInt16 = static_cast<int16_t>(xgyro * 1000);
-    auto ygyroInt16 = static_cast<int16_t>(ygyro * 1000);
-    auto zgyroInt16 = static_cast<int16_t>(zgyro * 1000);
-    auto xmag = static_cast<int16_t>(0);
-    auto ymag = static_cast<int16_t>(0);
-    auto zmag = static_cast<int16_t>(0);
-    const TMMessageData_t DATA = {.imuData ={xaccInt16, yaccInt16, zaccInt16, xgyroInt16, ygyroInt16, zgyroInt16, xmag, ymag, zmag }};
+inline TMMessage_t imuDataPack(uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro) {
+    int16_t xmag = 0;
+    int16_t ymag = 0;
+    int16_t zmag = 0;
+    const TMMessageData_t DATA = {.imuData ={xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag }};
     return TMMessage_t{TMMessage_t::RAW_IMU_DATA, DATA, time_boot_ms};
 }

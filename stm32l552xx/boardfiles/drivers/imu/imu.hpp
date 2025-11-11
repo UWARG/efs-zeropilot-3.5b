@@ -18,13 +18,16 @@ private:
 	GPIO_TypeDef* _csPort;
 	uint16_t _csPin;
 
+	static constexpr float GYRO_SEN_SCALE_FACTOR = 16.4f; // determined by GYRO_FS_SEL, page 11
+	static constexpr float ACCEL_SEN_SCALE_FACTOR = 2048.0f / 9.81f; // determined by ACCEL_FS_SEL, page 12, scale to m/s^2
+
 	static constexpr int RX_BUFFER_SIZE = 15; // inline static constexpr so it doesn't polluate namespace
 	uint8_t imu_tx_buffer[RX_BUFFER_SIZE]; // only first bit register addr to read sensor data, rest 0
 	uint8_t imu_rx_buffer[RX_BUFFER_SIZE]; // first byte is dummy, next 14 bytes are data received
 
 	uint8_t curr_register_bank = 5; // invalid initial state
 	volatile uint8_t spi_tx_rx_flag = 1; // set to 1 to initiate first read
-	IMUData_t imu_data = {}; // zero-initialize all floats
+	RAW_IMU_t raw_imu_data = {}; // zero-initialize all floats, NED frame
 
 	
 	// Utility functions
@@ -36,7 +39,7 @@ private:
 	int setBank(uint8_t bank);
 	void reset();
 	uint8_t whoAmI();
-	void processData();
+	void processRawData(); // process data in imu_rx_buffer and store in raw_imu_data, NED frame
 
 	// Configuration
 	void setLowNoiseMode();
@@ -80,7 +83,9 @@ public:
 
 	// Data reading
 	// First read returns all 0s, subsequent reads return latest data
-	IMUData_t readRawData() override; // non-blocking
+	RAW_IMU_t readRawData() override; // non-blocking
+
+	SCALED_IMU_t scaleIMUData(const RAW_IMU_t &rawData) override;
 
 	// put this in void HAL_SPI_TxRxCpltCallback (SPI_HandleTypeDef * hspi)
 	void txRxCallback();
