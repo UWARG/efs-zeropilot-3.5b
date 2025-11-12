@@ -9,6 +9,7 @@
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
 #include "imu_iface.hpp"
+#include "MahonyAHRS.hpp"
 
 #define AM_MAIN_DELAY 50
 
@@ -47,6 +48,8 @@ class AttitudeManager {
         IGPS *gpsDriver;
         IIMU *imuDriver;
 
+        Mahony mahonyFilter;
+
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
         IMessageQueue<TMMessage_t> *tmQueue;
         IMessageQueue<char[100]> *smLoggerQueue;
@@ -74,4 +77,6 @@ class AttitudeManager {
         void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 
         void sendRawIMUDataToTelemetryManager(const RAW_IMU_t &imuData, const bool &armed);
+
+        void sendAttitudeDataToTelemetryManager(const ATTITUDE_t &attitude, const bool &armed);
 };

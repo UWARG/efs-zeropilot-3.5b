@@ -1,10 +1,10 @@
 #include "attitude_manager.hpp"
 #include "rc_motor_control.hpp"
-#include "MahonyAHRS.hpp"
 
 #define AM_SCHEDULING_RATE_HZ 20
 #define AM_TELEMETRY_GPS_DATA_RATE_HZ 5
-#define AM_TELEMETRY_IMU_DATA_RATE_HZ 5
+#define AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ 5
+#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 10
 
 AttitudeManager::AttitudeManager(
     ISystemUtils *systemUtilsDriver,
@@ -49,19 +49,22 @@ void AttitudeManager::runControlLoopIteration() {
     // Send IMU raw data to telemetry manager
     RAW_IMU_t imuData = imuDriver->readRawData();
     SCALED_IMU_t scaledImuData = imuDriver->scaleIMUData(imuData);
-    // static Mahony mahonyFilter;
-    // mahonyFilter.updateIMU(
-    //     scaledImuData.xgyro,
-    //     scaledImuData.ygyro,
-    //     scaledImuData.zgyro,
-    //     scaledImuData.xacc,
-    //     scaledImuData.yacc,
-    //     scaledImuData.zacc
-    // );
-    // ATTITUDE_t attitude = mahonyFilter.getAttitude();
+    mahonyFilter.updateIMU(
+        scaledImuData.xgyro,
+        scaledImuData.ygyro,
+        scaledImuData.zgyro,
+        scaledImuData.xacc,
+        scaledImuData.yacc,
+        scaledImuData.zacc
+    );
+    ATTITUDE_t attitude = mahonyFilter.getAttitude();
 
-    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_IMU_DATA_RATE_HZ) == 0) {
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
         sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
+    }
+
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
+        sendAttitudeDataToTelemetryManager(attitude, controlMsg.arm > 0);
     }
 
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
@@ -198,7 +201,7 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
 }
 
 void AttitudeManager::sendRawIMUDataToTelemetryManager(const RAW_IMU_t &imuData, const bool &armed) { // armed functionality needed here?
-    TMMessage_t imuDataMsg = imuDataPack(
+    TMMessage_t imuDataMsg = rawImuDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
         imuData.xacc,
         imuData.yacc,
@@ -209,4 +212,15 @@ void AttitudeManager::sendRawIMUDataToTelemetryManager(const RAW_IMU_t &imuData,
     );
 
     tmQueue->push(&imuDataMsg);
+}
+
+void AttitudeManager::sendAttitudeDataToTelemetryManager(const ATTITUDE_t &attitude, const bool &armed) {
+    TMMessage_t attitudeDataMsg = attitudeDataPack(
+        systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
+        attitude.roll,
+        attitude.pitch,
+        attitude.yaw
+    );
+
+    tmQueue->push(&attitudeDataMsg);
 }

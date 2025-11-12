@@ -45,7 +45,15 @@ typedef union TMMessageData_u {
       int16_t xmag;
       int16_t ymag;
       int16_t zmag;
-  } imuData;
+  } rawImuData;
+  struct{
+      float roll;
+      float pitch;
+      float yaw;
+      float rollspeed;
+      float pitchspeed;
+      float yawspeed;
+  } attitudeData;
 } TMMessageData_t;
 
 typedef struct TMMessage{
@@ -54,7 +62,8 @@ typedef struct TMMessage{
         GPOS_DATA,
         RC_DATA,
         BM_DATA,
-        RAW_IMU_DATA
+        RAW_IMU_DATA,
+        ATTITUDE_DATA
     } dataType;
     TMMessageData_t tmMessageData;
     uint32_t timeBootMs = 0;
@@ -95,10 +104,18 @@ inline TMMessage_t bmDataPack(uint32_t time_boot_ms, int16_t temperature, float 
     return TMMessage_t{TMMessage_t::BM_DATA, DATA, time_boot_ms};
 }
 
-inline TMMessage_t imuDataPack(uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro) {
+inline TMMessage_t rawImuDataPack(uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro) {
     int16_t xmag = 0;
     int16_t ymag = 0;
     int16_t zmag = 0;
-    const TMMessageData_t DATA = {.imuData ={xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag }};
+    const TMMessageData_t DATA = {.rawImuData ={xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag }};
     return TMMessage_t{TMMessage_t::RAW_IMU_DATA, DATA, time_boot_ms};
+}
+
+inline TMMessage_t attitudeDataPack(uint32_t time_boot_ms, float roll, float pitch, float yaw) {
+    float rollspeed = 0.0f;
+    float pitchspeed = 0.0f;
+    float yawspeed = 0.0f;
+    const TMMessageData_t DATA = {.attitudeData ={roll, pitch, yaw, rollspeed, pitchspeed, yawspeed }};
+    return TMMessage_t{TMMessage_t::ATTITUDE_DATA, DATA, time_boot_ms};
 }
