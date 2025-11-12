@@ -45,6 +45,8 @@ typedef union TMMessageData_u {
       int16_t xmag;
       int16_t ymag;
       int16_t zmag;
+      uint8_t id;
+      int16_t temperature;
   } rawImuData;
   struct{
       float roll;
@@ -108,7 +110,9 @@ inline TMMessage_t rawImuDataPack(uint32_t time_boot_ms, int16_t xacc, int16_t y
     int16_t xmag = 0;
     int16_t ymag = 0;
     int16_t zmag = 0;
-    const TMMessageData_t DATA = {.rawImuData ={xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag }};
+    uint8_t id = 0;
+    int16_t temperature = 0;
+    const TMMessageData_t DATA = {.rawImuData ={xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag, id, temperature }};
     return TMMessage_t{TMMessage_t::RAW_IMU_DATA, DATA, time_boot_ms};
 }
 
