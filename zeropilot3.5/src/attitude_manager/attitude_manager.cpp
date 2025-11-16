@@ -58,9 +58,9 @@ void AttitudeManager::amUpdate() {
     );
     ATTITUDE_t attitude = mahonyFilter.getAttitudeRadians();
 
-    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
-        sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
-    }
+    // if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
+    //     sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
+    // }
 
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
         sendAttitudeDataToTelemetryManager(attitude, controlMsg.arm > 0);
