@@ -13,7 +13,6 @@ AttitudeManager::AttitudeManager(
     IMessageQueue<RCMotorControlMessage_t> *amQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<char[100]> *smLoggerQueue,
-    Flightmode *controlAlgorithm,
     MotorGroupInstance_t *rollMotors,
     MotorGroupInstance_t *pitchMotors,
     MotorGroupInstance_t *yawMotors,
@@ -27,7 +26,7 @@ AttitudeManager::AttitudeManager(
     amQueue(amQueue),
     tmQueue(tmQueue),
     smLoggerQueue(smLoggerQueue),
-    controlAlgorithm(controlAlgorithm),
+    controlAlgorithm(),
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
     yawMotors(yawMotors),
@@ -38,7 +37,7 @@ AttitudeManager::AttitudeManager(
     armAltitude(0.0f),
     amSchedulingCounter(0) {}
 
-void AttitudeManager::runControlLoopIteration() {
+void AttitudeManager::amUpdate() {
 
     // Send GPS data to telemetry manager
     GpsData_t gpsData = gpsDriver->readData();
@@ -73,12 +72,13 @@ void AttitudeManager::runControlLoopIteration() {
     bool controlRes = getControlInputs(&controlMsg);
     
     // Failsafe
+    static int noDataCount = 0;
     static bool failsafeTriggered = false;
 
     if (controlRes != true) {
         ++noDataCount;
 
-        if (noDataCount * AM_MAIN_DELAY > 1000) {
+        if (noDataCount * AM_CONTROL_LOOP_DELAY > AM_FAILSAFE_TIMEOUT) {
             outputToMotor(YAW, 50);
             outputToMotor(PITCH, 50);
             outputToMotor(ROLL, 50);
@@ -109,7 +109,7 @@ void AttitudeManager::runControlLoopIteration() {
         controlMsg.throttle = 0;
     }
 
-    RCMotorControlMessage_t motorOutputs = controlAlgorithm->runControl(controlMsg);
+    RCMotorControlMessage_t motorOutputs = controlAlgorithm.runControl(controlMsg);
 
     outputToMotor(YAW, motorOutputs.yaw);
     outputToMotor(PITCH, motorOutputs.pitch);

@@ -14,8 +14,8 @@ void amMainLoopWrapper(void *arg)
 {
   while(true)
   {
-    amHandle->runControlLoopIteration();
-    osDelay(timeToTicks(50));
+    amHandle->amUpdate();
+    osDelay(timeToTicks(AM_CONTROL_LOOP_DELAY));
   }
 }
 
