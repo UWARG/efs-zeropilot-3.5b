@@ -4,7 +4,7 @@
 #define AM_SCHEDULING_RATE_HZ 20
 #define AM_TELEMETRY_GPS_DATA_RATE_HZ 5
 #define AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ 5
-#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 10
+#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 20
 
 AttitudeManager::AttitudeManager(
     ISystemUtils *systemUtilsDriver,
@@ -57,7 +57,7 @@ void AttitudeManager::runControlLoopIteration() {
         scaledImuData.yacc,
         scaledImuData.zacc
     );
-    ATTITUDE_t attitude = mahonyFilter.getAttitude();
+    ATTITUDE_t attitude = mahonyFilter.getAttitudeRadians();
 
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
         sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
