@@ -31,6 +31,7 @@ alignas(MotorControl) static uint8_t steeringMotorStorage[sizeof(MotorControl)];
 alignas(GPS) static uint8_t gpsStorage[sizeof(GPS)];
 alignas(RCReceiver) static uint8_t rcStorage[sizeof(RCReceiver)];
 alignas(RFD) static uint8_t rfdStorage[sizeof(RFD)];
+alignas(IMU) static uint8_t imuStorage[sizeof(IMU)];
 
 alignas(MessageQueue<RCMotorControlMessage_t>) static uint8_t amRCQueueStorage[sizeof(MessageQueue<RCMotorControlMessage_t>)];
 alignas(MessageQueue<char[100]>) static uint8_t smLoggerQueueStorage[sizeof(MessageQueue<char[100]>)];
@@ -110,7 +111,7 @@ void initDrivers()
     gpsHandle = new (&gpsStorage) GPS(&huart2);
     rcHandle = new (&rcStorage) RCReceiver(&huart4);
     rfdHandle = new (&rfdStorage) RFD(&huart3);
-    imuHandle = new IMU(&hspi2, GPIOD, GPIO_PIN_0);
+    imuHandle = new (&imuStorage) IMU(&hspi2, GPIOD, GPIO_PIN_0);
 
     // Queues
     amRCQueueHandle = new (&amRCQueueStorage) MessageQueue<RCMotorControlMessage_t>(&amQueueId);
