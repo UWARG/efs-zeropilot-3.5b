@@ -4,7 +4,7 @@
 #include "rfd.hpp"
 #include "drivers.hpp"
 #include "utils.h"
-#include "../drivers/imu/imu.hpp"
+#include "imu.hpp"
 #include "user_diskio_spi.h"
 
 #ifdef __cplusplus

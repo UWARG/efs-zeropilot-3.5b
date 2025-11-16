@@ -12,7 +12,7 @@
 #include "queue.hpp"
 #include "gps.hpp"
 #include "rfd.hpp"
-#include "../drivers/imu/imu.hpp"
+#include "imu.hpp"
 
 extern SystemUtils *systemUtilsHandle;
 
