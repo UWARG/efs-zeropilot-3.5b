@@ -19,28 +19,30 @@ static const osMutexAttr_t itmMutexAttr = {
 };
 /* define mutexes end */
 
-void initMutexes()
-{
-  itmMutex = osMutexNew(&itmMutexAttr);
-}
+extern "C" {
+  void initMutexes()
+  {
+    itmMutex = osMutexNew(&itmMutexAttr);
+  }
 
-/* --- sempahores --- */
-/* define semaphores begin */
-/* define semaphores end */
+  /* --- sempahores --- */
+  /* define semaphores begin */
+  /* define semaphores end */
 
-void initSemphrs()
-{
+  void initSemphrs()
+  {
 
-}
+  }
 
-/* --- queues --- */
-/* define queues begin */
-/* define queues end */
+  /* --- queues --- */
+  /* define queues begin */
+  /* define queues end */
 
-void initQueues()
-{
-  amQueueId = osMessageQueueNew(16, sizeof(RCMotorControlMessage_t), NULL);
-  smLoggerQueueId = osMessageQueueNew(16, sizeof(char[100]), NULL);
-  tmQueueId = osMessageQueueNew(16, sizeof(TMMessage_t), NULL);
-  messageBufferId = osMessageQueueNew(16, sizeof(mavlink_message_t), NULL);
+  void initQueues()
+  {
+    amQueueId = osMessageQueueNew(16, sizeof(RCMotorControlMessage_t), NULL);
+    smLoggerQueueId = osMessageQueueNew(16, sizeof(char[100]), NULL);
+    tmQueueId = osMessageQueueNew(16, sizeof(TMMessage_t), NULL);
+    messageBufferId = osMessageQueueNew(16, sizeof(mavlink_message_t), NULL);
+  }
 }
