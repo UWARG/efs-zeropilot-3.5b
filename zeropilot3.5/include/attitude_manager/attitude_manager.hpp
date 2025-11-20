@@ -74,7 +74,7 @@ class AttitudeManager {
 
         void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 
-        void sendRawIMUDataToTelemetryManager(const RawImu_t &imuData, const bool &armed);
+        void sendRawIMUDataToTelemetryManager(const RawImu_t &imuData);
 
-        void sendAttitudeDataToTelemetryManager(const Attitude_t &attitude, const bool &armed);
+        void sendAttitudeDataToTelemetryManager(const Attitude_t &attitude);
 };
