@@ -34,30 +34,14 @@ private:
 public:
 	Mahony();
 	void begin(float sampleFrequency) { invSampleFreq = 1.0f / sampleFrequency; }
-	void updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
-	// float getRoll() {
-	// 	return roll * 57.29578f;
-	// }
-	// float getPitch() {
-	// 	return pitch * 57.29578f;
-	// }
-	// float getYaw() {
-	// 	return yaw * 57.29578f + 180.0f;
-	// }
-	// float getRollRadians() {
-	// 	return roll;
-	// }
-	// float getPitchRadians() {
-	// 	return pitch;
-	// }
-	// float getYawRadians() {
-	// 	return yaw;
-	// }
 
-	ATTITUDE_t getAttitude() {
+	void updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
+
+	Attitude_t getAttitude() {
 		return {roll * 57.29578f, pitch * 57.29578f, yaw * 57.29578f + 180.0f};
 	}
-	ATTITUDE_t getAttitudeRadians() {
+
+	Attitude_t getAttitudeRadians() {
 		return {roll, pitch, yaw};
 	}
 };

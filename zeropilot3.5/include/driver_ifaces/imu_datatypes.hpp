@@ -26,4 +26,4 @@ typedef struct {
     float roll;
     float pitch;
     float yaw;
-} ATTITUDE_t;
+} Attitude_t;

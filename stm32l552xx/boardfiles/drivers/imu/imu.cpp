@@ -35,44 +35,51 @@ void IMU::csHigh() {
 }
 
 
-int IMU::setBank(uint8_t bank) {
+HAL_StatusTypeDef IMU::setBank(uint8_t bank) {
     if (curr_register_bank == bank) {
-        return 1;
+        return HAL_OK;
     }
     uint8_t tx_buf[2] = {REG_BANK_SEL, bank};
     csLow();
-    HAL_SPI_Transmit(_spi, tx_buf, 2, HAL_MAX_DELAY);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(_spi, tx_buf, 2, HAL_MAX_DELAY);
     csHigh();
 
     curr_register_bank = bank;
-    return 1;
+    return status;
 }
 
 
-int IMU::readRegister(uint8_t bank, uint8_t register_addr, uint8_t* data) {
+HAL_StatusTypeDef IMU::readRegister(uint8_t bank, uint8_t register_addr, uint8_t* data) {
     
-    setBank(bank);
+    HAL_StatusTypeDef status = setBank(bank);
+    if (status != HAL_OK) {
+        return status;
+    }
     
     uint8_t tx[2] = {register_addr | 0b10000000, 0}; // set 8-th bit to 1 for read, page 53
     uint8_t rx[2] = {0, 0};
 
     csLow();
-    HAL_SPI_TransmitReceive(_spi, tx, rx, 2, HAL_MAX_DELAY);
+    status = HAL_SPI_TransmitReceive(_spi, tx, rx, 2, HAL_MAX_DELAY);
     csHigh();
 
     *data = rx[1];
 
-    return (HAL_OK);
+    return status;
 }
 
 
-void IMU::writeRegister(uint8_t bank, uint8_t register_addr, uint8_t data) {
+HAL_StatusTypeDef IMU::writeRegister(uint8_t bank, uint8_t register_addr, uint8_t data) {
     
-    setBank(bank);
+    HAL_StatusTypeDef status = setBank(bank);
+    if (status != HAL_OK) {
+        return status;
+    }
     uint8_t tx_buf[2] = {register_addr, data};
     csLow();
-    HAL_SPI_Transmit(_spi, tx_buf, 2, HAL_MAX_DELAY);
+    status = HAL_SPI_Transmit(_spi, tx_buf, 2, HAL_MAX_DELAY);
     csHigh();
+    return status;
 }
 
 

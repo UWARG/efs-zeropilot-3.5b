@@ -21,7 +21,7 @@ private:
 	static constexpr float GYRO_SEN_SCALE_FACTOR = 16.4f; // determined by GYRO_FS_SEL, page 11
 	static constexpr float ACCEL_SEN_SCALE_FACTOR = 2048.0f / 9.81f; // determined by ACCEL_FS_SEL, page 12, scale to m/s^2
 
-	static constexpr int RX_BUFFER_SIZE = 15; // inline static constexpr so it doesn't polluate namespace
+	static constexpr int RX_BUFFER_SIZE = 15; // inline static constexpr so it doesn't pollute namespace
 	uint8_t imu_tx_buffer[RX_BUFFER_SIZE]; // only first bit register addr to read sensor data, rest 0
 	uint8_t imu_rx_buffer[RX_BUFFER_SIZE]; // first byte is dummy, next 14 bytes are data received
 
@@ -31,12 +31,12 @@ private:
 
 	
 	// Utility functions
-	void writeRegister(uint8_t bank, uint8_t register_addr, uint8_t data); // blocking
-	int readRegister(uint8_t bank, uint8_t register_addr, uint8_t* data); // blocking
+	HAL_StatusTypeDef writeRegister(uint8_t bank, uint8_t register_addr, uint8_t data); // blocking
+	HAL_StatusTypeDef readRegister(uint8_t bank, uint8_t register_addr, uint8_t* data); // blocking
 	
 	void csLow();
 	void csHigh();
-	int setBank(uint8_t bank);
+	HAL_StatusTypeDef setBank(uint8_t bank);
 	void reset();
 	uint8_t whoAmI();
 	void processRawData(); // process data in imu_rx_buffer and store in raw_imu_data, NED frame

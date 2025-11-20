@@ -4,7 +4,7 @@
 #define AM_SCHEDULING_RATE_HZ 20
 #define AM_TELEMETRY_GPS_DATA_RATE_HZ 5
 #define AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ 5
-#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 20
+#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 5
 
 AttitudeManager::AttitudeManager(
     ISystemUtils *systemUtilsDriver,
@@ -38,33 +38,6 @@ AttitudeManager::AttitudeManager(
     amSchedulingCounter(0) {}
 
 void AttitudeManager::amUpdate() {
-
-    // Send GPS data to telemetry manager
-    GpsData_t gpsData = gpsDriver->readData();
-    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
-        sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
-    }
-
-    // Send IMU raw data to telemetry manager
-    RawImu_t imuData = imuDriver->readRawData();
-    ScaledImu_t scaledImuData = imuDriver->scaleIMUData(imuData);
-    mahonyFilter.updateIMU(
-        scaledImuData.xgyro,
-        scaledImuData.ygyro,
-        scaledImuData.zgyro,
-        scaledImuData.xacc,
-        scaledImuData.yacc,
-        scaledImuData.zacc
-    );
-    ATTITUDE_t attitude = mahonyFilter.getAttitudeRadians();
-
-    // if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
-    //     sendRawIMUDataToTelemetryManager(imuData, controlMsg.arm > 0);
-    // }
-
-    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
-        sendAttitudeDataToTelemetryManager(attitude, controlMsg.arm > 0);
-    }
 
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
 
@@ -109,6 +82,33 @@ void AttitudeManager::amUpdate() {
         controlMsg.throttle = 0;
     }
 
+    // Send GPS data to telemetry manager
+    GpsData_t gpsData = gpsDriver->readData();
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
+        sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
+    }
+
+    // Send IMU raw data to telemetry manager
+    RawImu_t imuData = imuDriver->readRawData();
+    ScaledImu_t scaledImuData = imuDriver->scaleIMUData(imuData);
+    mahonyFilter.updateIMU(
+        scaledImuData.xgyro,
+        scaledImuData.ygyro,
+        scaledImuData.zgyro,
+        scaledImuData.xacc,
+        scaledImuData.yacc,
+        scaledImuData.zacc
+    );
+    Attitude_t attitude = mahonyFilter.getAttitudeRadians();
+
+    // if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
+    //     sendRawIMUDataToTelemetryManager(imuData);
+    // }
+
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
+        sendAttitudeDataToTelemetryManager(attitude);
+    }
+
     RCMotorControlMessage_t motorOutputs = controlAlgorithm.runControl(controlMsg);
 
     outputToMotor(YAW, motorOutputs.yaw);
@@ -117,8 +117,6 @@ void AttitudeManager::amUpdate() {
     outputToMotor(THROTTLE, motorOutputs.throttle);
     outputToMotor(FLAP_ANGLE, motorOutputs.flapAngle);
     outputToMotor(STEERING, motorOutputs.yaw);
-
-    return;
 }
 
 bool AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
@@ -200,7 +198,7 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
     tmQueue->push(&gpsDataMsg);
 }
 
-void AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData, const bool &armed) { // armed functionality needed here?
+void AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData) {
     TMMessage_t imuDataMsg = rawImuDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
         imuData.xacc,
@@ -214,7 +212,7 @@ void AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData, 
     tmQueue->push(&imuDataMsg);
 }
 
-void AttitudeManager::sendAttitudeDataToTelemetryManager(const ATTITUDE_t &attitude, const bool &armed) {
+void AttitudeManager::sendAttitudeDataToTelemetryManager(const Attitude_t &attitude) {
     TMMessage_t attitudeDataMsg = attitudeDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
         attitude.roll,
