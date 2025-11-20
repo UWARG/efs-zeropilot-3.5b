@@ -46,8 +46,8 @@ void AttitudeManager::amUpdate() {
     }
 
     // Send IMU raw data to telemetry manager
-    RAW_IMU_t imuData = imuDriver->readRawData();
-    SCALED_IMU_t scaledImuData = imuDriver->scaleIMUData(imuData);
+    RawImu_t imuData = imuDriver->readRawData();
+    ScaledImu_t scaledImuData = imuDriver->scaleIMUData(imuData);
     mahonyFilter.updateIMU(
         scaledImuData.xgyro,
         scaledImuData.ygyro,
@@ -200,7 +200,7 @@ void AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData, co
     tmQueue->push(&gpsDataMsg);
 }
 
-void AttitudeManager::sendRawIMUDataToTelemetryManager(const RAW_IMU_t &imuData, const bool &armed) { // armed functionality needed here?
+void AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData, const bool &armed) { // armed functionality needed here?
     TMMessage_t imuDataMsg = rawImuDataPack(
         systemUtilsDriver->getCurrentTimestampMs(), // time_boot_ms
         imuData.xacc,

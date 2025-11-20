@@ -27,7 +27,7 @@ private:
 
 	uint8_t curr_register_bank = 5; // invalid initial state
 	volatile uint8_t spi_tx_rx_flag = 1; // set to 1 to initiate first read
-	RAW_IMU_t raw_imu_data = {}; // zero-initialize all floats, NED frame
+	RawImu_t raw_imu_data = {}; // zero-initialize all floats, NED frame
 
 	
 	// Utility functions
@@ -83,9 +83,9 @@ public:
 
 	// Data reading
 	// First read returns all 0s, subsequent reads return latest data
-	RAW_IMU_t readRawData() override; // non-blocking
+	RawImu_t readRawData() override; // non-blocking
 
-	SCALED_IMU_t scaleIMUData(const RAW_IMU_t &rawData) override;
+	ScaledImu_t scaleIMUData(const RawImu_t &rawData) override;
 
 	// put this in void HAL_SPI_TxRxCpltCallback (SPI_HandleTypeDef * hspi)
 	void txRxCallback();

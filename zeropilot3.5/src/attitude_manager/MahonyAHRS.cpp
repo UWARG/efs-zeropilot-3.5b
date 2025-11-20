@@ -28,8 +28,8 @@
 // Definitions
 
 #define DEFAULT_SAMPLE_FREQ	512.0f	// sample frequency in Hz
-#define twoKpDef	(30.0f)	// proportional gain
-#define twoKiDef	(2.0f)	// integral gain
+#define TWO_KP_DEF	(30.0f)	// proportional gain
+#define TWO_KI_DEF	(2.0f)	// integral gain
 
 
 //============================================================================================
@@ -40,8 +40,8 @@
 
 Mahony::Mahony()
 {
-	twoKp = twoKpDef;	// 2 * proportional gain (Kp)
-	twoKi = twoKiDef;	// 2 * integral gain (Ki)
+	twoKp = TWO_KP_DEF;	// 2 * proportional gain (Kp)
+	twoKi = TWO_KI_DEF;	// 2 * integral gain (Ki)
 	q0 = 1.0f;
 	q1 = 0.0f;
 	q2 = 0.0f;

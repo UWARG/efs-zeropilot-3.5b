@@ -10,8 +10,8 @@
 // 02/10/2011	SOH Madgwick	Optimised for reduced CPU load
 //
 //=============================================================================================
-#ifndef MahonyAHRS_h
-#define MahonyAHRS_h
+#ifndef MAHONY_AHRS_H
+#define MAHONY_AHRS_H
 #include <math.h>
 #include "imu_datatypes.hpp"
 

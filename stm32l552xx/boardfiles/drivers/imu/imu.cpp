@@ -76,7 +76,7 @@ void IMU::writeRegister(uint8_t bank, uint8_t register_addr, uint8_t data) {
 }
 
 
-RAW_IMU_t IMU::readRawData() {
+RawImu_t IMU::readRawData() {
     setBank(0);
 
     if (spi_tx_rx_flag) {
@@ -170,8 +170,8 @@ void IMU::processRawData() {
     // raw_imu_data.zgyro = ((float)-gyr_temp[2]);
 }
 
-SCALED_IMU_t IMU::scaleIMUData(const RAW_IMU_t &rawData) {
-    SCALED_IMU_t scaledData;
+ScaledImu_t IMU::scaleIMUData(const RawImu_t &rawData) {
+    ScaledImu_t scaledData;
 
     scaledData.xacc = (float)rawData.xacc / ACCEL_SEN_SCALE_FACTOR;
     scaledData.yacc = (float)rawData.yacc / ACCEL_SEN_SCALE_FACTOR;

@@ -10,7 +10,7 @@ typedef struct {
     int16_t xgyro;
     int16_t ygyro;
     int16_t zgyro;
-} RAW_IMU_t;
+} RawImu_t;
 
 typedef struct {
     float xacc;
@@ -19,7 +19,7 @@ typedef struct {
     float xgyro;
     float ygyro;
     float zgyro;
-} SCALED_IMU_t;
+} ScaledImu_t;
 
 // Attitude in radians
 typedef struct {
