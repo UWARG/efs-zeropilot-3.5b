@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(gtestzeropilot3.5)
+project(gtestzeropilot4.0)
 
 # ========== test files begin ==========
 # attitude manager test files

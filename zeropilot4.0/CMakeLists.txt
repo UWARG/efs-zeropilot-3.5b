@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(zeropilot3.5)
+project(zeropilot4.0)
 
 include(${CMAKE_SOURCE_DIR}/common.cmake)
 
