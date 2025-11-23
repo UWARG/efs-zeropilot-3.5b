@@ -69,6 +69,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FatFs/src"/>
 									<listOptionValue builtIn="false" value="../boardfiles/utils"/>
 									<listOptionValue builtIn="false" value="../boardfiles/drivers/logger"/>
+									<listOptionValue builtIn="false" value="../boardfiles/rtos/museq"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.219445963" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -217,6 +218,9 @@
 									<listOptionValue builtIn="false" value="../FATFS/Target"/>
 									<listOptionValue builtIn="false" value="../FATFS/App"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FatFs/src"/>
+									<listOptionValue builtIn="false" value="../boardfiles/utils"/>
+									<listOptionValue builtIn="false" value="../boardfiles/drivers/logger"/>
+									<listOptionValue builtIn="false" value="../boardfiles/rtos/museq"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/boardfiles/drivers/rfd}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2/all}&quot;"/>
@@ -342,6 +346,7 @@
 												<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FatFs/src"/>
 												<listOptionValue builtIn="false" value="../boardfiles/utils"/>
 												<listOptionValue builtIn="false" value="../boardfiles/drivers/logger"/>
+												<listOptionValue builtIn="false" value="../boardfiles/rtos/museq"/>
 												<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/boardfiles/drivers/rfd}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2/all}&quot;"/>
