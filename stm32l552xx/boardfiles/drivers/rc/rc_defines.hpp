@@ -1,7 +1,8 @@
 #pragma once
+
 #include <cstdint>
 
-static constexpr uint8_t SBUS_BYTE_COUNT = 25;
+static constexpr uint8_t SBUS_PACKET_SIZE = 25;
 static constexpr uint8_t SBUS_CHANNEL_COUNT = 16;
 static constexpr uint8_t SBUS_MAX_BTYES_PER_CHANNEL = 3;
 

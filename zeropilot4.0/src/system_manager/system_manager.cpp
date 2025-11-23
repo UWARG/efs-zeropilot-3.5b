@@ -1,18 +1,25 @@
 #include "system_manager.hpp"
 
+#define SM_SCHEDULING_RATE_HZ 20
+#define SM_TELEMETRY_HEARTBEAT_RATE_HZ 1
+#define SM_TELEMETRY_RC_DATA_RATE_HZ 5
+
 SystemManager::SystemManager(
+    ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
     IRCReceiver *rcDriver,
     IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<char[100]> *smLoggerQueue) :
+        systemUtilsDriver(systemUtilsDriver),
         iwdgDriver(iwdgDriver),
         loggerDriver(loggerDriver),
         rcDriver(rcDriver),
         amRCQueue(amRCQueue),
         tmQueue(tmQueue),
-        smLoggerQueue(smLoggerQueue) {}
+        smLoggerQueue(smLoggerQueue),
+        smSchedulingCounter(0) {}
 
 void SystemManager::smUpdate() {
     // Kick the watchdog
@@ -34,24 +41,56 @@ void SystemManager::smUpdate() {
     } else {
         oldDataCount += 1;
 
-        if ((oldDataCount * SM_MAIN_DELAY > 500) && rcConnected) {
+        if ((oldDataCount * SM_CONTROL_LOOP_DELAY > SM_RC_TIMEOUT) && rcConnected) {
             loggerDriver->log("RC Disconnected");
             rcConnected = false;
         }
     }
 
     // Send RC data to TM
-    sendRCDataToTelemetryManager(rcData);
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_RC_DATA_RATE_HZ) == 0) {
+        sendRCDataToTelemetryManager(rcData);
+    }
+
+    // Populate baseMode based on arm state
+    uint8_t baseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
+    if (rcData.arm) {
+        baseMode |= MAV_MODE_FLAG_SAFETY_ARMED;
+    }
+
+    // Determine system status based on RC connection and arm state
+    MAV_STATE systemStatus = MAV_STATE_ACTIVE;
+    if (!rcConnected) {
+        systemStatus = MAV_STATE_CRITICAL;
+    } else if (!rcData.arm) {
+        systemStatus = MAV_STATE_STANDBY;
+    }
+
+    // Custom mode not used, set to 0
+    uint32_t customMode = 0;
+
+    // Send Heartbeat data to TM at a 1Hz rate
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
+        sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+    }
 
     // Log if new messages
     if (smLoggerQueue->count() > 0) {
         sendMessagesToLogger();
     }
+
+    // Increment scheduling counter
+    smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
 }
 
 void SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
-    TMMessage_t rcDataMsg =  rcDataPack(0, rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
+    TMMessage_t rcDataMsg =  rcDataPack(systemUtilsDriver->getCurrentTimestampMs(), rcData.roll, rcData.pitch, rcData.yaw, rcData.throttle, rcData.aux2, rcData.arm);
     tmQueue->push(&rcDataMsg);
+}
+
+void SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
+    TMMessage_t hbDataMsg = heartbeatPack(systemUtilsDriver->getCurrentTimestampMs(), baseMode, customMode, systemStatus);
+    tmQueue->push(&hbDataMsg);
 }
 
 void SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {

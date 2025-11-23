@@ -2,22 +2,50 @@
 #include "drivers.hpp"
 #include "managers.hpp"
 
+// Pre-allocated static storage (global, not stack)
+alignas(AttitudeManager) static uint8_t amHandleStorage[sizeof(AttitudeManager)];
+alignas(SystemManager) static uint8_t smHandleStorage[sizeof(SystemManager)];
+alignas(TelemetryManager) static uint8_t tmHandleStorage[sizeof(TelemetryManager)];
+
+// Manager handles
 AttitudeManager *amHandle = nullptr;
 SystemManager *smHandle = nullptr;
 TelemetryManager *tmHandle = nullptr;
-DirectMapping *flightMode = nullptr;
-
 
 void initManagers()
 {
     // AM initialization
-
-    flightMode = new DirectMapping();
-    amHandle = new AttitudeManager(amRCQueueHandle, smLoggerQueueHandle, flightMode, &rollMotors, &pitchMotors, &yawMotors, &throttleMotors, &flapMotors, &steeringMotors);
+    amHandle = new (&amHandleStorage) AttitudeManager(
+        systemUtilsHandle, 
+        gpsHandle, 
+        amRCQueueHandle, 
+        tmQueueHandle, 
+        smLoggerQueueHandle, 
+        &rollMotors, 
+        &pitchMotors, 
+        &yawMotors, 
+        &throttleMotors, 
+        &flapMotors, 
+        &steeringMotors
+    );
 
     // SM initialization
-    smHandle = new SystemManager(iwdgHandle, loggerHandle, rcHandle, amRCQueueHandle, tmQueueHandle, smLoggerQueueHandle);
+    smHandle = new (&smHandleStorage) SystemManager(
+        systemUtilsHandle, 
+        iwdgHandle,
+        loggerHandle,
+        rcHandle,
+        amRCQueueHandle,
+        tmQueueHandle,
+        smLoggerQueueHandle
+    );
 
     // TM initialization
-    tmHandle = new TelemetryManager(rfdHandle, tmQueueHandle, amRCQueueHandle, messageBufferHandle);
+    tmHandle = new (&tmHandleStorage) TelemetryManager(
+        systemUtilsHandle,
+        rfdHandle,
+        tmQueueHandle,
+        amRCQueueHandle,
+        messageBufferHandle
+    );
 }

@@ -1,12 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include "flightmode.hpp"
-#include "queue_iface.hpp"
-#include "motor_iface.hpp"
+#include "systemutils_iface.hpp"
+#include "direct_mapping.hpp"
 #include "motor_datatype.hpp"
+#include "gps_iface.hpp"
+#include "tm_queue.hpp"
+#include "queue_iface.hpp"
 
-#define AM_MAIN_DELAY 50
+#define AM_CONTROL_LOOP_DELAY 50
+#define AM_FAILSAFE_TIMEOUT 1000
 
 typedef enum {
     YAW = 0,
@@ -20,9 +23,11 @@ typedef enum {
 class AttitudeManager {
     public:
         AttitudeManager(
+            ISystemUtils *systemUtilsDriver,
+            IGPS *gpsDriver,
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
+            IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
-            Flightmode *controlAlgorithm,
             MotorGroupInstance_t *rollMotors,
             MotorGroupInstance_t *pitchMotors,
             MotorGroupInstance_t *yawMotors,
@@ -31,15 +36,19 @@ class AttitudeManager {
             MotorGroupInstance_t *steeringMotors
         );
 
-        void runControlLoopIteration();
+        void amUpdate();
 
     private:
+        ISystemUtils *systemUtilsDriver;
+
+        IGPS *gpsDriver;
+
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
+        IMessageQueue<TMMessage_t> *tmQueue;
         IMessageQueue<char[100]> *smLoggerQueue;
 
-        Flightmode *controlAlgorithm;
+        DirectMapping controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
-        int noDataCount = 0;
 
         MotorGroupInstance_t *rollMotors;
         MotorGroupInstance_t *pitchMotors;
@@ -48,7 +57,14 @@ class AttitudeManager {
         MotorGroupInstance_t *flapMotors;
         MotorGroupInstance_t *steeringMotors;
 
+        bool previouslyArmed;
+        float armAltitude;
+
+        uint8_t amSchedulingCounter;
+
         bool getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
         void outputToMotor(ControlAxis_t axis, uint8_t percent);
+
+        void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
 };
