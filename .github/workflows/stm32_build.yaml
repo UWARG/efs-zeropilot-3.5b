@@ -29,20 +29,10 @@ jobs:
 
       - name: Build l552 board (STM32CubeIDE)
         run: |
-          /root/st/stm32cubeide/stm32cubeide \
-            -consoleLog \
-            -nosplash \
-            -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
-            -import ./stm32l552xx \
-            -project stm32l552xx \
-            -build all
+          stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data /tmp/stm-workspace -import ./stm32l552xx
+          headless-build.sh -data /tmp/stm-workspace -build stm32l552xx/Debug
 
       - name: Build l562 board (STM32CubeIDE)
         run: |
-          /root/st/stm32cubeide/stm32cubeide \
-            -consoleLog \
-            -nosplash \
-            -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
-            -import ./stm32l562xx \
-            -project stm32l562xx \
-            -build all
+          stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data /tmp/stm-workspace -import ./stm32l562xx
+          headless-build.sh -data /tmp/stm-workspace -build stm32l562xx/Debug
