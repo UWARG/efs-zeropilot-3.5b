@@ -2,13 +2,13 @@ name: STM32CubeIDE Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "chore/infra/docker-stm32cubeide-build" ]
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
   stm32cubeide_build:
-    name: Headless STM32CubeIDE Build
+    name: STM32CubeIDE Docker Build
     runs-on: ubuntu-latest
 
     container:
@@ -16,33 +16,20 @@ jobs:
       options: --privileged
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Setup permissions
-        run: chmod -R +x .
 
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y cmake make gcc-arm-none-eabi
+          apt-get install -y git build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
 
-      - name: Create workspace directory
-        run: mkdir -p /workspace
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-      - name: Build project using headless STM32CubeIDE
+      - name: Build l552 and l562 boards
+        working-directory: ./zeropilot3.5
         run: |
-          /opt/st/stm32cubeide_1.19.0/stm32cubeide \
-            --launcher.suppressErrors -nosplash \
-            -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
-            -data /workspace \
-            -import $GITHUB_WORKSPACE/stm32l552xx \
-            -build stm32l552xx/Debug
-
-      - name: Verify build artifacts
-        run: |
-          if [ ! -d "stm32l552xx/Debug" ]; then
-            echo "Build failed - Debug directory not found"
-            exit 1
-          fi
-          echo "Build completed successfully"
+          bash ./hwbuild.bash -c -b l552 &
+          bash ./hwbuild.bash -c -b l562 &
+          wait
