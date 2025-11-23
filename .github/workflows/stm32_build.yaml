@@ -2,7 +2,7 @@ name: STM32CubeIDE Build
 
 on:
   push:
-    branches: [ "main", "chore/infra/docker-stm32cubeide-build" ]
+    branches: [ "main" ]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -20,56 +20,17 @@ jobs:
         board: ["l552", "l562"]
 
     steps:
-      - name: Install Git
-        run: |
-          apt-get update
-          apt-get install -y git
 
-      - name: Install build tools
+      - name: Install dependencies
         run: |
-          apt-get install -y \
-            build-essential \
-            cmake \
-            gcc-arm-none-eabi \
-            binutils-arm-none-eabi
+          sudo apt-get update
+          sudo apt-get install -y git build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
 
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
 
-      - name: Setup permissions
-        run: chmod -R +x .
-
-      - name: Display environment info
-        run: |
-          echo "=== GCC Version ==="
-          arm-none-eabi-gcc --version
-          echo "=== CMake Version ==="
-          cmake --version
-          echo "=== Make Version ==="
-          make --version
-
-      - name: Build board=${{ matrix.board }} using CMake
-        run: |
-          cd zeropilot3.5
-          bash hwbuild.bash -c -b ${{ matrix.board }}
-
-      - name: Verify ${{ matrix.board }} build artifacts
-        run: |
-          build_dir="zeropilot3.5/build/${{ matrix.board }}"
-          if [ ! -d "$build_dir" ]; then
-            echo "Build failed - build directory not found at $build_dir"
-            exit 1
-          fi
-          echo "Build completed successfully for board=${{ matrix.board }}"
-          find "$build_dir" -name "*.elf" -o -name "*.bin" -o -name "*.hex" 2>/dev/null | head -10 || echo "No ELF/BIN/HEX artifacts found"
-          ls -lah "$build_dir" | head -20
-
-      - name: Upload build artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: stm32-build-artifacts-${{ matrix.board }}
-          path: zeropilot3.5/build/${{ matrix.board }}/
-          if-no-files-found: warn
+      - name: Build board=${{ matrix.board }}
+        working-directory: ./zeropilot3.5
+        run: bash ./hwbuild.bash -c -b ${{ matrix.board }}
