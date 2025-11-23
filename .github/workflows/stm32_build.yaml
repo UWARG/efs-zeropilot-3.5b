@@ -8,7 +8,7 @@ on:
 
 jobs:
   stm32cubeide_build:
-    name: Headless STM32CubeIDE Build
+    name: STM32CubeIDE Docker Build
     runs-on: ubuntu-latest
 
     container:
@@ -17,45 +17,46 @@ jobs:
 
     strategy:
       matrix:
-        project: ["stm32l552xx", "stm32l562xx"]
+        board: ["l552", "l562"]
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup permissions
         run: chmod -R +x .
 
-      - name: Install dependencies
+      - name: Display environment info
         run: |
-          apt-get update
-          apt-get install -y cmake make gcc-arm-none-eabi
+          echo "=== GCC Version ==="
+          arm-none-eabi-gcc --version
+          echo "=== CMake Version ==="
+          cmake --version
+          echo "=== Make Version ==="
+          make --version
 
-      - name: Create workspace directory
-        run: mkdir -p /workspace
-
-      - name: Build ${{ matrix.project }} using headless STM32CubeIDE
+      - name: Build board=${{ matrix.board }} using CMake
         run: |
-          /opt/st/stm32cubeide_1.19.0/stm32cubeide \
-            --launcher.suppressErrors -nosplash \
-            -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
-            -data /workspace \
-            -import $GITHUB_WORKSPACE/${{ matrix.project }} \
-            -build ${{ matrix.project }}/Debug
+          cd zeropilot3.5
+          bash hwbuild.bash -c -b ${{ matrix.board }}
 
-      - name: Verify ${{ matrix.project }} build artifacts
+      - name: Verify ${{ matrix.board }} build artifacts
         run: |
-          if [ ! -d "${{ matrix.project }}/Debug" ]; then
-            echo "Build failed for ${{ matrix.project }} - Debug directory not found"
+          build_dir="zeropilot3.5/build/${{ matrix.board }}"
+          if [ ! -d "$build_dir" ]; then
+            echo "Build failed - build directory not found at $build_dir"
             exit 1
           fi
-          echo "Build completed successfully for ${{ matrix.project }}"
-          find ${{ matrix.project }}/Debug -name "*.elf" -o -name "*.bin" -o -name "*.hex" | head -20
+          echo "Build completed successfully for board=${{ matrix.board }}"
+          find "$build_dir" -name "*.elf" -o -name "*.bin" -o -name "*.hex" 2>/dev/null | head -10 || echo "No ELF/BIN/HEX artifacts found"
+          ls -lah "$build_dir" | head -20
 
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stm32-build-artifacts-${{ matrix.project }}
-          path: ${{ matrix.project }}/Debug/
+          name: stm32-build-artifacts-${{ matrix.board }}
+          path: zeropilot3.5/build/${{ matrix.board }}/
           if-no-files-found: warn
