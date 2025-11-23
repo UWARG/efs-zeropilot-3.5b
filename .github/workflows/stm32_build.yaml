@@ -32,6 +32,13 @@ jobs:
           chmod +x ./zeropilot4.0/hwbuild.bash
           chmod +x ./zeropilot4.0/lint.bash
 
+      - name: Build zeropilot4.0 library (CMake)
+        working-directory: ./zeropilot4.0
+        run: |
+          bash ./hwbuild.bash -c -b l552 &
+          bash ./hwbuild.bash -c -b l562 &
+          wait
+
       - name: Build l552 board (STM32CubeIDE)
         run: |
           stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data /tmp/stm-workspace -import ./stm32l552xx
