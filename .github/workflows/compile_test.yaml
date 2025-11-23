@@ -18,6 +18,8 @@ jobs:
 
     - name: Checkout the repo
       uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Build project
       working-directory: ./zeropilot3.5

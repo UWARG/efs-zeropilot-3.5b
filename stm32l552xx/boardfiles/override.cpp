@@ -1,6 +1,7 @@
 #include "cmsis_os2.h"
 #include "main.h"
 #include "museq.hpp"
+#include "rfd.hpp"
 #include "drivers.hpp"
 #include "utils.h"
 
