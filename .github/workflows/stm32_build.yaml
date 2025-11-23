@@ -2,7 +2,7 @@ name: STM32CubeIDE Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "chore/infra/docker-stm32cubeide-build" ]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -14,6 +14,10 @@ jobs:
     container:
       image: xanderhendriks/stm32cubeide:16.0
       options: --privileged
+
+    strategy:
+      matrix:
+        project: ["stm32l552xx", "stm32l562xx"]
 
     steps:
       - name: Checkout source code
@@ -30,19 +34,28 @@ jobs:
       - name: Create workspace directory
         run: mkdir -p /workspace
 
-      - name: Build project using headless STM32CubeIDE
+      - name: Build ${{ matrix.project }} using headless STM32CubeIDE
         run: |
           /opt/st/stm32cubeide_1.19.0/stm32cubeide \
             --launcher.suppressErrors -nosplash \
             -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
             -data /workspace \
-            -import $GITHUB_WORKSPACE/stm32l552xx \
-            -build stm32l552xx/Debug
+            -import $GITHUB_WORKSPACE/${{ matrix.project }} \
+            -build ${{ matrix.project }}/Debug
 
-      - name: Verify build artifacts
+      - name: Verify ${{ matrix.project }} build artifacts
         run: |
-          if [ ! -d "stm32l552xx/Debug" ]; then
-            echo "Build failed - Debug directory not found"
+          if [ ! -d "${{ matrix.project }}/Debug" ]; then
+            echo "Build failed for ${{ matrix.project }} - Debug directory not found"
             exit 1
           fi
-          echo "Build completed successfully"
+          echo "Build completed successfully for ${{ matrix.project }}"
+          find ${{ matrix.project }}/Debug -name "*.elf" -o -name "*.bin" -o -name "*.hex" | head -20
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stm32-build-artifacts-${{ matrix.project }}
+          path: ${{ matrix.project }}/Debug/
+          if-no-files-found: warn
