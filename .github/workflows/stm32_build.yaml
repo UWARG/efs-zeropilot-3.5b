@@ -27,7 +27,7 @@ jobs:
         with:
           submodules: true
 
-      - name: Build all boards
+      - name: Build l552 and l562 boards
         working-directory: ./zeropilot3.5
         run: |
           bash ./hwbuild.bash -c -b l552 &
