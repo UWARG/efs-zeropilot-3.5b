@@ -23,8 +23,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
+          apt-get update
+          apt-get install -y git build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
 
       - name: Checkout source code
         uses: actions/checkout@v4
