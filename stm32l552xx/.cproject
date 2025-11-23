@@ -91,8 +91,12 @@
 										<listOptionValue builtIn="false" value="../Core/Inc"/>
 										<listOptionValue builtIn="false" value="../../zeropilot4.0/build/l552/include"/>
 										<listOptionValue builtIn="false" value="../../zeropilot4.0/include/driver_ifaces"/>
+										<listOptionValue builtIn="false" value="../../zeropilot4.0/include/attitude_manager"/>
+										<listOptionValue builtIn="false" value="../../zeropilot4.0/include/system_manager"/>
+										<listOptionValue builtIn="false" value="../../zeropilot4.0/include/telemetry_manager"/>
+										<listOptionValue builtIn="false" value="../../zeropilot4.0/include/thread_msgs"/>
 										<listOptionValue builtIn="false" value="../boardfiles/drivers/iwdg"/>
-									<listOptionValue builtIn="false" value="../boardfiles/drivers/logger"/>
+										<listOptionValue builtIn="false" value="../boardfiles/drivers/logger"/>
 									<listOptionValue builtIn="false" value="../boardfiles/drivers/motor"/>
 									<listOptionValue builtIn="false" value="../boardfiles/drivers/queue"/>
 									<listOptionValue builtIn="false" value="../boardfiles/drivers/rc"/>
@@ -285,6 +289,10 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2/all}&quot;"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/build/l552/include"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/driver_ifaces"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/attitude_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/system_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/telemetry_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/thread_msgs"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.1781415163" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>
 							</tool>
@@ -420,6 +428,10 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2/all}&quot;"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/build/l552/include"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/driver_ifaces"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/attitude_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/system_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/telemetry_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/thread_msgs"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.2067083617" name="Define symbols (-D)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="DEBUG"/>
@@ -555,6 +567,10 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Middlewares/Third_Party/mavlink2/all}&quot;"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/build/l552/include"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/driver_ifaces"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/attitude_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/system_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/telemetry_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/thread_msgs"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.443515352" name="Define symbols (-D)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>

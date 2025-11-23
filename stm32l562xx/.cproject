@@ -81,6 +81,10 @@
 									<listOptionValue builtIn="false" value="../boardfiles/rtos/museq"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/build/l562/include"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/driver_ifaces"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/attitude_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/system_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/telemetry_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/thread_msgs"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.515027548" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>
 							</tool>
@@ -179,6 +183,10 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/build/l562/include"/>
 									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/driver_ifaces"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/attitude_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/system_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/telemetry_manager"/>
+									<listOptionValue builtIn="false" value="../../zeropilot4.0/include/thread_msgs"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.2061556228" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>
 							</tool>
