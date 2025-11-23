@@ -11,21 +11,17 @@ jobs:
     name: STM32CubeIDE Docker Build
     runs-on: ubuntu-latest
 
-    container:
-      image: xanderhendriks/stm32cubeide:16.0
-      options: --privileged
-
     steps:
-
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y git build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
 
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
 
       - name: Make build scripts executable
         run: |
@@ -45,11 +41,13 @@ jobs:
           wait
 
       - name: Build l552 board (STM32CubeIDE)
-        run: |
-          stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data /tmp/stm-workspace -import ./stm32l552xx
-          headless-build.sh -data /tmp/stm-workspace -build stm32l552xx/Debug
+        uses: xanderhendriks/action-build-stm32cubeide@v16.0
+        with:
+          project-path: 'stm32l552xx'
+          project-target: 'stm32l552xx/Debug'
 
       - name: Build l562 board (STM32CubeIDE)
-        run: |
-          stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data /tmp/stm-workspace -import ./stm32l562xx
-          headless-build.sh -data /tmp/stm-workspace -build stm32l562xx/Debug
+        uses: xanderhendriks/action-build-stm32cubeide@v16.0
+        with:
+          project-path: 'stm32l562xx'
+          project-target: 'stm32l562xx/Debug'
