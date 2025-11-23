@@ -34,8 +34,8 @@ jobs:
 
       - name: Clean STM32CubeIDE projects
         run: |
-          rm -rf ./stm32l552xx/Debug ./stm32l552xx/.settings
-          rm -rf ./stm32l562xx/Debug ./stm32l562xx/.settings
+          rm -rf ./stm32l552xx/Debug ./stm32l552xx/.settings ./stm32l552xx/Middlewares
+          rm -rf ./stm32l562xx/Debug ./stm32l562xx/.settings ./stm32l562xx/Middlewares
 
       - name: Build zeropilot4.0 library (CMake)
         working-directory: ./zeropilot4.0
