@@ -2,7 +2,7 @@ name: STM32CubeIDE Build
 
 on:
   push:
-    branches: [ "main", "chore/infra/docker-stm32cubeide-build" ]
+    branches: [ "main"]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -29,7 +29,7 @@ jobs:
 
       - name: Build l552 board (STM32CubeIDE)
         run: |
-          /opt/st/stm32cubeide/stm32cubeide \
+          /root/st/stm32cubeide/stm32cubeide \
             -consoleLog \
             -nosplash \
             -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
@@ -39,7 +39,7 @@ jobs:
 
       - name: Build l562 board (STM32CubeIDE)
         run: |
-          /opt/st/stm32cubeide/stm32cubeide \
+          /root/st/stm32cubeide/stm32cubeide \
             -consoleLog \
             -nosplash \
             -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
