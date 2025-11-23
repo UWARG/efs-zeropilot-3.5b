@@ -27,6 +27,11 @@ jobs:
         with:
           submodules: true
 
+      - name: Make build scripts executable
+        run: |
+          chmod +x ./zeropilot4.0/hwbuild.bash
+          chmod +x ./zeropilot4.0/lint.bash
+
       - name: Build l552 board (STM32CubeIDE)
         run: |
           stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data /tmp/stm-workspace -import ./stm32l552xx
