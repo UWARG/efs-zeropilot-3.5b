@@ -144,8 +144,8 @@
   
           spiTxFlag = 0;
       }
-      else {
-          HAL_SPI_Transmit(&hspi1, buff, btx, HAL_MAX_DELAY);
+      } else {
+          HAL_SPI_Transmit(&hspi1, (uint8_t *)buff, btx, HAL_MAX_DELAY);
       }
   }
   #endif
