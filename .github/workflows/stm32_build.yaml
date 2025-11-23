@@ -2,7 +2,7 @@ name: STM32CubeIDE Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "chore/infra/docker-stm32cubeide-build" ]
   pull_request:
     types: [opened, synchronize, reopened]
 
