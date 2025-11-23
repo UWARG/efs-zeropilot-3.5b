@@ -15,10 +15,6 @@ jobs:
       image: xanderhendriks/stm32cubeide:16.0
       options: --privileged
 
-    strategy:
-      matrix:
-        board: ["l552", "l562"]
-
     steps:
 
       - name: Install dependencies
@@ -31,6 +27,9 @@ jobs:
         with:
           submodules: true
 
-      - name: Build board=${{ matrix.board }}
+      - name: Build all boards
         working-directory: ./zeropilot3.5
-        run: bash ./hwbuild.bash -c -b ${{ matrix.board }}
+        run: |
+          bash ./hwbuild.bash -c -b l552 &
+          bash ./hwbuild.bash -c -b l562 &
+          wait
