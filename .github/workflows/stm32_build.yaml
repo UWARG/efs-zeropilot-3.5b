@@ -27,9 +27,22 @@ jobs:
         with:
           submodules: true
 
-      - name: Build l552 and l562 boards
-        working-directory: ./zeropilot4.0
+      - name: Build l552 board (STM32CubeIDE)
         run: |
-          bash ./hwbuild.bash -c -b l552 &
-          bash ./hwbuild.bash -c -b l562 &
-          wait
+          /opt/st/stm32cubeide/stm32cubeide \
+            -consoleLog \
+            -nosplash \
+            -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
+            -import ./stm32l552xx \
+            -project stm32l552xx \
+            -build all
+
+      - name: Build l562 board (STM32CubeIDE)
+        run: |
+          /opt/st/stm32cubeide/stm32cubeide \
+            -consoleLog \
+            -nosplash \
+            -application org.eclipse.cdt.managedbuilder.core.headlessbuild \
+            -import ./stm32l562xx \
+            -project stm32l562xx \
+            -build all
