@@ -4,7 +4,7 @@ set -e
 
 script_dir=$( cd -- "$( dirname -- "$0" )" &> /dev/null && pwd )
 clean="false"
-board="l552"
+board="h753iit"
 
 usage() {
     echo "Usage: $0 [-c] [-b] <board>"
@@ -15,7 +15,7 @@ usage() {
 while getopts "b:c" opt; do
     case "${opt}" in
         b)
-            if [[ "$OPTARG" == "l552" || "$OPTARG" == "l562" ]]; then
+            if [[ "$OPTARG" == "l552" || "$OPTARG" == "l562" || "$OPTARG" == "h753iit" ]]; then
                 board="$OPTARG"
             fi
             ;;
@@ -31,8 +31,10 @@ done
 # set build dir
 if [[ "$board" == "l552" ]]; then
     build_dir="${script_dir}/build/l552"
-else
+elif [[ "$board" == "l562" ]]; then
     build_dir="${script_dir}/build/l562"
+else
+    build_dir="${script_dir}/build/h753iit"
 fi
 
 # clean if requested and setup
@@ -63,8 +65,10 @@ if [[ ! -f "CMakeCache.txt" ]]; then
     # find toolchain file 
     if [[ "$board" == "l552" ]]; then
         tc_file="${script_dir}/../stm32l552xx/stm32l552xx.cmake"
-    else
+    elif [[ "$board" == "l562" ]]; then
         tc_file="${script_dir}/../stm32l562xx/stm32l562xx.cmake"
+    else
+        tc_file="${script_dir}/../stm32l562xx/stm32h753iitx.cmake"
     fi
 
     echo "generating cmake..."
