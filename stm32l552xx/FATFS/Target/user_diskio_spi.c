@@ -132,9 +132,9 @@
   
   #if _USE_WRITE
   /* Send multiple byte */
-  static void xmit_spi_multi (BYTE *buff, UINT btx) {
+  static void xmit_spi_multi (const BYTE *buff, UINT btx) {
       if (osKernelGetState() == osKernelRunning) {
-          HAL_SPI_Transmit_DMA(&hspi1, buff, btx);
+          HAL_SPI_Transmit_DMA(&hspi1, (uint8_t *)buff, btx);
   
           uint32_t start = HAL_GetTick();
   
@@ -189,7 +189,7 @@
   }
   
   #if _USE_WRITE
-  static int xmit_datablock (BYTE *buff, BYTE token) {
+  static int xmit_datablock (const BYTE *buff, BYTE token) {
       BYTE resp;
   
       if (!wait_ready(500)) return 0;           /* Wait for card ready */
@@ -352,7 +352,7 @@
   /*-----------------------------------------------------------------------*/
   
   #if _USE_WRITE
-  DRESULT USER_SPI_write (BYTE drv, BYTE *buff, DWORD sector, UINT count) {
+  DRESULT USER_SPI_write (BYTE drv, const BYTE *buff, DWORD sector, UINT count) {
       if (drv || !count) return RES_PARERR;        /* Check parameter */
       if (Stat & STA_NOINIT) return RES_NOTRDY;    /* Check drive status */
       if (Stat & STA_PROTECT) return RES_WRPRT;    /* Check write protect */
