@@ -38,12 +38,17 @@ jobs:
           # Explicitly restore .cproject files to ensure latest configuration is used
           git checkout ./stm32l552xx/.cproject ./stm32l562xx/.cproject 2>/dev/null || true
 
-      - name: Build zeropilot4.0 library (CMake)
+      - name: Build zeropilot4.0 library for l552 (CMake)
         working-directory: ./zeropilot4.0
         run: |
-          bash ./hwbuild.bash -c -b l552 &
-          bash ./hwbuild.bash -c -b l562 &
-          wait
+          bash ./hwbuild.bash -c -b l552
+          ls -lh build/l552/libzeropilot4.0.a
+
+      - name: Build zeropilot4.0 library for l562 (CMake)
+        working-directory: ./zeropilot4.0
+        run: |
+          bash ./hwbuild.bash -c -b l562
+          ls -lh build/l562/libzeropilot4.0.a
 
       - name: Build l552 board (STM32CubeIDE)
         uses: xanderhendriks/action-build-stm32cubeide@v16.0
