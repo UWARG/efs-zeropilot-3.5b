@@ -49,10 +49,3 @@ public:
     bool getAirspeed(double *data) { *data = airspeedData_.airspeed_; return true; }
 };
 
-airspeed : public airspeed_iface::airspeed : public airspeed_iface(/* args */)
-{
-}
-
-airspeed : public airspeed_iface::~airspeed : public airspeed_iface()
-{
-}
