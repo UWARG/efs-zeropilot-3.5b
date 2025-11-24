@@ -29,7 +29,7 @@ DSTATUS USER_SPI_status (BYTE drv);
 DRESULT USER_SPI_read (BYTE drv, BYTE *buff, DWORD sector, UINT count);
 
 #if _USE_WRITE == 1
-DRESULT USER_SPI_write (BYTE drv, BYTE *buff, DWORD sector, UINT count);
+DRESULT USER_SPI_write (BYTE drv, const BYTE *buff, DWORD sector, UINT count);
 #endif
 
 #if _USE_IOCTL == 1

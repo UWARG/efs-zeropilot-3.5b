@@ -1,0 +1,63 @@
+name: STM32CubeIDE Build
+
+on:
+  push:
+    branches: [ "main"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  stm32cubeide_build:
+    name: STM32CubeIDE Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Make build scripts executable
+        run: |
+          chmod +x ./zeropilot4.0/hwbuild.bash
+          chmod +x ./zeropilot4.0/lint.bash
+
+      - name: Clean STM32CubeIDE build artifacts
+        run: |
+          rm -rf ./stm32l552xx/Debug ./stm32l552xx/.settings ./stm32l552xx/.cproject_backup
+          rm -rf ./stm32l562xx/Debug ./stm32l562xx/.settings ./stm32l562xx/.cproject_backup
+          # Remove any cached project files that might interfere
+          find ./stm32l552xx -name "*.o" -o -name "*.d" -o -name "subdir.mk" | xargs rm -f 2>/dev/null || true
+          find ./stm32l562xx -name "*.o" -o -name "*.d" -o -name "subdir.mk" | xargs rm -f 2>/dev/null || true
+          # Explicitly restore .cproject files to ensure latest configuration is used
+          git checkout ./stm32l552xx/.cproject ./stm32l562xx/.cproject 2>/dev/null || true
+
+      - name: Build zeropilot4.0 library for l552 (CMake)
+        working-directory: ./zeropilot4.0
+        run: |
+          bash ./hwbuild.bash -c -b l552
+          ls -lh build/l552/libzeropilot4.0.a
+
+      - name: Build zeropilot4.0 library for l562 (CMake)
+        working-directory: ./zeropilot4.0
+        run: |
+          bash ./hwbuild.bash -c -b l562
+          ls -lh build/l562/libzeropilot4.0.a
+
+      - name: Build l552 board (STM32CubeIDE)
+        uses: xanderhendriks/action-build-stm32cubeide@v16.0
+        with:
+          project-path: 'stm32l552xx'
+          project-target: 'stm32l552xx/Debug'
+
+      - name: Build l562 board (STM32CubeIDE)
+        uses: xanderhendriks/action-build-stm32cubeide@v16.0
+        with:
+          project-path: 'stm32l562xx'
+          project-target: 'stm32l562xx/Debug'
