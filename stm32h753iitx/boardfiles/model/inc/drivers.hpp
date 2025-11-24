@@ -12,7 +12,6 @@
 #include "queue.hpp"
 #include "gps.hpp"
 #include "rfd.hpp"
-#include "imu.hpp"
 
 extern SystemUtils *systemUtilsHandle;
 
@@ -32,7 +31,6 @@ extern RCReceiver *rcHandle;
 extern GPS *gpsHandle;
 
 extern RFD *rfdHandle;
-extern IMU *imuHandle;
 
 extern MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle;
 extern MessageQueue<char[100]> *smLoggerQueueHandle;
