@@ -68,7 +68,7 @@ if [[ ! -f "CMakeCache.txt" ]]; then
     elif [[ "$board" == "l562" ]]; then
         tc_file="${script_dir}/../stm32l562xx/stm32l562xx.cmake"
     else
-        tc_file="${script_dir}/../stm32l562xx/stm32h753iitx.cmake"
+        tc_file="${script_dir}/../stm32h753iitx/stm32h753iitx.cmake"
     fi
 
     echo "generating cmake..."
