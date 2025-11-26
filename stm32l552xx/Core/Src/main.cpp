@@ -303,10 +303,6 @@ static void MX_FDCAN1_Init(void)
   		Error_Handler();
   	}
 
-  	if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
-  		Error_Handler();
-  	}
-
   /* USER CODE END FDCAN1_Init 2 */
 
 }

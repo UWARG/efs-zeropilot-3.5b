@@ -19,8 +19,8 @@ CAN::CAN(FDCAN_HandleTypeDef *hfdcan) : hfdcan(hfdcan) {
 	canardInit(&canard,
 			canardMemoryPool,
 			sizeof(canardMemoryPool),
-			&StaticOnTransferReception,
-			&StaticShouldAcceptTransfer,
+			&CanardOnTransferReception,
+			&CanardShouldAcceptTransfer,
 			this
 	);
 
