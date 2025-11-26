@@ -19,8 +19,8 @@ CAN::CAN(FDCAN_HandleTypeDef *hfdcan) : hfdcan(hfdcan) {
 	canardInit(&canard,
 			canardMemoryPool,
 			sizeof(canardMemoryPool),
-			&CanardOnTransferReception,
-			&CanardShouldAcceptTransfer,
+			&StaticOnTransferReception,
+			&StaticShouldAcceptTransfer,
 			this
 	);
 
@@ -357,40 +357,40 @@ int16_t CAN::broadcast(
 	const uint8_t* payload,
 	uint16_t payload_len
 	#if CANARD_ENABLE_CANFD
-		, bool canfd; ///< True if CAN FD is enabled
+		, bool canfd
 	#endif
 	#if CANARD_ENABLE_DEADLINE
-		, uint64_t deadline_usec; ///< Deadline in microseconds
+		, uint64_t deadline_usec
 	#endif
 	#if CANARD_MULTI_IFACE
-		, uint8_t iface_mask; ///< Bitmask of interfaces to send the transfer on
+		, uint8_t iface_mask
 	#endif
 	#if CANARD_ENABLE_TAO_OPTION
-		, bool tao; ///< True if tail array optimization is enabled
+		, bool tao
 	#endif
 )
 {
-	CanardTxTransfer transfer_object = {
-		transfer_type = transfer_type,
-		data_type_signature = data_type_signature,
-		data_type_id = data_type_id,
-		inout_transfer_id = inout_transfer_id,
-		priority = priority,
-		payload = payload,
-		payload_len = payload_len,
-		#if CANARD_ENABLE_CANFD
-			canfd = canfd, ///< True if CAN FD is enabled
-		#endif
-		#if CANARD_ENABLE_DEADLINE
-			deadline_usec = deadline_usec, ///< Deadline in microseconds
-		#endif
-		#if CANARD_MULTI_IFACE
-			iface_mask = iface_mask, ///< Bitmask of interfaces to send the transfer on
-		#endif
-		#if CANARD_ENABLE_TAO_OPTION
-			tao = tao, ///< True if tail array optimization is enabled
-		#endif
-	};
+	CanardTxTransfer transfer_object;
+	transfer_object.transfer_type = transfer_type;
+	transfer_object.data_type_signature = data_type_signature;
+	transfer_object.data_type_id = data_type_id;
+	transfer_object.inout_transfer_id = inout_transfer_id;
+	transfer_object.priority = priority;
+	transfer_object.payload = payload;
+	transfer_object.payload_len = payload_len;
+	
+	#if CANARD_ENABLE_CANFD
+		transfer_object.canfd = canfd;
+	#endif
+	#if CANARD_ENABLE_DEADLINE
+		transfer_object.deadline_usec = deadline_usec;
+	#endif
+	#if CANARD_MULTI_IFACE
+		transfer_object.iface_mask = iface_mask;
+	#endif
+	#if CANARD_ENABLE_TAO_OPTION
+		transfer_object.tao = tao;
+	#endif
 
 	return broadcastObj(&transfer_object);
 }
