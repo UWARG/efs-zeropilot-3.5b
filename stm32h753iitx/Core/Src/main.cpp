@@ -167,19 +167,6 @@ int main(void)
   MX_IWDG1_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
-
-  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_1, GPIO_PIN_SET);
-
-  uint8_t rx[2], tx[2];
-  tx[0] = 0xFF;
-  tx[1] = 0xAC;
-
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
-  HAL_SPI_TransmitReceive(&hspi4, tx, rx, 2, HAL_MAX_DELAY);
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
-
-
 
   /* USER CODE END 2 */
 

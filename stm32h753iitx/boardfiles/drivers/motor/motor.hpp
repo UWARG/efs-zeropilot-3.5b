@@ -18,6 +18,19 @@ class MotorControl : public IMotorControl {
          */
         void init();
 
+        /**
+         * @brief enables servo output
+         * @param 
+         */
+        static void enableServo(GPIO_TypeDef* enGpioBase, uint16_t enGpioNum);
+
+        /**
+         * @brief enables servo switch
+         * @param 
+         */
+        static void enableServoSwitch(GPIO_TypeDef* csGpioBase, uint16_t csGpioNum, SPI_HandleTypeDef *hspi);
+
+
     private:
         TIM_HandleTypeDef * const timer;
         const uint32_t timerChannel;

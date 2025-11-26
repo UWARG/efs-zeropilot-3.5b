@@ -18,3 +18,17 @@ void MotorControl::init() {
     __HAL_TIM_SET_COMPARE(timer, timerChannel, minCCR);
     HAL_TIM_PWM_Start(timer, timerChannel);
 }
+
+void MotorControl::enableServo(GPIO_TypeDef* enGpioBase, uint16_t enGpioNum) {
+    HAL_GPIO_WritePin(enGpioBase, enGpioNum, GPIO_PIN_SET);
+}
+
+void MotorControl::enableServoSwitch(GPIO_TypeDef* csGpioBase, uint16_t csGpioNum, SPI_HandleTypeDef *hspi) {
+    uint8_t rx[2], tx[2];
+    tx[0] = 0xFF;
+    tx[1] = 0xAC;
+
+    HAL_GPIO_WritePin(csGpioBase, csGpioNum, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(hspi, tx, rx, 2, HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(csGpioBase, csGpioNum, GPIO_PIN_SET);
+}

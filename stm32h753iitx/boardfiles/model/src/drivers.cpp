@@ -10,6 +10,7 @@ extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
+extern SPI_HandleTypeDef hspi4;
 
 // ----------------------------------------------------------------------------
 // Static storage for each driver (aligned for correct type)
@@ -123,6 +124,8 @@ void initDrivers()
     leftFlapMotorHandle->init();
     rightFlapMotorHandle->init();
     steeringMotorHandle->init();
+    MotorControl::enableServo(GPIOF, GPIO_PIN_1);
+    MotorControl::enableServoSwitch(GPIOE, GPIO_PIN_3, &hspi4);
 
     rcHandle->init();
     gpsHandle->init();
