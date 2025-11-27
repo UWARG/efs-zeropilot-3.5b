@@ -38,10 +38,6 @@ void HAL_Delay(uint32_t Delay) {
   }
 }
 
-#ifdef __cplusplus
-}
-#endif
-
 /* interrupt callback functions */
 
 
@@ -81,3 +77,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     rcHandle->startDMA();
   }
 }
+
+#ifdef __cplusplus
+}
+#endif
+
+
