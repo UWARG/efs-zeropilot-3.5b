@@ -35,7 +35,7 @@ class RCReceiver : public IRCReceiver {
     private:
         UART_HandleTypeDef *uart;
         RCControl rcData;
-        uint8_t rawSbus[SBUS_PACKET_SIZE];
+        uint8_t volatile rawSbus[SBUS_PACKET_SIZE];
 
         float sbusToRCControl(uint8_t *buf, int channelMappingIdx);
 };
