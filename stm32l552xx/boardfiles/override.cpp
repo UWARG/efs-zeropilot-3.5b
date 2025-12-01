@@ -38,10 +38,6 @@ void HAL_Delay(uint32_t Delay) {
   }
 }
 
-#ifdef __cplusplus
-}
-#endif
-
 /* interrupt callback functions */
 
 
@@ -80,6 +76,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
     rcHandle->startDMA();
   }
+}
+
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs) {
 
     if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET) {
@@ -95,5 +93,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     }
 }
 
-}
 
+
+#ifdef __cplusplus
+}
+#endif

@@ -13,6 +13,7 @@
 #include "queue.hpp"
 #include "gps.hpp"
 #include "rfd.hpp"
+#include "can.hpp"
 
 extern SystemUtils *systemUtilsHandle;
 
@@ -28,6 +29,7 @@ extern MotorControl *leftFlapMotorHandle;
 extern MotorControl *rightFlapMotorHandle;
 extern MotorControl *steeringMotorHandle;
 
+extern CAN *canHandle;
 extern RCReceiver *rcHandle;
 extern GPS *gpsHandle;
 
