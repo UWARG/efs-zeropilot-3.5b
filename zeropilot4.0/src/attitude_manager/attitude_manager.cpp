@@ -210,7 +210,6 @@ void AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData) 
         imuData.zgyro
     );
 
-    int remainingCapacity = tmQueue->remainingCapacity();
     tmQueue->push(&imuDataMsg);
 }
 
