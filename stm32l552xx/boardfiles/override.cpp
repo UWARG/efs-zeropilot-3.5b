@@ -4,6 +4,8 @@
 #include "rfd.hpp"
 #include "drivers.hpp"
 #include "utils.h"
+#include "imu.hpp"
+#include "user_diskio_spi.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,4 +82,15 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
     rcHandle->startDMA();
   }
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+    #ifdef SPI_INTERFACE
+    if (hspi->Instance == SPI1) {
+        setSpiTxFlag(1);
+    }
+    #endif
+    if (hspi->Instance == SPI2) {
+      imuHandle->txRxCallback();
+    }
 }

@@ -66,6 +66,18 @@ void TelemetryManager::processMsgQueue() {
                 break;
             }
 
+            case TMMessage_t::RAW_IMU_DATA: {
+                auto rawImuData = tmqMessage.tmMessageData.rawImuData;
+                mavlink_msg_raw_imu_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs, rawImuData.xacc, rawImuData.yacc, rawImuData.zacc, rawImuData.xgyro, rawImuData.ygyro, rawImuData.zgyro, rawImuData.xmag, rawImuData.ymag, rawImuData.zmag, rawImuData.id, rawImuData.temperature);
+                break;
+            }
+
+            case TMMessage_t::ATTITUDE_DATA: {
+                auto attitudeData = tmqMessage.tmMessageData.attitudeData;
+                mavlink_msg_attitude_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs, attitudeData.roll, attitudeData.pitch, attitudeData.yaw, attitudeData.rollspeed, attitudeData.pitchspeed, attitudeData.yawspeed);
+                break;
+            }
+
             default: {
                 continue;
             }
