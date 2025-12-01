@@ -18,6 +18,10 @@ void initSemphrs();
 
 /* --- queues --- */
 /* declare queues begin */
+extern osMessageQueueId_t amQueueId;
+extern osMessageQueueId_t smLoggerQueueId;
+extern osMessageQueueId_t tmQueueId;
+extern osMessageQueueId_t messageBufferId;
 /* declare queues end */
 
 void initQueues();
