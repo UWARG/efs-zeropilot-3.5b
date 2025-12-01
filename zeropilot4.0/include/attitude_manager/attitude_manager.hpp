@@ -10,7 +10,7 @@
 #include "MahonyAHRS.hpp"
 #include "queue_iface.hpp"
 
-#define AM_CONTROL_LOOP_DELAY 50
+#define AM_CONTROL_LOOP_DELAY 10
 #define AM_FAILSAFE_TIMEOUT 1000
 
 typedef enum {

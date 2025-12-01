@@ -1,10 +1,10 @@
 #include "attitude_manager.hpp"
 #include "rc_motor_control.hpp"
 
-#define AM_SCHEDULING_RATE_HZ 20
+#define AM_SCHEDULING_RATE_HZ 100
 #define AM_TELEMETRY_GPS_DATA_RATE_HZ 5
-#define AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ 5
-#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 5
+#define AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ 20
+#define AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ 100
 
 AttitudeManager::AttitudeManager(
     ISystemUtils *systemUtilsDriver,
@@ -40,6 +40,27 @@ AttitudeManager::AttitudeManager(
 void AttitudeManager::amUpdate() {
 
     amSchedulingCounter = (amSchedulingCounter + 1) % AM_SCHEDULING_RATE_HZ;
+
+    // Send IMU raw data to telemetry manager
+    RawImu_t imuData = imuDriver->readRawData();
+    ScaledImu_t scaledImuData = imuDriver->scaleIMUData(imuData);
+    mahonyFilter.updateIMU(
+        scaledImuData.xgyro,
+        scaledImuData.ygyro,
+        scaledImuData.zgyro,
+        scaledImuData.xacc,
+        scaledImuData.yacc,
+        scaledImuData.zacc
+    );
+    Attitude_t attitude = mahonyFilter.getAttitudeRadians();
+
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
+        sendRawIMUDataToTelemetryManager(imuData);
+    }
+
+    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
+        sendAttitudeDataToTelemetryManager(attitude);
+    }
 
     // Get data from Queue and motor outputs
     bool controlRes = getControlInputs(&controlMsg);
@@ -88,26 +109,6 @@ void AttitudeManager::amUpdate() {
         sendGPSDataToTelemetryManager(gpsData, controlMsg.arm > 0);
     }
 
-    // Send IMU raw data to telemetry manager
-    RawImu_t imuData = imuDriver->readRawData();
-    ScaledImu_t scaledImuData = imuDriver->scaleIMUData(imuData);
-    mahonyFilter.updateIMU(
-        scaledImuData.xgyro,
-        scaledImuData.ygyro,
-        scaledImuData.zgyro,
-        scaledImuData.xacc,
-        scaledImuData.yacc,
-        scaledImuData.zacc
-    );
-    Attitude_t attitude = mahonyFilter.getAttitudeRadians();
-
-    // if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
-    //     sendRawIMUDataToTelemetryManager(imuData);
-    // }
-
-    if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
-        sendAttitudeDataToTelemetryManager(attitude);
-    }
 
     RCMotorControlMessage_t motorOutputs = controlAlgorithm.runControl(controlMsg);
 
@@ -209,6 +210,7 @@ void AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData) 
         imuData.zgyro
     );
 
+    int remainingCapacity = tmQueue->remainingCapacity();
     tmQueue->push(&imuDataMsg);
 }
 
