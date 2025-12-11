@@ -7,6 +7,7 @@ extern IWDG_HandleTypeDef hiwdg1;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
@@ -99,15 +100,15 @@ void initDrivers()
     rightAileronMotorHandle = new (&rightAileronMotorStorage) MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
     elevatorMotorHandle = new (&elevatorMotorStorage) MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
     rudderMotorHandle = new (&rudderMotorStorage) MotorControl(&htim1, TIM_CHANNEL_4, 5, 10);
-    throttleMotorHandle = new (&throttleMotorStorage) MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
-    leftFlapMotorHandle = new (&leftFlapMotorStorage) MotorControl(&htim2, TIM_CHANNEL_1, 5, 10);
-    rightFlapMotorHandle = new (&rightFlapMotorStorage) MotorControl(&htim2, TIM_CHANNEL_2, 5, 10);
-    steeringMotorHandle = new (&steeringMotorStorage) MotorControl(&htim2, TIM_CHANNEL_3, 5, 10);
+    throttleMotorHandle = new (&throttleMotorStorage) MotorControl(&htim2, TIM_CHANNEL_1, 5, 10);
+    leftFlapMotorHandle = new (&leftFlapMotorStorage) MotorControl(&htim2, TIM_CHANNEL_2, 5, 10);
+    rightFlapMotorHandle = new (&rightFlapMotorStorage) MotorControl(&htim2, TIM_CHANNEL_3, 5, 10);
+    steeringMotorHandle = new (&steeringMotorStorage) MotorControl(&htim2, TIM_CHANNEL_4, 5, 10);
 
     // Peripherals
     gpsHandle = new (&gpsStorage) GPS(&huart2);
     rcHandle = new (&rcStorage) RCReceiver(&huart4);
-    rfdHandle = new (&rfdStorage) RFD(&huart3);
+    rfdHandle = new (&rfdStorage) RFD(&huart1);
 
     // Queues
     amRCQueueHandle = new (&amRCQueueStorage) MessageQueue<RCMotorControlMessage_t>(&amQueueId);
