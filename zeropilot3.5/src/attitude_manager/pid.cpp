@@ -53,8 +53,5 @@ float PID::pidOutput(float setpoint, float measurement) {
     prevError = error;
     prevMeasurement = measurement;
 
-    // Absolute motor control position
-    float pidOut = measurement + pidControlEffort; // Directly into motor control
-
-    return pidOut; // Must go directly into motor control
+    return pidControlEffort;
 }

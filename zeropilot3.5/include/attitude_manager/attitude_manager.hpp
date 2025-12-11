@@ -7,6 +7,7 @@
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
 #include "queue_iface.hpp"
+#include "drone_state.hpp"
 
 #define AM_CONTROL_LOOP_DELAY 50
 #define AM_FAILSAFE_TIMEOUT 1000
@@ -49,6 +50,7 @@ class AttitudeManager {
 
         DirectMapping controlAlgorithm;
         RCMotorControlMessage_t controlMsg;
+        DroneState_t droneState;
 
         MotorGroupInstance_t *rollMotors;
         MotorGroupInstance_t *pitchMotors;

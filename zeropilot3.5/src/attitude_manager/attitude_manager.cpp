@@ -23,6 +23,7 @@ AttitudeManager::AttitudeManager(
     tmQueue(tmQueue),
     smLoggerQueue(smLoggerQueue),
     controlAlgorithm(),
+    droneState(DRONE_STATE_DEFAULT),
     rollMotors(rollMotors),
     pitchMotors(pitchMotors),
     yawMotors(yawMotors),
@@ -75,7 +76,7 @@ void AttitudeManager::amUpdate() {
         controlMsg.throttle = 0;
     }
 
-    RCMotorControlMessage_t motorOutputs = controlAlgorithm.runControl(controlMsg);
+    RCMotorControlMessage_t motorOutputs = controlAlgorithm.runControl(controlMsg, droneState);
 
     outputToMotor(YAW, motorOutputs.yaw);
     outputToMotor(PITCH, motorOutputs.pitch);

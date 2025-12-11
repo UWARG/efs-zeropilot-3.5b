@@ -1,5 +1,7 @@
 #include "fbwa_mapping.hpp"
 
+#define AM_BIAS_SHIFT 50.0f
+
 FBWAMapping::FBWAMapping() noexcept :
     rollPID(0.0f, 0.0f, 0.0f,
         0.0f, OUTPUT_MIN, OUTPUT_MAX,
@@ -24,20 +26,20 @@ void FBWAMapping::setPitchPIDConstants(float newKp, float newKi, float newKd, fl
     pitchPID.setConstants(newKp, newKi, newKd, newTau);
 }
 
-RCMotorControlMessage_t FBWAMapping::runControl(RCMotorControlMessage_t controlInputs){
+RCMotorControlMessage_t FBWAMapping::runControl(RCMotorControlMessage_t controlInputs, const DroneState_t &droneState){
     float rollSetpoint = controlInputs.roll;
     float pitchSetpoint = controlInputs.pitch;
 
-    // Get from sensor fusion -- make sure to update include files when we get this ********
-    float rollMeasured = 50.0;
-    float pitchMeasured = 50.0;
+    // Get measured values from drone state (populated by IMU)
+    float rollMeasured = droneState.roll;
+    float pitchMeasured = droneState.pitch;
 
     // Currently, roll & pitch outputs receive absolute roll & pitch angles, not relative to current position.
     float rollOutput = rollPID.pidOutput(rollSetpoint, rollMeasured);
     float pitchOutput = pitchPID.pidOutput(pitchSetpoint, pitchMeasured);
 
-    controlInputs.roll = rollOutput; // setting desired roll angle
-    controlInputs.pitch = pitchOutput; // setting desired pitch angle
+    controlInputs.roll = rollOutput + AM_BIAS_SHIFT; // setting desired roll angle, adding 50 to shift to [0,100] range
+    controlInputs.pitch = pitchOutput + AM_BIAS_SHIFT; // setting desired pitch angle, adding 50 to shift to [0,100] range
 
     return controlInputs;
 }
