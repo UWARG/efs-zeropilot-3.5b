@@ -56,7 +56,7 @@ HAL_StatusTypeDef IMU::readRegister(uint8_t bank, uint8_t register_addr, uint8_t
         return status;
     }
     
-    uint8_t tx[2] = {register_addr | 0b10000000, 0}; // set 8-th bit to 1 for read, page 53
+    uint8_t tx[2] = {(uint8_t)(register_addr | 0b10000000), 0}; // set 8-th bit to 1 for read, page 53
     uint8_t rx[2] = {0, 0};
 
     csLow();
