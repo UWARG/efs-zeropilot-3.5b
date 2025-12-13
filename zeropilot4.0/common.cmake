@@ -2,6 +2,7 @@
 set(AM_SRC
     "src/attitude_manager/attitude_manager.cpp"
     "src/attitude_manager/direct_mapping.cpp"
+    "src/attitude_manager/MahonyAHRS.cpp"
 )
 set(AM_INC
     "include/attitude_manager/"
