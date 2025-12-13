@@ -98,15 +98,15 @@ void initDrivers()
     loggerHandle = new (&loggerStorage) Logger(); // Initialized later in RTOS task
 
     // Motors
-    leftAileronMotorHandle = new (&leftAileronMotorStorage) MotorControl(&htim1, TIM_CHANNEL_1, 5, 10);
-    rightAileronMotorHandle = new (&rightAileronMotorStorage) MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
-    elevatorMotorHandle = new (&elevatorMotorStorage) MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
-    rudderMotorHandle = new (&rudderMotorStorage) MotorControl(&htim1, TIM_CHANNEL_4, 5, 10);
+    leftAileronMotorHandle = new (&leftAileronMotorStorage) MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
+    rightAileronMotorHandle = new (&rightAileronMotorStorage) MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
+    elevatorMotorHandle = new (&elevatorMotorStorage) MotorControl(&htim3, TIM_CHANNEL_3, 5, 10);
+    rudderMotorHandle = new (&rudderMotorStorage) MotorControl(&htim3, TIM_CHANNEL_4, 5, 10);
     throttleMotorHandle = new (&throttleMotorStorage) MotorControl(&htim4, TIM_CHANNEL_1, 5, 10);
-    leftFlapMotorHandle = new (&leftFlapMotorStorage) MotorControl(&htim3, TIM_CHANNEL_1, 5, 10);
-    rightFlapMotorHandle = new (&rightFlapMotorStorage) MotorControl(&htim3, TIM_CHANNEL_2, 5, 10);
-    steeringMotorHandle = new (&steeringMotorStorage) MotorControl(&htim3, TIM_CHANNEL_3, 5, 10);
-
+    leftFlapMotorHandle = new (&leftFlapMotorStorage) MotorControl(&htim1, TIM_CHANNEL_1, 5, 10);
+    rightFlapMotorHandle = new (&rightFlapMotorStorage) MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
+    steeringMotorHandle = new (&steeringMotorStorage) MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
+    
     // Peripherals
     gpsHandle = new (&gpsStorage) GPS(&huart2);
     rcHandle = new (&rcStorage) RCReceiver(&huart4);
