@@ -106,7 +106,7 @@ void initDrivers()
     leftFlapMotorHandle = new (&leftFlapMotorStorage) MotorControl(&htim1, TIM_CHANNEL_1, 5, 10);
     rightFlapMotorHandle = new (&rightFlapMotorStorage) MotorControl(&htim1, TIM_CHANNEL_2, 5, 10);
     steeringMotorHandle = new (&steeringMotorStorage) MotorControl(&htim1, TIM_CHANNEL_3, 5, 10);
-    
+
     // Peripherals
     gpsHandle = new (&gpsStorage) GPS(&huart2);
     rcHandle = new (&rcStorage) RCReceiver(&huart4);
