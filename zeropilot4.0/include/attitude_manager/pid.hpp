@@ -21,7 +21,7 @@ class PID {
         // Gains
         float kp, ki, kd;      // PID constants
         float tau;             // Derivative low-pass filter constant
-        float t;               // Sample time (set to AM_CONTROL_LOOP_DELAY)
+        float t;               // Sample time (set to AM_CONTROL_LOOP_PERIOD_S)
 
         // Output and Integral Limits
         float outputMinLim, outputMaxLim;       // Output limits
