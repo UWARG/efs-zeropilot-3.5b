@@ -15,7 +15,7 @@ usage() {
 while getopts "b:c" opt; do
     case "${opt}" in
         b)
-            if [[ "$OPTARG" == "l552" || "$OPTARG" == "l562" ]]; then
+            if [[ "$OPTARG" == "l552" ]]; then
                 board="$OPTARG"
             fi
             ;;
@@ -31,8 +31,6 @@ done
 # set build dir
 if [[ "$board" == "l552" ]]; then
     build_dir="${script_dir}/build/l552"
-else
-    build_dir="${script_dir}/build/l562"
 fi
 
 # clean if requested and setup
@@ -63,8 +61,6 @@ if [[ ! -f "CMakeCache.txt" ]]; then
     # find toolchain file 
     if [[ "$board" == "l552" ]]; then
         tc_file="${script_dir}/../stm32l552xx/stm32l552xx.cmake"
-    else
-        tc_file="${script_dir}/../stm32l562xx/stm32l562xx.cmake"
     fi
 
     echo "generating cmake..."
