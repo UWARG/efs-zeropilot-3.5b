@@ -1,9 +1,9 @@
 #pragma once
 
 typedef struct {
-    float pitch;      // Pitch angle in degrees
-    float roll;       // Roll angle in degrees
-    float yaw;        // Yaw angle in degrees
+    float pitch;      // Pitch angle in radians
+    float roll;       // Roll angle in radians
+    float yaw;        // Yaw angle in radians
     float altitude;   // Altitude in meters
     float airspeed;   // Airspeed in m/s
 } DroneState_t;
