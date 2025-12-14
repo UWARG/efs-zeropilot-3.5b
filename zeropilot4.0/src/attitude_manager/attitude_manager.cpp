@@ -55,6 +55,9 @@ void AttitudeManager::amUpdate() {
         scaledImuData.zacc
     );
     Attitude_t attitude = mahonyFilter.getAttitudeRadians();
+    droneState.roll = attitude.roll;
+    droneState.pitch = attitude.pitch;
+    droneState.yaw = attitude.yaw;
 
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
         sendRawIMUDataToTelemetryManager(imuData);
