@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-
-
 struct RegInfo {
     uint8_t address;
     uint8_t byte_size;
@@ -19,7 +17,7 @@ static constexpr RegInfo REG_POWER = {0x08, 3, false}; // 24
 static constexpr RegInfo REG_ENERGY = {0x09, 5, false}; // 40
 static constexpr RegInfo REG_CHARGE = {0x0A, 5, true};  // 40
 
-static constexpr uint8_t INA228_ADDR = 0b1000101; //VS to VS
+static constexpr uint8_t INA228_ADDR = 0b1000101; // VS to VS
 
 //constants
 static constexpr float RSHUNT = 0.0005; 

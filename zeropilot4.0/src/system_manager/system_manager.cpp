@@ -9,7 +9,7 @@ SystemManager::SystemManager(
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
     IRCReceiver *rcDriver,
-	IPM *pmDriver,
+	IPowerModule *pmDriver,
     IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
     IMessageQueue<TMMessage_t> *tmQueue,
     IMessageQueue<char[100]> *smLoggerQueue) :

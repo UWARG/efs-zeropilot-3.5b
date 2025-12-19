@@ -1,12 +1,12 @@
 #pragma once
 
 #include "stm32h7xx_hal.h"
-#include "powerModule_iface.hpp"
-#include "powerModule_defines.hpp"
+#include "power_module_iface.hpp"
+#include "power_module_defines.hpp"
 #include <cmath> 
 
 
-class PowerModule : public IPM {
+class PowerModule : public IPowerModule {
     public:
         bool readData(PMData_t *data) override;
         PowerModule(I2C_HandleTypeDef *hi2c);

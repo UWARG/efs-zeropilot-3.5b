@@ -112,6 +112,7 @@ void initDrivers()
     rcHandle = new (&rcStorage) RCReceiver(&huart4);
     rfdHandle = new (&rfdStorage) RFD(&huart3);
     imuHandle = new (&imuStorage) IMU(&hspi2, GPIOD, GPIO_PIN_0);
+    
     // Queues
     amRCQueueHandle = new (&amRCQueueStorage) MessageQueue<RCMotorControlMessage_t>(&amQueueId);
     smLoggerQueueHandle = new (&smLoggerQueueStorage) MessageQueue<char[100]>(&smLoggerQueueId);
