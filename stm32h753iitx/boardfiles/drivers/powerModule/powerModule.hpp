@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stm32l5xx_hal_i2c.h" 
+#include "stm32h7xx_hal.h"
 #include "powerModule_iface.hpp"
 #include "powerModule_defines.hpp"
 #include <cmath> 
@@ -12,6 +12,7 @@ class PowerModule : public IPM {
         PowerModule(I2C_HandleTypeDef *hi2c);
         bool init();
         volatile uint8_t callbackCount;
+        void I2C_MemRxCpltCallback();
 
 
     private: 
@@ -20,10 +21,8 @@ class PowerModule : public IPM {
         bool writeRegister(uint16_t MemAddress, uint8_t * pData, uint16_t Size, I2C_HandleTypeDef *hi2c);
         bool readRegister(uint16_t MemAddress, uint8_t * pData, uint16_t Size, I2C_HandleTypeDef *hi2c);
         void parse(I2C_HandleTypeDef *hi2c);
-        void I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c);
 
 
-        volatile uint8_t callbackCount;
         uint8_t vbusData[3];
         uint8_t currentData[3];
         uint8_t powerData[3];

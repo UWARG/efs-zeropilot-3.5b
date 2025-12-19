@@ -31,7 +31,6 @@ extern MotorControl *steeringMotorHandle;
 
 extern RCReceiver *rcHandle;
 extern GPS *gpsHandle;
-extern 
 extern RFD *rfdHandle;
 extern IMU *imuHandle;
 extern PowerModule *powerModule;

@@ -1,4 +1,3 @@
-#include "stm32l5xx_hal.h"
 #include "powerModule.hpp"
 
 
@@ -61,7 +60,7 @@ bool PowerModule::readRegister(
 
 }
 
-void PowerModule::I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
+void PowerModule::I2C_MemRxCpltCallback() {
     callbackCount++;
 
     switch(callbackCount) {
@@ -100,13 +99,13 @@ bool PowerModule::readData(PMData_t *data) {
     //two's complement
     processedData.bus_voltage = (((vbusData[0] << 16) | (vbusData[1] << 8) | vbusData[2]) >> 4) * VBUS_LSB;
     processedData.current = (((currentData[0] << 16) | (currentData[1] << 8) | currentData[2]) >> 4) * CURRENT_LSB;
-    processedData.charge = ((uint64_t(chargeData[0] << 32) | (chargeData[1] << 24) |
+    processedData.charge = ((((uint64_t)chargeData[0] << 32) | (chargeData[1] << 24) |
                              (chargeData[2] << 16) | (chargeData[3] << 8) | chargeData[4])) * CHARGE_LSB;
 
     //unsigned
     processedData.power = ((powerData[0] << 16) | (powerData[1] << 8) | powerData[2]) * POWER_LSB;
 
-    processedData.energy = ((uint64_t(energyData[0] << 32) | (energyData[1] << 24) |
+    processedData.energy = ((((uint64_t)energyData[0] << 32) | (energyData[1] << 24) |
                              (energyData[2] << 16) | (energyData[3] << 8) | energyData[4])) * ENERGY_LSB;
 
     *data = processedData;
