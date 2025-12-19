@@ -45,7 +45,8 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     if (huart == rcHandle->getHUART()){
         rcHandle->parse();
         rcHandle->startDMA();
-    } else if (RFD::instance && RFD::instance->getHuart() == huart) {
+    } 
+    else if (RFD::instance && RFD::instance->getHuart() == huart) {
       RFD::instance->receiveCallback(Size);
     }
     // GPS dma callback
@@ -79,13 +80,15 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
-    if (hspi->Instance == SPI2) {
+    if (hspi == imuHandle->getSPI()) {
       imuHandle->txRxCallback();
     }
 }
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
-    pmHandle->I2C_MemRxCpltCallback();
+    if (hi2c == pmHandle->getI2C()) {
+        pmHandle->I2C_MemRxCpltCallback();
+    }
 }
 
 #ifdef __cplusplus

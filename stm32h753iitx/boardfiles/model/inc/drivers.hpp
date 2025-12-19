@@ -13,7 +13,7 @@
 #include "gps.hpp"
 #include "rfd.hpp"
 #include "imu.hpp"
-#include "powerModule.hpp"
+#include "power_module.hpp"
 
 extern SystemUtils *systemUtilsHandle;
 

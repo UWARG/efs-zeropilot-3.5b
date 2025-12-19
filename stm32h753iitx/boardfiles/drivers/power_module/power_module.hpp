@@ -13,6 +13,7 @@ class PowerModule : public IPowerModule {
         bool init();
         volatile uint8_t callbackCount;
         void I2C_MemRxCpltCallback();
+        I2C_HandleTypeDef* getI2C();
 
 
     private: 

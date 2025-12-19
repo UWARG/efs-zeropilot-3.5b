@@ -23,6 +23,23 @@ SystemManager::SystemManager(
         smLoggerQueue(smLoggerQueue),
         smSchedulingCounter(0) {}
 
+SystemManager::SystemManager(
+    ISystemUtils *systemUtilsDriver,
+    IIndependentWatchdog *iwdgDriver,
+    ILogger *loggerDriver,
+    IRCReceiver *rcDriver,
+	IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
+    IMessageQueue<TMMessage_t> *tmQueue,
+    IMessageQueue<char[100]> *smLoggerQueue) :
+        systemUtilsDriver(systemUtilsDriver),
+        iwdgDriver(iwdgDriver),
+        loggerDriver(loggerDriver),
+        rcDriver(rcDriver),
+		amRCQueue(amRCQueue),
+        tmQueue(tmQueue),
+        smLoggerQueue(smLoggerQueue),
+        smSchedulingCounter(0) {}
+
 void SystemManager::smUpdate() {
     // Kick the watchdog
     iwdgDriver->refreshWatchdog();

@@ -1,4 +1,4 @@
-#include "powerModule.hpp"
+#include "power_module.hpp"
 
 
 PowerModule::PowerModule(I2C_HandleTypeDef* hi2c) : hi2c(hi2c) {
@@ -110,4 +110,8 @@ bool PowerModule::readData(PMData_t *data) {
 
     *data = processedData;
     return true;
+}
+
+I2C_HandleTypeDef* PowerModule::getI2C() {
+    return hi2c;
 }

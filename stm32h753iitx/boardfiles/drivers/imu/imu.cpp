@@ -190,6 +190,10 @@ ScaledImu_t IMU::scaleIMUData(const RawImu_t &rawData) {
     return scaledData;
 }
 
+SPI_HandleTypeDef* IMU::getSPI() {
+    return _spi;
+}
+
 
 // TODO: verify correctness of below functions
 /*

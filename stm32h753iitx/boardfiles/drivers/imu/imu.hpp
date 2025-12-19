@@ -89,6 +89,8 @@ public:
 
 	// put this in void HAL_SPI_TxRxCpltCallback (SPI_HandleTypeDef * hspi)
 	void txRxCallback();
+
+	SPI_HandleTypeDef* getSPI();
 };
 
 #endif
