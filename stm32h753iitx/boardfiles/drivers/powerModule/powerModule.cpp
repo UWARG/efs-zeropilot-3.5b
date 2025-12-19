@@ -1,9 +1,9 @@
 #include "stm32l5xx_hal.h"
 #include "powerModule.hpp"
 
-volatile uint8_t PowerModule::callbackCount = 0;
 
-PowerModule::PowerModule(I2C_HandleTypeDef* hi2c) : hi2c(hi2c) {}
+PowerModule::PowerModule(I2C_HandleTypeDef* hi2c) : hi2c(hi2c) {
+}
 
 bool PowerModule::init() {
     callbackCount = 0;
@@ -60,9 +60,7 @@ bool PowerModule::readRegister(
     return HAL_I2C_Mem_Read_DMA(hi2c, INA228_ADDR << 1, memAddress, I2C_MEMADD_SIZE_8BIT, pData, size) == HAL_OK;
 
 }
-extern "C" void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
-    PowerModule::I2C_MemRxCpltCallback(hi2c);
-}
+
 void PowerModule::I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
     callbackCount++;
 
