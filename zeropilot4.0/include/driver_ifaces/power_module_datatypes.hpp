@@ -5,7 +5,7 @@
 typedef struct {
 
     //instantaneous results
-    float bus_voltage = 0.0f;
+    float busVoltage = 0.0f;
     float current = 0.0f;
     float power = 0.0f;
 
