@@ -11,6 +11,7 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
+extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi4;
 
 // ----------------------------------------------------------------------------
@@ -32,6 +33,7 @@ alignas(MotorControl) static uint8_t steeringMotorStorage[sizeof(MotorControl)];
 alignas(GPS) static uint8_t gpsStorage[sizeof(GPS)];
 alignas(RCReceiver) static uint8_t rcStorage[sizeof(RCReceiver)];
 alignas(RFD) static uint8_t rfdStorage[sizeof(RFD)];
+alignas(IMU) static uint8_t imuStorage[sizeof(IMU)];
 
 alignas(MessageQueue<RCMotorControlMessage_t>) static uint8_t amRCQueueStorage[sizeof(MessageQueue<RCMotorControlMessage_t>)];
 alignas(MessageQueue<char[100]>) static uint8_t smLoggerQueueStorage[sizeof(MessageQueue<char[100]>)];
@@ -57,6 +59,7 @@ MotorControl *steeringMotorHandle = nullptr;
 GPS *gpsHandle = nullptr;
 RCReceiver *rcHandle = nullptr;
 RFD *rfdHandle = nullptr;
+IMU *imuHandle = nullptr;
 
 MessageQueue<RCMotorControlMessage_t> *amRCQueueHandle = nullptr;
 MessageQueue<char[100]> *smLoggerQueueHandle = nullptr;
@@ -109,6 +112,7 @@ void initDrivers()
     gpsHandle = new (&gpsStorage) GPS(&huart2);
     rcHandle = new (&rcStorage) RCReceiver(&huart4);
     rfdHandle = new (&rfdStorage) RFD(&huart1);
+    imuHandle = new (&imuStorage) IMU(&hspi2, GPIOI, GPIO_PIN_0);
 
     // Queues
     amRCQueueHandle = new (&amRCQueueStorage) MessageQueue<RCMotorControlMessage_t>(&amQueueId);
@@ -130,6 +134,7 @@ void initDrivers()
 
     rcHandle->init();
     gpsHandle->init();
+    imuHandle->init();
 
     // Motor instance bindings
     leftAileronMotorInstance = {leftAileronMotorHandle, true};

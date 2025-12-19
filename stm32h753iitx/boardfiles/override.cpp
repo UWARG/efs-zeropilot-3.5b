@@ -78,6 +78,12 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
   }
 }
 
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+    if (hspi->Instance == SPI2) {
+      imuHandle->txRxCallback();
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -17,7 +17,8 @@ void initManagers()
     // AM initialization
     amHandle = new (&amHandleStorage) AttitudeManager(
         systemUtilsHandle, 
-        gpsHandle, 
+        gpsHandle,
+        imuHandle,
         amRCQueueHandle, 
         tmQueueHandle, 
         smLoggerQueueHandle, 

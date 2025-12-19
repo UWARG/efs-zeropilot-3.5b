@@ -6,9 +6,11 @@
 #include "motor_datatype.hpp"
 #include "gps_iface.hpp"
 #include "tm_queue.hpp"
+#include "imu_iface.hpp"
+#include "MahonyAHRS.hpp"
 #include "queue_iface.hpp"
 
-#define AM_CONTROL_LOOP_DELAY 50
+#define AM_CONTROL_LOOP_DELAY 10
 #define AM_FAILSAFE_TIMEOUT 1000
 
 typedef enum {
@@ -25,6 +27,7 @@ class AttitudeManager {
         AttitudeManager(
             ISystemUtils *systemUtilsDriver,
             IGPS *gpsDriver,
+            IIMU *imuDriver,
             IMessageQueue<RCMotorControlMessage_t> *amQueue,
             IMessageQueue<TMMessage_t> *tmQueue,
             IMessageQueue<char[100]> *smLoggerQueue,
@@ -42,6 +45,9 @@ class AttitudeManager {
         ISystemUtils *systemUtilsDriver;
 
         IGPS *gpsDriver;
+        IIMU *imuDriver;
+
+        Mahony mahonyFilter;
 
         IMessageQueue<RCMotorControlMessage_t> *amQueue;
         IMessageQueue<TMMessage_t> *tmQueue;
@@ -67,4 +73,8 @@ class AttitudeManager {
         void outputToMotor(ControlAxis_t axis, uint8_t percent);
 
         void sendGPSDataToTelemetryManager(const GpsData_t &gpsData, const bool &armed);
+
+        void sendRawIMUDataToTelemetryManager(const RawImu_t &imuData);
+
+        void sendAttitudeDataToTelemetryManager(const Attitude_t &attitude);
 };
