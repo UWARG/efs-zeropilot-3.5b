@@ -97,7 +97,7 @@ void PowerModule::parse(I2C_HandleTypeDef *hi2c) {
 bool PowerModule::readData(PMData_t *data) {
 
     //two's complement
-    processedData.bus_voltage = (((vbusData[0] << 16) | (vbusData[1] << 8) | vbusData[2]) >> 4) * VBUS_LSB;
+    processedData.busVoltage = (((vbusData[0] << 16) | (vbusData[1] << 8) | vbusData[2]) >> 4) * VBUS_LSB;
     processedData.current = (((currentData[0] << 16) | (currentData[1] << 8) | currentData[2]) >> 4) * CURRENT_LSB;
     processedData.charge = ((((uint64_t)chargeData[0] << 32) | (chargeData[1] << 24) |
                              (chargeData[2] << 16) | (chargeData[3] << 8) | chargeData[4])) * CHARGE_LSB;

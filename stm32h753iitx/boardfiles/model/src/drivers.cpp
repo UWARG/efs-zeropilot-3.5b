@@ -11,6 +11,7 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
+extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi4;
 extern I2C_HandleTypeDef hi2c1;
@@ -32,7 +33,7 @@ alignas(MotorControl) static uint8_t rightFlapMotorStorage[sizeof(MotorControl)]
 alignas(MotorControl) static uint8_t steeringMotorStorage[sizeof(MotorControl)];
 
 alignas(GPS) static uint8_t gpsStorage[sizeof(GPS)];
-alignas(RCReceiver) static uint8_t rcStorage[sizeof(RCReceiver)];
+alignas(CRSFReceiver) static uint8_t rcStorage[sizeof(CRSFReceiver)];
 alignas(RFD) static uint8_t rfdStorage[sizeof(RFD)];
 alignas(IMU) static uint8_t imuStorage[sizeof(IMU)];
 alignas(PowerModule) static uint8_t pmStorage[sizeof(PowerModule)];
@@ -60,7 +61,7 @@ MotorControl *rightFlapMotorHandle = nullptr;
 MotorControl *steeringMotorHandle = nullptr;
 
 GPS *gpsHandle = nullptr;
-RCReceiver *rcHandle = nullptr;
+CRSFReceiver *rcHandle = nullptr;
 RFD *rfdHandle = nullptr;
 IMU *imuHandle = nullptr;
 PowerModule *pmHandle = nullptr;
@@ -114,9 +115,9 @@ void initDrivers()
 
     // Peripherals
     gpsHandle = new (&gpsStorage) GPS(&huart2);
-    rcHandle = new (&rcStorage) RCReceiver(&huart4);
+    rcHandle = new (&rcStorage) CRSFReceiver(&huart4);
     rfdHandle = new (&rfdStorage) RFD(&huart1);
-    imuHandle = new (&imuStorage) IMU(&hspi2, GPIOI, GPIO_PIN_0);
+    imuHandle = new (&imuStorage) IMU(&hspi1, GPIOC, GPIO_PIN_5);
     pmHandle = new (&pmStorage) PowerModule(&hi2c1);
 
     // Queues
