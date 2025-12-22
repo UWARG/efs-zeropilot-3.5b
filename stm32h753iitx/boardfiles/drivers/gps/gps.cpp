@@ -18,8 +18,8 @@ bool GPS::init() {
 
     __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 
-    // HAL_StatusTypeDef messagesuccess = enableMessage(0x01, 0x11); //enable ubx velecef messages
-    HAL_StatusTypeDef messagesuccess = HAL_OK; //enable ubx velecef messages
+    HAL_StatusTypeDef messagesuccess = enableMessage(0x01, 0x11); //enable ubx velecef messages
+    // HAL_StatusTypeDef messagesuccess = HAL_OK; //enable ubx velecef messages
 
     return (success == HAL_OK) & (messagesuccess == HAL_OK);
 }
@@ -31,7 +31,7 @@ HAL_StatusTypeDef GPS::enableMessage(uint8_t msgClass, uint8_t msgId) {
         0x03, 0x00,         //length
         msgClass, msgId,
         0x01,               //rate
-        0x00, 0x00          //placeholder
+        0x00, 0x00          //placeholder for checksum
     };
 
     if(sendUBX(cfgMsg, sizeof(cfgMsg))) {
@@ -53,7 +53,6 @@ void GPS::calcChecksum(uint8_t *msg, uint16_t len) {
 
 bool GPS::sendUBX(uint8_t *msg, uint16_t len) {
     calcChecksum(msg, len);
-    return true;
     return (HAL_UART_Transmit(huart, msg, len, HAL_MAX_DELAY) == HAL_OK);
 }
 
