@@ -19,8 +19,7 @@ bool GPS::init() {
     __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 
     HAL_StatusTypeDef messagesuccess = enableMessage(0x01, 0x11); //enable ubx velecef messages
-    // HAL_StatusTypeDef messagesuccess = HAL_OK; //enable ubx velecef messages
-
+    
     return (success == HAL_OK) & (messagesuccess == HAL_OK);
 }
 
