@@ -29,5 +29,5 @@ class PowerModule : public IPowerModule {
         uint8_t powerData[3];
         uint8_t energyData[5];
         uint8_t chargeData[5];
-
+        volatile bool dataFilled = 0;
 };

@@ -31,10 +31,10 @@ bool PowerModule::init() {
     Starting DMA loop
     */
 
-    if(success) {
+   if(success) {
+        dataFilled = 0;
         parse(hi2c);
     }
-
 
     return success;
 }
@@ -78,7 +78,7 @@ void PowerModule::I2C_MemRxCpltCallback() {
             break;
         case 5:
             callbackCount = 0;
-            parse(hi2c); //read vbus
+            dataFilled = 1;
             break;
         default:
             break;
@@ -91,6 +91,7 @@ void PowerModule::I2C_MemRxCpltCallback() {
 
 void PowerModule::parse(I2C_HandleTypeDef *hi2c) {
     //start the cycle
+    if (dataFilled) return;
     readRegister(REG_VBUS.address, vbusData, REG_VBUS.byte_size, hi2c);
 }
 
@@ -109,6 +110,10 @@ bool PowerModule::readData(PMData_t *data) {
                              (energyData[2] << 16) | (energyData[3] << 8) | energyData[4])) * ENERGY_LSB;
 
     *data = processedData;
+
+    dataFilled = 0;
+    parse(hi2c);
+
     return true;
 }
 

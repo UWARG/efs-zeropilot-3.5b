@@ -35,6 +35,7 @@ SystemManager::SystemManager(
         iwdgDriver(iwdgDriver),
         loggerDriver(loggerDriver),
         rcDriver(rcDriver),
+        pmDriver(nullptr),
 		amRCQueue(amRCQueue),
         tmQueue(tmQueue),
         smLoggerQueue(smLoggerQueue),
@@ -91,6 +92,11 @@ void SystemManager::smUpdate() {
     // Send Heartbeat data to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
         sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+    }
+
+    if (pmDriver) {
+        PMData_t pmData;
+        bool pmDataValid = pmDriver->readData(&pmData);
     }
 
     // Log if new messages
