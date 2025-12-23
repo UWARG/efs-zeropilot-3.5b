@@ -77,8 +77,12 @@ void CRSFReceiver::parse() {
         bitsInBuffer -= 11;
 
         // Map to desired range
-        rcData_.ControlSignals[i] = static_cast<float>((channels[i] - CRSF_PULSE_MIN) * (100.0f / CRSF_PULSE_RANGE));
+        rcData_.controlSignals[i] = static_cast<float>((channels[i] - CRSF_PULSE_MIN) * (100.0f / CRSF_PULSE_RANGE));
     }
 
     rcData_.isDataNew = true;
+}
+
+UART_HandleTypeDef * CRSFReceiver::getUart() {
+	return uart_;
 }

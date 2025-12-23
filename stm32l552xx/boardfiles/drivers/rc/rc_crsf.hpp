@@ -29,6 +29,7 @@ class CRSFReceiver : public IRCReceiver {
         void startDMA();
 
         void parse();
+        UART_HandleTypeDef * getUart();
        
     private:
         UART_HandleTypeDef *uart_;

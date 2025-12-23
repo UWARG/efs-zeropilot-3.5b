@@ -29,7 +29,7 @@ alignas(MotorControl) static uint8_t rightFlapMotorStorage[sizeof(MotorControl)]
 alignas(MotorControl) static uint8_t steeringMotorStorage[sizeof(MotorControl)];
 
 alignas(GPS) static uint8_t gpsStorage[sizeof(GPS)];
-alignas(CRSFReceiver) static uint8_t rcStorage[sizeof(CRSFReceiver)];
+alignas(CRSFReceiver) static uint8_t crsfStorage[sizeof(CRSFReceiver)];
 alignas(RFD) static uint8_t rfdStorage[sizeof(RFD)];
 alignas(IMU) static uint8_t imuStorage[sizeof(IMU)];
 
