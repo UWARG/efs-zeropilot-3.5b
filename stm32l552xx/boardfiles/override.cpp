@@ -94,3 +94,9 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
       imuHandle->txRxCallback();
     }
 }
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
+    if (hi2c == pmHandle->getI2C()) {
+        pmHandle->I2C_MemRxCpltCallback();
+    }
+}
