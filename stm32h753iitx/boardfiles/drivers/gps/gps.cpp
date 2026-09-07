@@ -248,9 +248,7 @@ bool GPS::receiveByte(uint8_t &byte, uint32_t deadline) {
 }
 
 ZP_ERROR_e GPS::readData(GpsData_t &data) {
-    // When nothing new has arrived since the last call, mark it as old and don't reparse the data.
-    // Staleness is reported through data.isNew rather than as an error: for a 5-10 Hz GPS polled
-    // at the AM rate this is the common case, and returning an error would flood the caller's mask.
+    // When nothing new has arrived since the last call, mark it as old and don't reparse the data
     if (!dataReady) {
         tempData.isNew = false;
         data = tempData;
@@ -279,7 +277,6 @@ ZP_ERROR_e GPS::readData(GpsData_t &data) {
     parsingData = false;
     data = tempData;
 
-    // Bytes arrived but no complete frame could be extracted from them
     return success ? ZP_ERROR_OK : ZP_ERROR_PARSE;
 }
 

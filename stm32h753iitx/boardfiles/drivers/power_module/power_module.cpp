@@ -5,7 +5,6 @@ PowerModule::PowerModule(I2C_HandleTypeDef* hi2c) : hi2c(hi2c) {}
 
 ZP_ERROR_e PowerModule::init() {
     callbackCount = 0;
-    // The INA228 failing to acknowledge its address is a NACK, not a generic failure
     if (HAL_I2C_IsDeviceReady(hi2c, INA228_ADDR << 1, 1, 100) != HAL_OK) {
         return ZP_ERROR_EXT_API | ZP_ERROR_NACK;
     }
@@ -97,8 +96,7 @@ void PowerModule::I2C_MemRxCpltCallback() {
             break;
     }
 
-    // If one read failed to start, reset the chain, next readData() call restarts from VBUS.
-    // Compare against ZP_ERROR_OK explicitly: ZP_ERROR_OK is 0, so `!result` would mean success.
+    // If one read failed to start, reset the chain, next readData() call restarts from VBUS
     if (result != ZP_ERROR_OK) {
         callbackCount = 0;
     }
@@ -113,7 +111,6 @@ void PowerModule::I2C_ErrorCallback() {
 }
 
 ZP_ERROR_e PowerModule::parse(I2C_HandleTypeDef *hi2c) {
-    // A set already waiting to be consumed is the normal case, not a failure
     if (dataFilled) return ZP_ERROR_OK;
 
     // Start the cycle
@@ -126,8 +123,7 @@ ZP_ERROR_e PowerModule::readData(PMData_t *data) {
         return ZP_ERROR_NULLPTR;
     }
 
-    // No fresh sample set yet, kick off the cycle or restart it if it stalled. NOT_READY rather
-    // than OK is what keeps SM from marking batteryData.isValid on a stale sample.
+    // No fresh sample set yet, kick off the cycle or restarting it if it stalled, and report no fresh data
     if (!dataFilled) {
         return parse(hi2c) | ZP_ERROR_NOT_READY;
     }

@@ -136,7 +136,7 @@ ZP_ERROR_e FBWAMapping::runControl(RCMotorControlMessage_t &controlOutput, const
     prevFilteredRollRate = filteredRollRate;
     prevFilteredPitchRate = filteredPitchRate;
 
-    // Calculate PID outputs for roll/pitch, accumulating any errors
+    // Calculate PID outputs for roll/pitch
     float rollPIDOut = 0.0f;
     float pitchPIDOut = 0.0f;
     result |= rollPID.pidOutput(rollSetpoint, rollMeasured, rollPIDOut);

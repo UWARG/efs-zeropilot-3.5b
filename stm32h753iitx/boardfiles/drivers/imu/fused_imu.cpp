@@ -37,8 +37,6 @@ ZP_ERROR_e FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {
             uint16_t count = rawImuBatch[i].count;
             if (count == 0) continue; // No data from this IMU, skip
 
-            // Each IMU can contribute up to MAX_PACKETS and the fused buffer is sized for all of
-            // them, but the counts come from the individual batches, so bound them explicitly.
             if (offset + count > MAX_FUSED_PACKET_SIZE) {
                 result |= ZP_ERROR_RANGE;
                 break;
@@ -75,8 +73,7 @@ ZP_ERROR_e FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {
 }
 
 ZP_ERROR_e FusedIMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) {
-    // Guard to prevent recalculations when IMUs not filled with new data.
-    // An empty batch is the normal idle case, not a failure.
+    // Guard to prevent recalculations when IMUs not filled with new data
     if (rawDataBatch.count == 0) {
         scaledFusedImuBatch.count = 0;
         scaledDataBatch = scaledFusedImuBatch;

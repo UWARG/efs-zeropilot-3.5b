@@ -14,9 +14,6 @@ enum class FlightMode_e : uint32_t {
     #endif
 };
 
-// Named "validate" rather than "isValid" on purpose: it returns a ZP_ERROR_e, and a predicate-
-// sounding name invites `if (!isValidFlightMode(m))`, which inverts the meaning because
-// ZP_ERROR_OK is 0. Compare the result against ZP_ERROR_OK.
 inline ZP_ERROR_e validateFlightMode(uint32_t val) {
     switch (static_cast<FlightMode_e>(val)) {
         #ifdef PLANE

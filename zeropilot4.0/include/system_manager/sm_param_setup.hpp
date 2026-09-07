@@ -15,7 +15,7 @@ class SMParamSetup : public IParamSetup {
     private:
         SystemManager* sm;
 
-    // Bounds-checked helpers shared by the indexed callbacks below
+    // Flightmode helper
     static ZP_ERROR_e setFltMode(SystemManager* ctx, uint8_t idx, float val);
     static ZP_ERROR_e setRCReversed(SystemManager* ctx, uint8_t idx, float val);
 

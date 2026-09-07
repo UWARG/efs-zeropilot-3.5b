@@ -8,9 +8,6 @@ static inline int usToPercent(float us) {
     return static_cast<int>((us - 1000.0f) / 10.0f);
 }
 
-// Reads a param, accumulating any error into `result`. Returns 0.0f on failure; callers check
-// `result` rather than the value. Safe to use as a call argument: C++17 sequences each argument's
-// initialization indeterminately (never interleaved), so the |= side effects cannot race.
 static inline float readParam(ZP_ERROR_e &result, ZP_PARAM_ID id) {
     float value = 0.0f;
     result |= ZP_PARAM::get(id, value);

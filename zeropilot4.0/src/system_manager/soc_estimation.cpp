@@ -20,7 +20,7 @@ void SocEstimator::calcStateOfCharge(BatteryData_t batteryData, int mode) {
     float nCellsRaw = 0.0f;
     result |= ZP_PARAM::get(ZP_PARAM_ID::BATT_CAPACITY, battCapacityMah);
     result |= ZP_PARAM::get(ZP_PARAM_ID::BATT_N_CELLS, nCellsRaw);
-    if (result != ZP_ERROR_OK) return; // Leave the previous estimate in place
+    if (result != ZP_ERROR_OK) return;
 
     float batteryCharge = battCapacityMah * 3.6f; // mA to C
     uint8_t nCells = static_cast<uint8_t>(nCellsRaw);

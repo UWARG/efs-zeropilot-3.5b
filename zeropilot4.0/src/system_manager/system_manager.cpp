@@ -312,7 +312,6 @@ ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         rcDataMessage.pitch = rcChannelReversed[1] ? 100.0f - rcData.pitch : rcData.pitch;
         rcDataMessage.throttle = rcChannelReversed[2] ? 100.0f - rcData.throttle : rcData.throttle;
         rcDataMessage.yaw = rcChannelReversed[3] ? 100.0f - rcData.yaw : rcData.yaw;
-        // The safety-switch term is load bearing: this is the only arm gate in the system.
         rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged;
         #ifdef PLANE
         rcDataMessage.flapAngle = rcData.aux2;
@@ -328,8 +327,6 @@ ZP_ERROR_e SystemManager::sendBatteryDataToTelemetryManager(const BatteryData_t 
     static constexpr uint8_t VOLTAGE_LEN = 1;
     float voltages[VOLTAGE_LEN] = {batteryData.pmData.busVoltage};
 
-    // State of charge and time remaining now come from the SoC estimator rather than being
-    // recomputed here from BATT_CAPACITY.
     TMMessage_t batteryDataMsg;
     uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
     ZP_ERROR_e result = batteryDataPack(batteryDataMsg, currentTime, batteryId,

@@ -88,7 +88,7 @@ ZP_ERROR_e initDrivers()
     uint32_t servoType = static_cast<uint32_t>(val);
     
     for (int i = 0; i < 8; i++) {
-        // Determine if it is a brushless DC motor
+        // Determine if it is brushless DC motor
         float funcVal = 0.0f;
         status = ZP_PARAM::get(SERVO_FUNC[i], funcVal);
         if (status != ZP_ERROR_OK) Error_Handler();
@@ -145,9 +145,6 @@ ZP_ERROR_e initDrivers()
         if (status != ZP_ERROR_OK) Error_Handler();
     }
 
-    // Only the drivers already returning ZP_ERROR_e can be checked here. GPS, IMU, rangefinder
-    // and barometer still return bool/int; Stage D0 puts ZP_ERROR_e init() on every interface,
-    // at which point these become checked too.
     if ((status = rcHandle->init()) != ZP_ERROR_OK) Error_Handler();
     if ((status = telemLinkHandle->init()) != ZP_ERROR_OK) Error_Handler();
     gpsHandle->init();

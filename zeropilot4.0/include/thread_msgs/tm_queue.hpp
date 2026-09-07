@@ -206,7 +206,6 @@ inline ZP_ERROR_e rcDataPack(TMMessage_t &data, uint32_t time_boot_ms, const flo
     if (controlSignals == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     }
-    // Channels past the message capacity would otherwise be dropped without the caller knowing
     if (size > TM_QUEUE_RC_CHANNELS_COUNT) {
         result |= ZP_ERROR_RANGE;
     }
@@ -230,7 +229,6 @@ inline ZP_ERROR_e batteryDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint
     if (voltages == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     }
-    // Cells past the message capacity would otherwise be dropped without the caller knowing
     if (voltage_len > TM_QUEUE_BATTERY_VOLTAGES_COUNT) {
         result |= ZP_ERROR_RANGE;
     }

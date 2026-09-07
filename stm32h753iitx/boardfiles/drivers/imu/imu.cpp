@@ -149,9 +149,7 @@ int IMU::init() {
 }
 
 ZP_ERROR_e IMU::readRawData(RawImuBatch_t &rawDataBatch) {
-    // Dont start another dma transaction when in the middle of one transaction.
-    // An in-flight transfer is the normal case at the AM rate, not a failure, so report it
-    // as an empty batch rather than an error and leave the caller's mask meaningful.
+    // Dont start another dma transaction when in the middle of one transaction
     if (!dmaDone) {
         rawImuDataBatch.count = 0;
         rawDataBatch = rawImuDataBatch;
@@ -167,8 +165,6 @@ ZP_ERROR_e IMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t
     if (rawDataBatch.data == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
-    // scaledData holds MAX_PACKETS entries. Today the hardware FIFO limit matches that, but a
-    // batch handed over from another IMU object carries its own count, so bound it explicitly.
     if (rawDataBatch.count > MAX_PACKETS) {
         return ZP_ERROR_RANGE;
     }

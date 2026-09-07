@@ -10,7 +10,7 @@ private:
 
     RawImu_t rawData = {};
     ScaledImu_t scaledData = {};
-    static constexpr uint16_t SITL_BATCH_PACKETS = 1; // SITL only ever emits one packet per read
+    static constexpr uint16_t SITL_BATCH_PACKETS = 1;
     RawImuBatch_t rawBatch = {&rawData, SITL_BATCH_PACKETS};
     ScaledImuBatch_t scaledBatch = {&scaledData, SITL_BATCH_PACKETS};
 
@@ -79,7 +79,6 @@ public:
         if (rawDataBatch.data == nullptr) {
             return ZP_ERROR_NULLPTR;
         }
-        // scaledData is a single packet: a larger batch would be silently reduced to its last entry
         if (rawDataBatch.count > SITL_BATCH_PACKETS) {
             return ZP_ERROR_RANGE;
         }

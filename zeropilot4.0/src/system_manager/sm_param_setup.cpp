@@ -13,8 +13,6 @@ ZP_ERROR_e SMParamSetup::loadAllParams() {
     };
     for (uint8_t i = 0; i < SM_FLIGHTMODE_COUNT; i++) {
         float val = 0.0f;
-        // Gate on this iteration's result, not the accumulated one: a failure on an early
-        // param must not silently suppress loading every later param.
         ZP_ERROR_e getResult = ZP_PARAM::get(FLTMODE_PARAMS[i], val);
         result |= getResult;
         if (getResult == ZP_ERROR_OK) {
@@ -55,15 +53,10 @@ ZP_ERROR_e SMParamSetup::bindAllParamCallbacks() {
 }
 
 ZP_ERROR_e SMParamSetup::setFltMode(SystemManager* ctx, uint8_t idx, float val) {
-    // idx is only ever a literal from the six callbacks below today, but the write below is
-    // unconditional, so bound it rather than relying on every future caller behaving.
     if (idx >= SM_FLIGHTMODE_COUNT) return ZP_ERROR_RANGE;
 
     uint32_t mode = static_cast<uint32_t>(val);
 
-    // Compare explicitly against ZP_ERROR_OK. This previously read `if (!isValidFlightMode(mode))`,
-    // which inverted the check because ZP_ERROR_OK is 0: valid modes were rejected and invalid
-    // ones were written through.
     ZP_ERROR_e result = validateFlightMode(mode);
     if (result != ZP_ERROR_OK) return result;
 

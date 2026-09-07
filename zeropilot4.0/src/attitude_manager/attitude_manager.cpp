@@ -5,8 +5,6 @@
 #include "unit_conversions.hpp"
 #include <limits>
 
-// Reads a param, accumulating any error into `result`. Returns 0.0f on failure; callers check
-// `result` rather than the value.
 static inline float readParam(ZP_ERROR_e &result, ZP_PARAM_ID id) {
     float value = 0.0f;
     result |= ZP_PARAM::get(id, value);
@@ -363,8 +361,6 @@ ZP_ERROR_e AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMs
     if (result != ZP_ERROR_OK) {
         return result;
     }
-    // An empty queue is the normal idle case, not a failure; NOT_READY tells the caller
-    // there was simply nothing to read this tick.
     if (count == 0) {
         return ZP_ERROR_NOT_READY;
     }
