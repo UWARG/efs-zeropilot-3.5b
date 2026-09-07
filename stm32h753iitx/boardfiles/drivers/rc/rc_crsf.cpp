@@ -92,7 +92,7 @@ ZP_ERROR_e CRSFReceiver::parse() {
     }
 
     rcData_.isDataNew = true;
-    return  ZP_ERROR_OK;
+    return ZP_ERROR_OK;
 }
 
 UART_HandleTypeDef * CRSFReceiver::getHuart() {

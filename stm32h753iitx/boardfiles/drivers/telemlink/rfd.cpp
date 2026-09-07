@@ -4,7 +4,7 @@
 
 RFD* RFD::instance = nullptr;
 
-RFD::RFD(UART_HandleTypeDef* huart) : huart(huart), readIndex(0), writeIndex(0){
+RFD::RFD(UART_HandleTypeDef* huart) : huart(huart), readIndex(0), writeIndex(0) {
     instance = this;
 }
 
@@ -13,79 +13,97 @@ RFD::~RFD() {
 }
 
 ZP_ERROR_e RFD::transmit(const uint8_t* data, uint16_t size) {
-    if (huart) {
-        if (HAL_UART_Transmit_DMA(huart, data, size) == HAL_OK) {
-            return ZP_ERROR_OK;
-        } else {
-            return ZP_ERROR_FAIL;
-        }
+    if (huart == nullptr) {
+        return ZP_ERROR_NULLPTR;
     }
 
-    return ZP_ERROR_FAIL;
+    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(huart, data, size);
+    if (status == HAL_BUSY) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
+    } else if (status != HAL_OK) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+    }
+    return ZP_ERROR_OK;
 }
 
 ZP_ERROR_e RFD::getRXTransferSize(uint16_t idx, uint16_t& output) {
-	if (idx > lastIdx) {
-		output = (uint16_t)(idx - lastIdx);
-	} else {
-		output = (uint16_t)(BUFFER_SIZE - lastIdx + idx);
-	}
+    if (idx > lastIdx) {
+        output = (uint16_t)(idx - lastIdx);
+    } else {
+        output = (uint16_t)(BUFFER_SIZE - lastIdx + idx);
+    }
     return ZP_ERROR_OK;
 }
 
 ZP_ERROR_e RFD::init() {
-    if (huart) {
-        if (HAL_UARTEx_ReceiveToIdle_DMA(huart, rxBuffer, BUFFER_SIZE) == HAL_OK) {
-            return ZP_ERROR_OK;
-        } else {
-            return ZP_ERROR_FAIL;
-        }
+    if (huart == nullptr) {
+        return ZP_ERROR_NULLPTR;
     }
 
-    return ZP_ERROR_FAIL;
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(huart, rxBuffer, BUFFER_SIZE);
+    if (status == HAL_BUSY) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
+    } else if (status != HAL_OK) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+    }
+    return ZP_ERROR_OK;
 }
 
 ZP_ERROR_e RFD::receiveCallback(uint16_t writeIdx) {
-    if (HAL_UARTEx_GetRxEventType(huart) == HAL_UART_RXEVENT_HT) {
-		return ZP_ERROR_FAIL;
-	}
+    ZP_ERROR_e result = ZP_ERROR_OK;
 
-    writeIndex = writeIdx % BUFFER_SIZE;
+    // A half transfer event carries no completed frame, so there is nothing to consume
+    if (HAL_UARTEx_GetRxEventType(huart) != HAL_UART_RXEVENT_HT) {
+        writeIndex = writeIdx % BUFFER_SIZE;
+        uint16_t transferSize = 0;
+        result |= getRXTransferSize(writeIndex, transferSize);
 
-	uint16_t transferSize = 0;
-    ZP_ERROR_e result = getRXTransferSize(writeIndex, transferSize);
-	currentSize += transferSize;
+        if ((currentSize + transferSize) > BUFFER_SIZE) {
+            readIndex = (readIndex + ((currentSize + transferSize) - BUFFER_SIZE)) % BUFFER_SIZE;
+            currentSize = BUFFER_SIZE;
+            result |= ZP_ERROR_MEMORY_OVERFLOW;
+        } else {
+            currentSize += transferSize;
+        }
 
-    if (currentSize > (BUFFER_SIZE - 1)) {
-        readIndex += currentSize - (BUFFER_SIZE - 1);
-        readIndex %= BUFFER_SIZE;
-        currentSize = BUFFER_SIZE - 1;
+        lastIdx = writeIdx;
     }
-
-	lastIdx = writeIdx;
 
     return result;
 }
 
 ZP_ERROR_e RFD::receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) {
+    if (buffer == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
+    received_size = 0;
+
+    // Nothing buffered yet is the normal idle case, not a failure
     if (readIndex == writeIndex) {
-        return ZP_ERROR_FAIL;
+        return ZP_ERROR_NOT_READY;
     }
 
     int dataRead = 0;
 
-	if (readIndex < writeIndex) {
-		memcpy(buffer, rxBuffer + readIndex, writeIndex - readIndex);
-		dataRead += writeIndex - readIndex;
-    
-    // data wrapped around buffer
-	} else {
-		memcpy(buffer, rxBuffer + readIndex, BUFFER_SIZE - readIndex);
-		dataRead += BUFFER_SIZE - readIndex;
+    if (readIndex < writeIndex) {
+        if ((writeIndex - readIndex) > bufferSize) {
+            return ZP_ERROR_RANGE;
+        }
+        memcpy(buffer, rxBuffer + readIndex, writeIndex - readIndex);
+        dataRead += writeIndex - readIndex;
 
-		memcpy(buffer + dataRead, rxBuffer, writeIndex);
-		dataRead += writeIndex;
-	}
+    // data wrapped around buffer
+    } else {
+        if ((BUFFER_SIZE - readIndex + writeIndex) > bufferSize) {
+            return ZP_ERROR_RANGE;
+        }
+        memcpy(buffer, rxBuffer + readIndex, BUFFER_SIZE - readIndex);
+        dataRead += BUFFER_SIZE - readIndex;
+
+        memcpy(buffer + dataRead, rxBuffer, writeIndex);
+        dataRead += writeIndex;
+    }
 
     readIndex = (readIndex + dataRead) % BUFFER_SIZE;
     currentSize -= dataRead;

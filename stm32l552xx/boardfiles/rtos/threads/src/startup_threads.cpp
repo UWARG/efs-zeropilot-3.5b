@@ -2,7 +2,6 @@
 #include "managers.hpp"
 #include "utils.h"
 #include "logger.hpp"
-#include "zp_error.h"
 
 osThreadId_t startUpMainHandle;
 extern Logger * loggerHandle;

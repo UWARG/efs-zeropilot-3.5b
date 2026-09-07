@@ -92,7 +92,7 @@ ZP_ERROR_e CRSFReceiver::parse() {
         if (i < 4) { //stick channels
             rcData.controlSignals[i] = static_cast<float>((channels[i] - CRSF_PULSE_MIN) * (100.0f / CRSF_PULSE_RANGE));
         } 
-        else{
+        else {
             // ARM and AUX channels
             rcData.controlSignals[i] = static_cast<float>((channels[i] - CRSF_AUX_MIN) * (100.0f / CRSF_AUX_RANGE));
         }

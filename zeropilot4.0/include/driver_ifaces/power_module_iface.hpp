@@ -22,6 +22,5 @@ protected:
 
 public:
     virtual ~IPowerModule() = default;
-    // change value to a more explicit name (need to check function definition)
-    virtual ZP_ERROR_e readData(PMData_t *data) = 0;
+     virtual ZP_ERROR_e readData(PMData_t *data) = 0;
 };

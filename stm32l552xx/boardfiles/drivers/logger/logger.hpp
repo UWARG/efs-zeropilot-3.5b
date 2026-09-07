@@ -3,7 +3,6 @@
 #include "logger_iface.hpp"
 #include "app_fatfs.h"
 #include "logger_config.h"
-#include "zp_error.h"
 
 class Logger : public ILogger {
     private:
