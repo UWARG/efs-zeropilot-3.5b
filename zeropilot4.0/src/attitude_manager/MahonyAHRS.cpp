@@ -29,8 +29,8 @@
 // Definitions
 
 #define DEFAULT_SAMPLE_FREQ	512.0f	// sample frequency in Hz
-#define TWO_KP_DEF	(30.0f)	// proportional gain
-#define TWO_KI_DEF	(2.0f)	// integral gain
+#define TWO_KP_DEF	(1.0f)	// proportional gain
+#define TWO_KI_DEF	(0.05f)	// integral gain
 
 
 //============================================================================================
@@ -56,7 +56,7 @@ Mahony::Mahony()
 //-------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, float az)
+ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt)
 {
 	if (!isInitialized) return ZP_ERROR_NOT_READY;
 	ZP_ERROR_e result = ZP_ERROR_OK;
@@ -64,11 +64,6 @@ ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, f
     float halfvx, halfvy, halfvz;
     float halfex, halfey, halfez;
     float qa, qb, qc;
-
-	// Convert gyroscope degrees/sec to radians/sec
-	gx *= 0.0174533f;
-	gy *= 0.0174533f;
-	gz *= 0.0174533f;
 
 	// Compute feedback only if accelerometer measurement valid
 	// (avoids NaN in accelerometer normalisation)
@@ -81,9 +76,9 @@ ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, f
 		az *= recipNorm;
 
 		// Estimated direction of gravity
-		halfvx = q1 * q3 - q0 * q2;
-		halfvy = q0 * q1 + q2 * q3;
-		halfvz = q0 * q0 - 0.5f + q3 * q3;
+		halfvx = q0 * q2 - q1 * q3;
+		halfvy = -(q0 * q1 + q2 * q3);
+		halfvz = 0.5f - q0 * q0 - q3 * q3;
 
 		// Error is sum of cross product between estimated
 		// and measured direction of gravity
@@ -94,9 +89,9 @@ ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, f
 		// Compute and apply integral feedback if enabled
 		if(twoKi > 0.0f) {
 			// integral error scaled by Ki
-			integralFBx += twoKi * halfex * invSampleFreq;
-			integralFBy += twoKi * halfey * invSampleFreq;
-			integralFBz += twoKi * halfez * invSampleFreq;
+			integralFBx += twoKi * halfex * dt;
+			integralFBy += twoKi * halfey * dt;
+			integralFBz += twoKi * halfez * dt;
 			gx += integralFBx;	// apply integral feedback
 			gy += integralFBy;
 			gz += integralFBz;
@@ -113,9 +108,9 @@ ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, f
 	}
 
 	// Integrate rate of change of quaternion
-	gx *= (0.5f * invSampleFreq);		// pre-multiply common factors
-	gy *= (0.5f * invSampleFreq);
-	gz *= (0.5f * invSampleFreq);
+	gx *= (0.5f * dt);		// pre-multiply common factors
+	gy *= (0.5f * dt);
+	gz *= (0.5f * dt);
 	qa = q0;
 	qb = q1;
 	qc = q2;

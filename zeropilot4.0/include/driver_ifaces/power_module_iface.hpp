@@ -8,6 +8,7 @@ typedef struct PMData {
     float busVoltage;
     float current;
     float power;
+    float temperature;
 
     // Accumulated results
     float charge;

@@ -17,9 +17,13 @@ ZP_ERROR_e initManagers()
     ZP_ERROR_e result = ZP_ERROR_OK;
     // AM initialization
     amHandle = new (&amHandleStorage) AttitudeManager(
-        systemUtilsHandle, 
+        systemUtilsHandle,
+        mathUtilsHandle,
         gpsHandle,
         imuHandle,
+        fftHandle,
+        rangefinderHandle,
+        barometerHandle,
         amRCQueueHandle, 
         tmQueueHandle, 
         smLoggerQueueHandle, 
@@ -31,8 +35,9 @@ ZP_ERROR_e initManagers()
         systemUtilsHandle, 
         iwdgHandle,
         loggerHandle,
+        nullptr, // safetySwitchHandle: No safety switch on L5, pass nullptr
         rcHandle,
-		pmHandle,
+        pmHandle,
         amRCQueueHandle,
         tmQueueHandle,
         smLoggerQueueHandle

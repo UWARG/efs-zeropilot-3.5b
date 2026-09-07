@@ -11,7 +11,7 @@
 //
 //=============================================================================================
 #pragma once
-#include <math.h>
+#include <cmath>
 #include "imu_datatypes.hpp"
 #include "zp_error.h"
 //--------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ public:
         ZP_ERROR_e result = ZP_ERROR_OK;
 
         if (sampleFrequency <= 0.0f) {
-            result |= ZP_ERROR_INVALID_PARAM;
+            result |= ZP_ERROR_INVALID_ARG;
         }
         if (isInitialized) {
             result |= ZP_ERROR_ALREADY_INITIALIZED;
@@ -51,7 +51,7 @@ public:
         return result;
     }
 
-	ZP_ERROR_e updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
+	ZP_ERROR_e updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt);
 
 	ZP_ERROR_e getAttitude(Attitude_t& out_attitude) {
         ZP_ERROR_e result = ZP_ERROR_OK;

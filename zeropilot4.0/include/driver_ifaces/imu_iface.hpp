@@ -11,6 +11,8 @@ protected:
 public:
     virtual ~IIMU() = default;
 	virtual int init() = 0;
-	virtual ZP_ERROR_e readRawData(RawImu_t &data) = 0;
-	virtual ZP_ERROR_e scaleIMUData(const RawImu_t &rawData, ScaledImu_t &data) = 0;
+	virtual ZP_ERROR_e readRawData(RawImuBatch_t &rawDataBatch) = 0;
+	virtual ZP_ERROR_e scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) = 0;
+	virtual float getODRHz() = 0;
+	virtual GyroBias_t getGyroStartupBias(uint8_t imuId) = 0;
 };

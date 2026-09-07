@@ -7,11 +7,13 @@
 #include "rc_iface.hpp"
 #include "rc_motor_control.hpp"
 #include "iwdg_iface.hpp"
+#include "safety_switch_iface.hpp"
 #include "tm_queue.hpp"
 #include "queue_iface.hpp"
 #include "power_module_iface.hpp"
 #include "sm_param_setup.hpp"
 #include "zp_error.h"
+#include "soc_estimation.hpp"
 
 #define SM_SCHEDULING_RATE_HZ 20
 #define SM_TELEMETRY_HEARTBEAT_RATE_HZ 1
@@ -25,6 +27,7 @@ static constexpr float SM_RC_ARM_THRESHOLD = 50.0f;
 
 // Flightmode Count
 static constexpr uint8_t SM_FLIGHTMODE_COUNT = 6;
+static constexpr uint8_t SM_RC_REVERSIBLE_COUNT = 4;
 
 // Calculated using 1165, 1295, 1425, 1555, 1685, and 1815 us as nominal values
 static constexpr float SM_FLIGHTMODE1_MAX = 23.0f; // (1165 + 1295) / 2 = 1230 -> scaled/offset to 23.0
@@ -33,14 +36,10 @@ static constexpr float SM_FLIGHTMODE3_MAX = 49.0f; // (1425 + 1555) / 2 = 1490 -
 static constexpr float SM_FLIGHTMODE4_MAX = 62.0f; // (1555 + 1685) / 2 = 1620 -> scaled/offset to 62.0
 static constexpr float SM_FLIGHTMODE5_MAX = 75.0f; // (1685 + 1815) / 2 = 1750 -> scaled/offset to 75.0
 
-typedef struct{
-    PMData_t pmData;
-    MAV_BATTERY_CHARGE_STATE chargeState;
-    uint32_t batteryLowCounterMs;
-    uint32_t batteryCritcounterMs;
-    bool isValid;
-} BatteryData_t;
-
+// Safety switch constants
+static constexpr uint32_t SM_SAFETY_SWITCH_HOLD_THRESHOLD_MS = 2000;
+static constexpr uint32_t SM_SAFETY_SWITCH_BLINK_RATE_HZ = 2;
+static constexpr uint32_t SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S = 10; // Send safety switch prearm message every 10 seconds
 class SystemManager {
     friend class SMParamSetup;
 
@@ -49,6 +48,7 @@ class SystemManager {
             ISystemUtils *systemUtilsDriver,
             IIndependentWatchdog *iwdgDriver,
             ILogger *loggerDriver,
+            ISafetySwitch *safetySwitchDriver,
             IRCReceiver *rcDriver,
             IPowerModule *pmDriver,
             IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
@@ -63,6 +63,7 @@ class SystemManager {
 
         IIndependentWatchdog *iwdgDriver; // Independent Watchdog driver
         ILogger *loggerDriver; // Logger driver
+        ISafetySwitch *safetySwitchDriver; // Safety switch driver
         IRCReceiver *rcDriver; // RC receiver driver
         IPowerModule *pmDriver; // Power module driver
         
@@ -72,28 +73,36 @@ class SystemManager {
 
         uint8_t smSchedulingCounter;
 
-        PlaneFlightMode_e flightModes[SM_FLIGHTMODE_COUNT];
+        FlightMode_e flightModes[SM_FLIGHTMODE_COUNT];
+
+        bool isSafetySwitchEngaged;         // Flag to indicate if the safety switch is engaged
+        uint32_t safetySwitchHoldCounterMs; // Counter to track how long the safety switch has been held
+        bool safetySwitchTriggered;         // Flag to prevent toggling multiple times during a single long press
+        uint32_t safetySwitchPrearmCntrMs;  // Counter to track time since last prearm message was sent
+        ZP_ERROR_e safetySwitchUpdate();    // Function to update the state of the safety switch and handle its logic
 
         int oldDataCount;
         bool rcConnected;
+
+        bool rcChannelReversed[SM_RC_REVERSIBLE_COUNT];
         
         BatteryData_t batteryData;
         ZP_ERROR_e updateBatteryFSM();
+        SocEstimator socEstimator;
 
         ZP_ERROR_e sendRCDataToAttitudeManager(const RCControl &rcData);
         ZP_ERROR_e sendRCDataToTelemetryManager(const RCControl &rcData);
         ZP_ERROR_e sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
-        ZP_ERROR_e sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t BATTERY_ID);
+        ZP_ERROR_e sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId);
         ZP_ERROR_e sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id = 0, uint8_t chunk_seq = 0);
 
-        ZP_ERROR_e decodeRawFlightMode(float flightModeRawValue, PlaneFlightMode_e& flightMode);
+        ZP_ERROR_e decodeRawFlightMode(float flightModeRawValue, FlightMode_e& flightMode);
 
         ZP_ERROR_e sendMessagesToLogger();
 
         uint8_t profilerId;
 
         SMParamSetup paramSetup;
-
 
         uint8_t profilerBuf[256];
         TaskProfile profiles[MAX_PROFILED_TASKS];

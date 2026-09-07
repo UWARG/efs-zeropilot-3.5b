@@ -13,12 +13,28 @@ ZP_ERROR_e SMParamSetup::loadAllParams() {
     };
     for (uint8_t i = 0; i < SM_FLIGHTMODE_COUNT; i++) {
         float val = 0.0f;
-        result |= ZP_PARAM::get(FLTMODE_PARAMS[i], val);
-        if (result == ZP_ERROR_OK) {
-            sm->flightModes[i] = static_cast<PlaneFlightMode_e>(
-                static_cast<uint32_t>(val));
+        // Gate on this iteration's result, not the accumulated one: a failure on an early
+        // param must not silently suppress loading every later param.
+        ZP_ERROR_e getResult = ZP_PARAM::get(FLTMODE_PARAMS[i], val);
+        result |= getResult;
+        if (getResult == ZP_ERROR_OK) {
+            sm->flightModes[i] = static_cast<FlightMode_e>(static_cast<uint32_t>(val));
         }
     }
+
+    static constexpr ZP_PARAM_ID RC_REVERSED_PARAMS[SM_RC_REVERSIBLE_COUNT] = {
+        ZP_PARAM_ID::RC1_REVERSED, ZP_PARAM_ID::RC2_REVERSED,
+        ZP_PARAM_ID::RC3_REVERSED, ZP_PARAM_ID::RC4_REVERSED
+    };
+    for (uint8_t i = 0; i < SM_RC_REVERSIBLE_COUNT; i++) {
+        float val = 0.0f;
+        ZP_ERROR_e getResult = ZP_PARAM::get(RC_REVERSED_PARAMS[i], val);
+        result |= getResult;
+        if (getResult == ZP_ERROR_OK) {
+            result |= setRCReversed(sm, i, val);
+        }
+    }
+
     return result;
 }
 
@@ -30,13 +46,35 @@ ZP_ERROR_e SMParamSetup::bindAllParamCallbacks() {
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::FLTMODE4, sm, updateFltMode4);
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::FLTMODE5, sm, updateFltMode5);
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::FLTMODE6, sm, updateFltMode6);
+
+    result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::RC1_REVERSED, sm, setRC1Reversed);
+    result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::RC2_REVERSED, sm, setRC2Reversed);
+    result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::RC3_REVERSED, sm, setRC3Reversed);
+    result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::RC4_REVERSED, sm, setRC4Reversed);
     return result;
 }
 
 ZP_ERROR_e SMParamSetup::setFltMode(SystemManager* ctx, uint8_t idx, float val) {
+    // idx is only ever a literal from the six callbacks below today, but the write below is
+    // unconditional, so bound it rather than relying on every future caller behaving.
+    if (idx >= SM_FLIGHTMODE_COUNT) return ZP_ERROR_RANGE;
+
     uint32_t mode = static_cast<uint32_t>(val);
-    if (!isValidPlaneFlightMode(mode)) return ZP_ERROR_INVALID_PARAM;
-    ctx->flightModes[idx] = static_cast<PlaneFlightMode_e>(mode);
+
+    // Compare explicitly against ZP_ERROR_OK. This previously read `if (!isValidFlightMode(mode))`,
+    // which inverted the check because ZP_ERROR_OK is 0: valid modes were rejected and invalid
+    // ones were written through.
+    ZP_ERROR_e result = validateFlightMode(mode);
+    if (result != ZP_ERROR_OK) return result;
+
+    ctx->flightModes[idx] = static_cast<FlightMode_e>(mode);
+    return ZP_ERROR_OK;
+}
+
+ZP_ERROR_e SMParamSetup::setRCReversed(SystemManager* ctx, uint8_t idx, float val) {
+    if (idx >= SM_RC_REVERSIBLE_COUNT) return ZP_ERROR_RANGE;
+
+    ctx->rcChannelReversed[idx] = (val != 0.0f);
     return ZP_ERROR_OK;
 }
 
@@ -47,3 +85,9 @@ ZP_ERROR_e SMParamSetup::updateFltMode3(SystemManager* ctx, float val) { return 
 ZP_ERROR_e SMParamSetup::updateFltMode4(SystemManager* ctx, float val) { return setFltMode(ctx, 3, val); }
 ZP_ERROR_e SMParamSetup::updateFltMode5(SystemManager* ctx, float val) { return setFltMode(ctx, 4, val); }
 ZP_ERROR_e SMParamSetup::updateFltMode6(SystemManager* ctx, float val) { return setFltMode(ctx, 5, val); }
+
+// Channel reverse callbacks
+ZP_ERROR_e SMParamSetup::setRC1Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 0, val); }
+ZP_ERROR_e SMParamSetup::setRC2Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 1, val); }
+ZP_ERROR_e SMParamSetup::setRC3Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 2, val); }
+ZP_ERROR_e SMParamSetup::setRC4Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 3, val); }

@@ -10,6 +10,7 @@ SystemManager::SystemManager(
     ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
     ILogger *loggerDriver,
+    ISafetySwitch *safetySwitchDriver,
     IRCReceiver *rcDriver,
     IPowerModule *pmDriver,
     IMessageQueue<RCMotorControlMessage_t> *amRCQueue,
@@ -18,6 +19,7 @@ SystemManager::SystemManager(
         systemUtilsDriver(systemUtilsDriver),
         iwdgDriver(iwdgDriver),
         loggerDriver(loggerDriver),
+        safetySwitchDriver(safetySwitchDriver),
         rcDriver(rcDriver),
         pmDriver(pmDriver),
         amRCQueue(amRCQueue),
@@ -25,9 +27,15 @@ SystemManager::SystemManager(
         smLoggerQueue(smLoggerQueue),
         smSchedulingCounter(0),
         flightModes{},
+        isSafetySwitchEngaged(safetySwitchDriver == nullptr ? false : true),
+        safetySwitchHoldCounterMs(0),
+        safetySwitchTriggered(false),
+        safetySwitchPrearmCntrMs(0),
         oldDataCount(0),
         rcConnected(false),
+        rcChannelReversed{},
         batteryData({PMData_t{}, MAV_BATTERY_CHARGE_STATE_OK, 0, 0}),
+        socEstimator(batteryData),
         profilerId(0),
         paramSetup(this)
 {
@@ -42,6 +50,12 @@ ZP_ERROR_e SystemManager::smUpdate() {
 
     // Kick the watchdog
     result |= iwdgDriver->refreshWatchdog();
+
+    // Update the state of the safety switch if the driver is available
+    if (safetySwitchDriver != nullptr) {
+        result |= safetySwitchUpdate();
+    }
+
 
     // Get RC data from the RC receiver and passthrough to AM if new
     RCControl rcData;
@@ -77,7 +91,7 @@ ZP_ERROR_e SystemManager::smUpdate() {
     }
 
     // Set armed status based on SM_RC_ARM_THRESHOLD
-    bool armed = rcData.arm > SM_RC_ARM_THRESHOLD;
+    bool armed = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged;
 
     // Populate baseMode based on arm state
     uint8_t baseMode = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
@@ -94,7 +108,7 @@ ZP_ERROR_e SystemManager::smUpdate() {
     }
 
     // Decode flight mode from raw value and include in custom mode for HEARTBEAT telemetry
-    PlaneFlightMode_e flightMode;
+    FlightMode_e flightMode;
     result |= decodeRawFlightMode(rcData.fltModeRaw, flightMode);
     uint32_t customMode = static_cast<uint32_t>(flightMode);
 
@@ -105,6 +119,7 @@ ZP_ERROR_e SystemManager::smUpdate() {
 
     // Monitor Battery State and send Battery Data to TM at a 1Hz rate
     if (updateBatteryFSM() == ZP_ERROR_OK) {
+        socEstimator.calcStateOfCharge(batteryData, SOC_CHARGE_DISCHARGE_MODE);
         if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_BATTERY_DATA_RATE_HZ) == 0) {
             result |= sendBatteryDataToTelemetryManager(batteryData, 0);
         }
@@ -124,26 +139,26 @@ ZP_ERROR_e SystemManager::smUpdate() {
 
         for (uint8_t i = 0; i < count; i++) {
             if (strcmp(profiles[i].name, "SM") == 0) {
-                if (profiles[i].deltaExec >= (SM_UPDATE_LOOP_DELAY_MS * 1000)) {
+                if (profiles[i].maxExecUs >= (SM_UPDATE_LOOP_DELAY_MS * 1000)) {
                     result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "SM execution time exceeding scheduled rate");
-                } else if (profiles[i].deltaExec >= 0.8f * (SM_UPDATE_LOOP_DELAY_MS * 1000)) {
+                } else if (profiles[i].maxExecUs >= 0.8f * (SM_UPDATE_LOOP_DELAY_MS * 1000)) {
                     result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "SM execution time about to exceed scheduled rate");
                 }
             } else if (strcmp(profiles[i].name, "AM") == 0) {
-                if (profiles[i].deltaExec >= (AM_UPDATE_LOOP_DELAY_MS * 1000)) {
+                if (profiles[i].maxExecUs >= (AM_UPDATE_LOOP_DELAY_MS * 1000)) {
                     result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "AM execution time exceeding scheduled rate");
-                } else if (profiles[i].deltaExec >= 0.8f * (AM_UPDATE_LOOP_DELAY_MS * 1000)) {
+                } else if (profiles[i].maxExecUs >= 0.8f * (AM_UPDATE_LOOP_DELAY_MS * 1000)) {
                     result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "AM execution time about to exceed scheduled rate");
                 }
             } else if (strcmp(profiles[i].name, "TM") == 0) {
-                if (profiles[i].deltaExec >= (TM_UPDATE_LOOP_DELAY_MS * 1000)) {
+                if (profiles[i].maxExecUs >= (TM_UPDATE_LOOP_DELAY_MS * 1000)) {
                     result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "TM execution time exceeding scheduled rate");
-                } else if (profiles[i].deltaExec >= 0.8f * (TM_UPDATE_LOOP_DELAY_MS * 1000)) {
+                } else if (profiles[i].maxExecUs >= 0.8f * (TM_UPDATE_LOOP_DELAY_MS * 1000)) {
                     result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "TM execution time about to exceed scheduled rate");
                 }
             }
             #if LOG_TIMING
-            snprintf((char*)profilerBuf, sizeof(profilerBuf), "%-12s %lu us      %lu hz", profiles[i].name, profiles[i].deltaExec, profiles[i].deltaPeriod);
+            snprintf((char*)profilerBuf, sizeof(profilerBuf), "%-12s %lu us      %lu hz", profiles[i].name, profiles[i].maxExecUs, profiles[i].avgRateHz);
             result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, (char*)profilerBuf);
             #endif
         }
@@ -156,6 +171,45 @@ ZP_ERROR_e SystemManager::smUpdate() {
     smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
 
     systemUtilsDriver->profilerEnd(profilerId);
+    return result;
+}
+
+ZP_ERROR_e SystemManager::safetySwitchUpdate() {
+    ZP_ERROR_e result = ZP_ERROR_OK;
+
+    // Safety switch logic
+    if (safetySwitchDriver->isSafetySwitchPressed()) {
+        safetySwitchHoldCounterMs += SM_UPDATE_LOOP_DELAY_MS;
+
+        // If held for threshold duration and not already triggered, toggle the safety switch state
+        if (safetySwitchHoldCounterMs >= SM_SAFETY_SWITCH_HOLD_THRESHOLD_MS && !safetySwitchTriggered) {
+            isSafetySwitchEngaged = !isSafetySwitchEngaged;
+            safetySwitchTriggered = true;
+        }
+    } else {
+        safetySwitchHoldCounterMs = 0;
+        safetySwitchTriggered = false;
+    }
+
+    // Safety switch LED logic
+    if (!isSafetySwitchEngaged) {
+        safetySwitchDriver->setSafetySwitchLEDState(true);
+    } else {
+        if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_SAFETY_SWITCH_BLINK_RATE_HZ) == 0) {
+            bool currentLedState = safetySwitchDriver->getSafetySwitchLEDState();
+            safetySwitchDriver->setSafetySwitchLEDState(!currentLedState);
+        }
+    }
+
+    // Handle "PreArm: Hardware Safety Switch" STATUSTEXT message
+    if (isSafetySwitchEngaged) {
+        safetySwitchPrearmCntrMs += SM_UPDATE_LOOP_DELAY_MS;
+
+        if (safetySwitchPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
+            safetySwitchPrearmCntrMs = 0;
+            result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "PreArm: Hardware Safety Switch");
+        }
+    }
     return result;
 }
 
@@ -249,17 +303,20 @@ ZP_ERROR_e SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, 
 
 ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     RCMotorControlMessage_t rcDataMessage;
-    PlaneFlightMode_e fltMode;
+    FlightMode_e fltMode;
 
     ZP_ERROR_e result = decodeRawFlightMode(rcData.fltModeRaw, fltMode);
 
     if (result == ZP_ERROR_OK) {
-        rcDataMessage.roll = rcData.roll;
-        rcDataMessage.pitch = rcData.pitch;
-        rcDataMessage.yaw = rcData.yaw;
-        rcDataMessage.throttle = rcData.throttle;
-        rcDataMessage.arm = rcData.arm > SM_RC_ARM_THRESHOLD;
+        rcDataMessage.roll = rcChannelReversed[0] ? 100.0f - rcData.roll : rcData.roll;
+        rcDataMessage.pitch = rcChannelReversed[1] ? 100.0f - rcData.pitch : rcData.pitch;
+        rcDataMessage.throttle = rcChannelReversed[2] ? 100.0f - rcData.throttle : rcData.throttle;
+        rcDataMessage.yaw = rcChannelReversed[3] ? 100.0f - rcData.yaw : rcData.yaw;
+        // The safety-switch term is load bearing: this is the only arm gate in the system.
+        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged;
+        #ifdef PLANE
         rcDataMessage.flapAngle = rcData.aux2;
+        #endif
         rcDataMessage.flightMode = fltMode;
 
         result |= amRCQueue->push(&rcDataMessage);
@@ -267,35 +324,25 @@ ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t BATTERY_ID) {   
+ZP_ERROR_e SystemManager::sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId) {
     static constexpr uint8_t VOLTAGE_LEN = 1;
     float voltages[VOLTAGE_LEN] = {batteryData.pmData.busVoltage};
 
-    float battCapacityMah = 0.0f;
-    ZP_ERROR_e result = ZP_PARAM::get(ZP_PARAM_ID::BATT_CAPACITY, battCapacityMah);
+    // State of charge and time remaining now come from the SoC estimator rather than being
+    // recomputed here from BATT_CAPACITY.
+    TMMessage_t batteryDataMsg;
+    uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
+    ZP_ERROR_e result = batteryDataPack(batteryDataMsg, currentTime, batteryId,
+                                        batteryData.pmData.temperature, voltages, VOLTAGE_LEN,
+                                        batteryData.pmData.current,
+                                        batteryData.pmData.charge,
+                                        batteryData.pmData.energy,
+                                        socEstimator.getSocPercentage(),
+                                        socEstimator.getTimeRemaining(),
+                                        batteryData.chargeState);
 
     if (result == ZP_ERROR_OK) {
-        float consumedColoumbs = batteryData.pmData.charge;
-        float remainingColoumbs = (battCapacityMah * 3.6f) - consumedColoumbs;
-        remainingColoumbs = remainingColoumbs < 0 ? 0 : remainingColoumbs;
-        int8_t socPercentage = static_cast<int8_t>((remainingColoumbs / (battCapacityMah * 3.6f)) * 100.0f);
-
-        int32_t timeRemainingSec = 0;
-        if (batteryData.pmData.current > 0.5f) {
-            timeRemainingSec = static_cast<int32_t>(remainingColoumbs / batteryData.pmData.current);
-        }
-
-        TMMessage_t batteryDataMsg;
-        uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
-        result |= batteryDataPack(batteryDataMsg, currentTime, BATTERY_ID, 
-                                  INT16_MAX, voltages, VOLTAGE_LEN, batteryData.pmData.current, 
-                                  static_cast<int32_t>(batteryData.pmData.charge), 
-                                  static_cast<int32_t>(batteryData.pmData.energy), 
-                                  socPercentage, timeRemainingSec, batteryData.chargeState);
-        
-        if (result == ZP_ERROR_OK) {
-            result |= tmQueue->push(&batteryDataMsg);
-        }
+        result |= tmQueue->push(&batteryDataMsg);
     }
     return result;
 }
@@ -312,14 +359,14 @@ ZP_ERROR_e SystemManager::sendStatusTextToTelemetryManager(MAV_SEVERITY severity
     return result;
 }
 
-ZP_ERROR_e SystemManager::decodeRawFlightMode(float flightModeRawValue, PlaneFlightMode_e &outMode) {
+ZP_ERROR_e SystemManager::decodeRawFlightMode(float flightModeRawValue, FlightMode_e &outMode) {
     if (flightModeRawValue <= SM_FLIGHTMODE1_MAX) outMode = flightModes[0];
     else if (flightModeRawValue <= SM_FLIGHTMODE2_MAX) outMode = flightModes[1];
     else if (flightModeRawValue <= SM_FLIGHTMODE3_MAX) outMode = flightModes[2];
     else if (flightModeRawValue <= SM_FLIGHTMODE4_MAX) outMode = flightModes[3];
     else if (flightModeRawValue <= SM_FLIGHTMODE5_MAX) outMode = flightModes[4];
     else outMode = flightModes[5];
-    
+
     return ZP_ERROR_OK;
 }
 

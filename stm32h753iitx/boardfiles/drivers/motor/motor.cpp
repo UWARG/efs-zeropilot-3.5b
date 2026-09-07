@@ -11,9 +11,7 @@ ZP_ERROR_e MotorControl::set(uint32_t percent) {
     percent = percent > 100 ? 100 : percent;
     
     uint32_t ticks = 0;
-    if (armFlag) {
-        ticks = ((percent / 100.0) * (maxCCR - minCCR)) + minCCR;
-    }
+    ticks = ((percent / 100.0) * (maxCCR - minCCR)) + minCCR;
 
     if (__HAL_TIM_SET_COMPARE(timer, timerChannel, ticks) == HAL_OK) {
         return ZP_ERROR_OK;

@@ -17,7 +17,7 @@ public:
     ZP_ERROR_e receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) override;
 
     // Getters
-    UART_HandleTypeDef* getHUART() const;
+    UART_HandleTypeDef* getHuart() const;
 
     // DMA callback
     ZP_ERROR_e receiveCallback(uint16_t size);

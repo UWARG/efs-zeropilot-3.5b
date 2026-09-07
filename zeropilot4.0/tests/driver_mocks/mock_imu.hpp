@@ -6,6 +6,8 @@
 class MockIMU : public IIMU {
 public:
     MOCK_METHOD(int, init, (), (override));
-    MOCK_METHOD(RawImu_t, readRawData, (), (override));
-    MOCK_METHOD(ScaledImu_t, scaleIMUData, (const RawImu_t &rawData), (override));
+    MOCK_METHOD(RawImuBatch_t, readRawData, (), (override));
+    MOCK_METHOD(ScaledImuBatch_t, scaleIMUData, (const RawImuBatch_t &rawDataBatch), (override));
+    MOCK_METHOD(float, getODRHz, (), (override));
+    MOCK_METHOD(GyroBias_t, getGyroStartupBias, (uint8_t imuId), (override));
 };

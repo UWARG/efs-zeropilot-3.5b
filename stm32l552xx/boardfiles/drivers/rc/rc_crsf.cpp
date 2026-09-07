@@ -100,6 +100,6 @@ ZP_ERROR_e CRSFReceiver::parse() {
     return result;
 }
 
-UART_HandleTypeDef* CRSFReceiver::getHUART() {
+UART_HandleTypeDef * CRSFReceiver::getHuart() {
 	return uart;
 }
