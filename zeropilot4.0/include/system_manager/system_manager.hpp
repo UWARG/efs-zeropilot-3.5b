@@ -13,12 +13,14 @@
 #include "power_module_iface.hpp"
 #include "sm_param_setup.hpp"
 #include "zp_error.h"
+#include "zp_bit.hpp"
 #include "soc_estimation.hpp"
 
 #define SM_SCHEDULING_RATE_HZ 20
 #define SM_TELEMETRY_HEARTBEAT_RATE_HZ 1
 #define SM_TELEMETRY_RC_DATA_RATE_HZ 5
 #define SM_TELEMETRY_BATTERY_DATA_RATE_HZ 1
+#define SM_TELEMETRY_SYS_STATUS_RATE_HZ 1
 
 #define SM_UPDATE_LOOP_DELAY_MS (1000 / SM_SCHEDULING_RATE_HZ)
 
@@ -79,10 +81,15 @@ class SystemManager {
         uint32_t safetySwitchHoldCounterMs; // Counter to track how long the safety switch has been held
         bool safetySwitchTriggered;         // Flag to prevent toggling multiple times during a single long press
         uint32_t safetySwitchPrearmCntrMs;  // Counter to track time since last prearm message was sent
+        ZP_ERROR_e bindBitHandlers();
+        ZP_ERROR_e reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs);
+        static void onBitChange(SystemManager* ctx, ZP_BIT_ID id, BitLevel_e level, BitState_e state);
+
         ZP_ERROR_e safetySwitchUpdate();    // Function to update the state of the safety switch and handle its logic
 
-        int oldDataCount;
         bool rcConnected;
+        bool prevArmed;
+        uint32_t bitPrearmCntrMs;
 
         bool rcChannelReversed[SM_RC_REVERSIBLE_COUNT];
         
@@ -93,6 +100,7 @@ class SystemManager {
         ZP_ERROR_e sendRCDataToAttitudeManager(const RCControl &rcData);
         ZP_ERROR_e sendRCDataToTelemetryManager(const RCControl &rcData);
         ZP_ERROR_e sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
+        ZP_ERROR_e sendSysStatusToTelemetryManager();
         ZP_ERROR_e sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId);
         ZP_ERROR_e sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id = 0, uint8_t chunk_seq = 0);
 

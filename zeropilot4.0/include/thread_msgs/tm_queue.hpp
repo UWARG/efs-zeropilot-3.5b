@@ -110,6 +110,16 @@ typedef union TMMessageData_u {
     float quaternion[4];
     uint8_t signalQuality;
   } distanceSensorData;
+
+  struct {
+    uint32_t sensorsPresent;
+    uint32_t sensorsEnabled;
+    uint32_t sensorsHealth;
+    uint16_t load;             // cpu load, 0.1% units
+    uint16_t voltageBattery;   // mV
+    int16_t  currentBattery;   // cA, -1 if unmeasured
+    int8_t   batteryRemaining; // %, -1 if unmeasured
+  } sysStatusData;
 } TMMessageData_t;
 
 typedef struct TMMessage{
@@ -123,7 +133,8 @@ typedef struct TMMessage{
         RAW_IMU_DATA,
         ATTITUDE_DATA,
         SCALED_PRESSURE_DATA,
-        DISTANCE_SENSOR_DATA
+        DISTANCE_SENSOR_DATA,
+        SYS_STATUS_DATA
     } dataType;
     TMMessageData_t tmMessageData;
     uint32_t timeBootMs = 0;
@@ -305,4 +316,20 @@ inline ZP_ERROR_e distanceSensorDataPack(TMMessage_t &data, uint32_t time_boot_m
         data = TMMessage_t{TMMessage_t::DISTANCE_SENSOR_DATA, DATA, time_boot_ms};
     }
     return result;
+}
+
+inline ZP_ERROR_e sysStatusPack(TMMessage_t &data, uint32_t time_boot_ms, uint32_t sensors_present,
+                                uint32_t sensors_enabled, uint32_t sensors_health, uint16_t load,
+                                float voltage_battery, float current_battery, int8_t battery_remaining) {
+    const uint16_t scaledVoltage = static_cast<uint16_t>(voltage_battery * 1000.0f); // V -> mV
+    const int16_t scaledCurrent = static_cast<int16_t>(current_battery * 100.0f);    // A -> cA
+
+    const TMMessageData_t DATA = {
+        .sysStatusData = {
+            sensors_present, sensors_enabled, sensors_health,
+            load, scaledVoltage, scaledCurrent, battery_remaining
+        }
+    };
+    data = TMMessage_t{TMMessage_t::SYS_STATUS_DATA, DATA, time_boot_ms};
+    return ZP_ERROR_OK;
 }

@@ -1,4 +1,5 @@
 #include "drivers.hpp"
+#include "zp_bit.hpp"
 #include "museq.hpp"
 #include "stm32h7xx_hal.h"
 #include "zp_params.hpp"
@@ -88,10 +89,14 @@ const ZP_PARAM_ID SERVO_FUNC[8] = {
 // ----------------------------------------------------------------------------
 // Initialization
 // ----------------------------------------------------------------------------
-ZP_ERROR_e initDrivers()
+void initDrivers()
 {
     // Core utilities
     systemUtilsHandle = new SystemUtils();
+
+    // BIT needs the millisecond clock, so it starts as soon as SystemUtils exists and before any
+    // driver init result is reported. Nothing to trap on: if it cannot start, reports no-op.
+    (void)ZP_BIT::init(systemUtilsHandle);
     mathUtilsHandle = new MathUtils();
     fftHandle = new FFT();
     iwdgHandle = new IndependentWatchdog(&hiwdg1);
@@ -99,15 +104,13 @@ ZP_ERROR_e initDrivers()
 
     // Motors (servo index matches SERVOx param)
     float val = 0.0f;
-    ZP_ERROR_e status = ZP_PARAM::get(ZP_PARAM_ID::MOT_PWM_TYPE, val);
-    if (status != ZP_ERROR_OK) Error_Handler();
+    ZP_ERROR_e paramStatus = ZP_PARAM::get(ZP_PARAM_ID::MOT_PWM_TYPE, val);
     uint32_t servoType = static_cast<uint32_t>(val);
 
     for (int i = 0; i < 8; i++) {
         // Determine if it is brushless DC motor
         float funcVal = 0.0f;
-        status |= ZP_PARAM::get(SERVO_FUNC[i], funcVal);
-        if (status != ZP_ERROR_OK) Error_Handler();
+        paramStatus |= ZP_PARAM::get(SERVO_FUNC[i], funcVal);
 
         MotorFunction_e func = static_cast<MotorFunction_e>(static_cast<int>(funcVal));
         bool isBLDC = false;
@@ -145,8 +148,7 @@ ZP_ERROR_e initDrivers()
     imuHandle = new FusedIMU(&hspi1, imu0, imu1);
     pmHandle = new PowerModule(&hi2c1);
     float rngfndEnable = 0.0f;
-    status |= ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE, rngfndEnable);
-    if (status != ZP_ERROR_OK) Error_Handler();
+    paramStatus |= ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE, rngfndEnable);
     if (static_cast<int>(rngfndEnable) == 1) {
         rangefinderHandle = new Rangefinder(&hi2c3);
     }
@@ -160,8 +162,7 @@ ZP_ERROR_e initDrivers()
 
     // Initialize hardware components
    for (int i = 0; i < 8; i++) {
-        status |= motorHandles[i]->init();
-        if (status != ZP_ERROR_OK) Error_Handler();
+        (void)ZP_BIT::report(ZP_BIT_ID::MOTOR_INIT, motorHandles[i]->init());
     }
 
     MotorControl::enableServo(GPIOF, GPIO_PIN_1);
@@ -169,19 +170,20 @@ ZP_ERROR_e initDrivers()
 
     canControllerHandle = new CANController(&hfdcan1, systemUtilsHandle);
 
-    status |= rcHandle->init();
-    if (status != ZP_ERROR_OK) Error_Handler();
-    gps1Handle->init();
-    gps2Handle->init();
-    imuHandle->init();
-    status |= telemLinkHandle->init();
-    if (status != ZP_ERROR_OK) Error_Handler();
-    status |= pmHandle->init();
-    if (status != ZP_ERROR_OK) Error_Handler();
+    (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
+    // These ifaces still return bool/int; Stage D0 converts them to ZP_ERROR_e.
+    // Both GPS inits must run, so evaluate them before combining rather than short-circuiting.
+    const bool gps1Ok = gps1Handle->init();
+    const bool gps2Ok = gps2Handle->init();
+    (void)ZP_BIT::report(ZP_BIT_ID::GPS_INIT, (gps1Ok && gps2Ok) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    (void)ZP_BIT::report(ZP_BIT_ID::IMU_INIT, (imuHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    (void)ZP_BIT::report(ZP_BIT_ID::TELEM_INIT, telemLinkHandle->init());
+    (void)ZP_BIT::report(ZP_BIT_ID::PM_INIT, pmHandle->init());
     if (rangefinderHandle != nullptr) {
-        rangefinderHandle->init();
+        (void)ZP_BIT::report(ZP_BIT_ID::RANGEFINDER_INIT,
+                             (rangefinderHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
     }
-    barometerHandle->init();
+    (void)ZP_BIT::report(ZP_BIT_ID::BARO_INIT, barometerHandle->init() ? ZP_ERROR_OK : ZP_ERROR_FAIL);
 
     // Motor instances — fields loaded from ZP_PARAM by AttitudeManager::loadServoParams()
     for (int i = 0; i < 8; i++) {
@@ -190,5 +192,7 @@ ZP_ERROR_e initDrivers()
 
     mainMotorGroup = {motorInstances, 8};
 
-    return ZP_ERROR_OK;
+    // A param read failing here is a param-table problem, so it lands on the same BIT that
+    // ZP_PARAM::init() reports to. Nothing is returned: every failure is already recorded.
+    (void)ZP_BIT::report(ZP_BIT_ID::PARAM_TABLE_INIT, paramStatus);
 }

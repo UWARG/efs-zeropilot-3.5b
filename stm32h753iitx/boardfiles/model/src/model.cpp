@@ -1,11 +1,17 @@
 #include "drivers.hpp"
 #include "managers.hpp"
 #include "zp_params.hpp"
+#include "zp_bit.hpp"
 
-ZP_ERROR_e initModel()
+void initModel()
 {
-  if (ZP_PARAM::init() != ZP_ERROR_OK) Error_Handler();
-  if (initDrivers() != ZP_ERROR_OK) Error_Handler();
-  if (initManagers() != ZP_ERROR_OK) Error_Handler();
-  return ZP_ERROR_OK;
+  // Params first: initDrivers reads the servo table while constructing the motor handles.
+  // BIT itself is started inside initDrivers, once SystemUtils provides its clock.
+  ZP_ERROR_e paramStatus = ZP_PARAM::init();
+
+  initDrivers();
+
+  (void)ZP_BIT::report(ZP_BIT_ID::PARAM_TABLE_INIT, paramStatus);
+
+  initManagers();
 }

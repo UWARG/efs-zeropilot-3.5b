@@ -1,4 +1,5 @@
 #include "telemetry_manager.hpp"
+#include "zp_bit.hpp"
 #include "zp_params.hpp"
 
 #define SYSTEM_ID 1             // Suggested System ID by Mavlink
@@ -33,10 +34,19 @@ void TelemetryManager::tmUpdate() {
     
     // Accumulate status across all steps using the |= operator
     ZP_ERROR_e status = ZP_ERROR_OK;
-    status |= receive();
+
+    ZP_ERROR_e linkStatus = receive();
+    status |= linkStatus;
     status |= processParamTx();
     status |= processTXMsgQueue();
-    status |= transmit();
+
+    ZP_ERROR_e txStatus = transmit();
+    status |= txStatus;
+
+    // TELEM_LINK_VALID covers the radio itself, so only the two calls that touch it are reported
+    ZP_ERROR_e linkHealth = linkStatus;
+    linkHealth |= txStatus;
+    (void)ZP_BIT::report(ZP_BIT_ID::TELEM_LINK_VALID, linkHealth);
 
     systemUtilsDriver->profilerEnd(profilerId);
 }
@@ -153,6 +163,15 @@ ZP_ERROR_e TelemetryManager::processTXMsgQueue() {
                     case TMMessage_t::DISTANCE_SENSOR_DATA: {
                         auto distanceSensorData = tmqMessage.tmMessageData.distanceSensorData;
                         mavlink_msg_distance_sensor_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage, tmqMessage.timeBootMs, distanceSensorData.minDistance, distanceSensorData.maxDistance, distanceSensorData.currentDistance, MAV_DISTANCE_SENSOR_LASER, distanceSensorData.id, MAV_SENSOR_ROTATION_PITCH_270, distanceSensorData.covariance, distanceSensorData.horizontalFov, distanceSensorData.verticalFov, distanceSensorData.quaternion, distanceSensorData.signalQuality);
+                        break;
+                    }
+
+                    case TMMessage_t::SYS_STATUS_DATA: {
+                        auto sysStatusData = tmqMessage.tmMessageData.sysStatusData;
+                        mavlink_msg_sys_status_pack(SYSTEM_ID, COMPONENT_ID, &mavlinkMessage,
+                            sysStatusData.sensorsPresent, sysStatusData.sensorsEnabled, sysStatusData.sensorsHealth,
+                            sysStatusData.load, sysStatusData.voltageBattery, sysStatusData.currentBattery,
+                            sysStatusData.batteryRemaining, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                         break;
                     }
 

@@ -48,6 +48,13 @@ set(ZP_ERROR_INC
     "include/zp_error/"
 )
 
+set(ZP_BIT_SRC
+    "src/bit/zp_bit.cpp"
+)
+set(ZP_BIT_INC
+    "include/bit/"
+)
+
 # External library files (does not apply compiler warnings)
 set(EXTERNAL_INC
     "../external/c_library_v2/all/"
@@ -59,6 +66,7 @@ set(ZP_SRC
     ${SM_SRC}
     ${TM_SRC}
     ${ZP_PARAM_SRC}
+    ${ZP_BIT_SRC}
 )
 set(ZP_INC
     "include/driver_ifaces/"
@@ -68,4 +76,5 @@ set(ZP_INC
     ${TM_INC}
     ${ZP_PARAM_INC}
     ${ZP_ERROR_INC}
+    ${ZP_BIT_INC}
 )

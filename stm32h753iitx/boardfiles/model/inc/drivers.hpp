@@ -52,4 +52,4 @@ extern MessageQueue<mavlink_message_t> *messageBufferHandle;
 
 extern MotorGroupInstance_t mainMotorGroup;
 
-ZP_ERROR_e initDrivers();
+void initDrivers();

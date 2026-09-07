@@ -1,4 +1,5 @@
 #include "attitude_manager.hpp"
+#include "zp_bit.hpp"
 #include "rc_motor_control.hpp"
 #include "zp_params.hpp"
 #include "motor_functions.hpp"
@@ -54,7 +55,6 @@ AttitudeManager::AttitudeManager(
     setArmFlag(false),
     lastServoOutputs{0},
     amSchedulingCounter(0),
-    noDataCount(0),
     failsafeTriggered(false),
     groundIdlePrev(false),
     lastTimestamp(0),
@@ -111,7 +111,8 @@ void AttitudeManager::amUpdate() {
 
     // Read barometer data
     BaroData_t baroData;
-    barometerDriver->readData(baroData);
+    const bool baroOk = barometerDriver->readData(baroData);
+    (void)ZP_BIT::report(ZP_BIT_ID::BARO_DATA_VALID, baroOk ? ZP_ERROR_OK : ZP_ERROR_FAIL);
 
     // Send scaled pressure data to TM
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_SCALED_PRESSURE_DATA_RATE_HZ) == 0) {
@@ -121,8 +122,9 @@ void AttitudeManager::amUpdate() {
     // Send IMU raw data to telemetry manager
     RawImuBatch_t imuData = {};
     ScaledImuBatch_t scaledImuData = {};
-    result |= imuDriver->readRawData(imuData);
-    result |= imuDriver->scaleIMUData(imuData, scaledImuData);
+    ZP_ERROR_e imuStatus = imuDriver->readRawData(imuData);
+    imuStatus |= imuDriver->scaleIMUData(imuData, scaledImuData);
+    result |= ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, imuStatus);
     for (int i = 0; i < scaledImuData.count; i++) {
         if (scaledImuData.data[i].imuId == 0) { // Only feed one IMU's data for FFT sampling as we need a continuous time stream.
             harmonicNotchFilter.pushSample(scaledImuData.data[i].xgyro, scaledImuData.data[i].ygyro, scaledImuData.data[i].zgyro);
@@ -204,7 +206,7 @@ void AttitudeManager::amUpdate() {
 
     // Get GPS data
     GpsData_t gpsData = {};
-    result |= gpsDriver->readData(gpsData);
+    result |= ZP_BIT::report(ZP_BIT_ID::GPS_DATA_VALID, gpsDriver->readData(gpsData));
     if (gpsData.isNew) {
         lastValidGps = gpsData;
     }
@@ -237,46 +239,56 @@ void AttitudeManager::amUpdate() {
     // Get data from Queue and motor outputs
     ZP_ERROR_e controlRes = getControlInputs(&controlMsg);
 
-    if (controlRes != ZP_ERROR_OK) {
-        ++noDataCount;
+    // An empty queue is the normal case at the 1 kHz AM rate between SM's 20 Hz pushes, so only a
+    // genuine queue fault is worth accumulating.
+    if (controlRes != ZP_ERROR_NOT_READY) {
+        result |= controlRes;
+    }
 
-        if (noDataCount * AM_UPDATE_LOOP_DELAY_MS > ((readParam(result, ZP_PARAM_ID::RC_FS_TIMEOUT)) * 1000)) {
-            RCMotorControlMessage_t motorOutputs{0};
+    // RC health is owned by SM, which debounces it against RC_FS_TIMEOUT. AM reads the latched
+    // verdict rather than running a second timer of its own off an empty queue, which at the 1 kHz
+    // AM rate is the normal case between SM's 20 Hz pushes.
+    BitState_e rcState = BitState_e::UNKNOWN;
+    result |= ZP_BIT::getLatched(ZP_BIT_ID::RC_DATA_VALID, rcState);
 
-            #ifdef PLANE
-            motorOutputs.roll = 50;
-            motorOutputs.pitch = 50;
-            motorOutputs.yaw = 50;
-            motorOutputs.throttle = 0;
-            motorOutputs.flapAngle = 0;
-            #endif
+    if (rcState == BitState_e::FAILING) {
+        RCMotorControlMessage_t motorOutputs{0};
 
-            #ifdef QUADCOPTER
-            motorOutputs.roll = 0;
-            motorOutputs.pitch = 0;
-            motorOutputs.yaw = 0;
-            motorOutputs.throttle = 0;      
-            #endif
-            
-            if (!failsafeTriggered) {
-                char errorMsg[100] = "Failsafe triggered";
-                result |= smLoggerQueue->push(&errorMsg);
-                failsafeTriggered = true;
-            }
-            
-            result |= outputToMotors(motorOutputs, false);
+        #ifdef PLANE
+        motorOutputs.roll = 50;
+        motorOutputs.pitch = 50;
+        motorOutputs.yaw = 50;
+        motorOutputs.throttle = 0;
+        motorOutputs.flapAngle = 0;
+        #endif
 
-            systemUtilsDriver->profilerEnd(profilerId);
-            return;
+        #ifdef QUADCOPTER
+        motorOutputs.roll = 0;
+        motorOutputs.pitch = 0;
+        motorOutputs.yaw = 0;
+        motorOutputs.throttle = 0;
+        #endif
+
+        if (!failsafeTriggered) {
+            char errorMsg[100] = "Failsafe triggered";
+            result |= smLoggerQueue->push(&errorMsg);
+            failsafeTriggered = true;
         }
-    } else {
-        noDataCount = 0;
 
-        if (failsafeTriggered) {
-          char errorMsg[100] = "Motor control restored";
-          result |= smLoggerQueue->push(&errorMsg);
-          failsafeTriggered = false;
-        }
+        result |= outputToMotors(motorOutputs, false);
+
+        // Clear the arm pulse here too: the old early-return skipped it, so a disarm edge
+        // coinciding with failsafe entry stayed latched until the next edge.
+        setArmFlag = false;
+
+        systemUtilsDriver->profilerEnd(profilerId);
+        return;
+    }
+
+    if (failsafeTriggered) {
+        char errorMsg[100] = "Motor control restored";
+        result |= smLoggerQueue->push(&errorMsg);
+        failsafeTriggered = false;
     }
 
     // Update armedFlag and activateFlightMode() on rising edge

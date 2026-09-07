@@ -31,8 +31,9 @@ SystemManager::SystemManager(
         safetySwitchHoldCounterMs(0),
         safetySwitchTriggered(false),
         safetySwitchPrearmCntrMs(0),
-        oldDataCount(0),
         rcConnected(false),
+        prevArmed(false),
+        bitPrearmCntrMs(0),
         rcChannelReversed{},
         batteryData({PMData_t{}, MAV_BATTERY_CHARGE_STATE_OK, 0, 0}),
         socEstimator(batteryData),
@@ -42,6 +43,66 @@ SystemManager::SystemManager(
     paramSetup.loadAllParams();
     paramSetup.bindAllParamCallbacks();
     systemUtilsDriver->profilerRegister("SM", &profilerId);
+    bindBitHandlers();
+}
+
+ZP_ERROR_e SystemManager::bindBitHandlers() {
+    ZP_ERROR_e result = ZP_ERROR_OK;
+
+    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::BIT_COUNT); i++) {
+        result |= ZP_BIT::bindHandler(static_cast<ZP_BIT_ID>(i), this, onBitChange);
+    }
+
+    // Preserve the timing of the failsafe this replaces
+    float fsTimeout = 0.0f;
+    if (ZP_PARAM::get(ZP_PARAM_ID::RC_FS_TIMEOUT, fsTimeout) == ZP_ERROR_OK) {
+        result |= ZP_BIT::setPersistence(ZP_BIT_ID::RC_DATA_VALID,
+                                         static_cast<uint32_t>(fsTimeout * 1000.0f),
+                                         SM_UPDATE_LOOP_DELAY_MS * 3);
+    }
+
+    return result;
+}
+
+ZP_ERROR_e SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
+    const uint32_t budgetUs = budgetMs * 1000;
+
+    // Fails once a loop is sustained at 80% of its budget, matching the threshold the old
+    // "about to exceed scheduled rate" warning used
+    ZP_ERROR_e timing = ZP_ERROR_OK;
+    if (maxExecUs >= (budgetUs * 8) / 10) {
+        timing |= ZP_ERROR_TIMEOUT;
+    }
+
+    (void)ZP_BIT::report(id, timing);
+    return ZP_ERROR_OK;
+}
+
+void SystemManager::onBitChange(SystemManager* ctx, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
+    if (ctx == nullptr) {
+        return;
+    }
+
+    // RC health drives the MAV_STATE ladder
+    if (id == ZP_BIT_ID::RC_DATA_VALID) {
+        ctx->rcConnected = (state == BitState_e::PASSING);
+    }
+
+    char text[TM_QUEUE_STATUSTEXT_CHAR_COUNT];
+    MAV_SEVERITY severity = MAV_SEVERITY_INFO;
+
+    if (state == BitState_e::FAILING) {
+        severity = (level == BitLevel_e::CRITICAL) ? MAV_SEVERITY_CRITICAL : MAV_SEVERITY_WARNING;
+        snprintf(text, sizeof(text), "%s FAIL", ZP_BIT::name(id));
+    } else if (state == BitState_e::PASSING) {
+        snprintf(text, sizeof(text), "%s OK", ZP_BIT::name(id));
+    } else {
+        return;
+    }
+
+    // Handlers are void by design; the send status is deliberately discarded here because there is
+    // no caller to propagate it to. A failure to report a fault is itself reported by TM_QUEUE bits.
+    (void)ctx->sendStatusTextToTelemetryManager(severity, text);
 }
 
 void SystemManager::smUpdate() {
@@ -57,32 +118,23 @@ void SystemManager::smUpdate() {
     }
 
 
-    // Get RC data from the RC receiver and passthrough to AM if new
+    // Get RC data from the RC receiver and passthrough to AM if new.
+    // Gate on this call's own status, not the tick-wide accumulator: bits from the watchdog or
+    // safety switch above must not suppress RC passthrough, and they can no longer be cleared.
     RCControl rcData;
-    result |= rcDriver->getRCData(rcData);
-    
-    if (result == ZP_ERROR_OK) {
-        if (rcData.isDataNew) {
-            oldDataCount = 0;
-            result |= sendRCDataToAttitudeManager(rcData);
+    ZP_ERROR_e rcStatus = rcDriver->getRCData(rcData);
+    result |= rcStatus;
 
-            if (!rcConnected) {
-                result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, "RC Connected");
-                // loggerDriver->log("RC Connected"); (TODO: Uncomment after rearchitecture)
-                rcConnected = true;
-            }
-        } else {
-            oldDataCount += 1;
+    // A stale frame is a health failure rather than a driver error. RC_DATA_VALID's debounce
+    // window is seeded from RC_FS_TIMEOUT, so this replaces the old oldDataCount timer exactly.
+    ZP_ERROR_e rcHealth = rcStatus;
+    if (!rcData.isDataNew) {
+        rcHealth |= ZP_ERROR_NOT_READY;
+    }
+    (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, rcHealth);
 
-            float fsTimeout = 0.0f;
-            if (ZP_PARAM::get(ZP_PARAM_ID::RC_FS_TIMEOUT, fsTimeout) == ZP_ERROR_OK) {
-                if ((oldDataCount * SM_UPDATE_LOOP_DELAY_MS > (fsTimeout * 1000)) && rcConnected) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "RC Disconnected");
-                    // loggerDriver->log("RC Disconnected"); (TODO: Uncomment after rearchitecture)
-                    rcConnected = false;
-                }
-            }
-        }
+    if (rcStatus == ZP_ERROR_OK && rcData.isDataNew) {
+        result |= sendRCDataToAttitudeManager(rcData);
     }
 
     // Send RC data to TM
@@ -100,8 +152,13 @@ void SystemManager::smUpdate() {
     }
 
     // Determine system status based on RC connection and arm state
+    ZP_BIT_ID emergencyBit = ZP_BIT_ID::BIT_COUNT;
+    const bool bitBlocking = (ZP_BIT::prearmCheck(emergencyBit) != ZP_ERROR_OK);
+
     MAV_STATE systemStatus = MAV_STATE_ACTIVE;
-    if (!rcConnected) {
+    if (bitBlocking && armed) {
+        systemStatus = MAV_STATE_EMERGENCY;
+    } else if (!rcConnected) {
         systemStatus = MAV_STATE_CRITICAL;
     } else if (!armed) {
         systemStatus = MAV_STATE_STANDBY;
@@ -115,6 +172,11 @@ void SystemManager::smUpdate() {
     // Send Heartbeat data to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
         result |= sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+    }
+
+    // Send SYS_STATUS sensor health to TM at a 1Hz rate
+    if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_SYS_STATUS_RATE_HZ) == 0) {
+        result |= sendSysStatusToTelemetryManager();
     }
 
     // Monitor Battery State and send Battery Data to TM at a 1Hz rate
@@ -139,23 +201,11 @@ void SystemManager::smUpdate() {
 
         for (uint8_t i = 0; i < count; i++) {
             if (strcmp(profiles[i].name, "SM") == 0) {
-                if (profiles[i].maxExecUs >= (SM_UPDATE_LOOP_DELAY_MS * 1000)) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "SM execution time exceeding scheduled rate");
-                } else if (profiles[i].maxExecUs >= 0.8f * (SM_UPDATE_LOOP_DELAY_MS * 1000)) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "SM execution time about to exceed scheduled rate");
-                }
+                result |= reportLoopTiming(ZP_BIT_ID::SM_LOOP_TIMING, profiles[i].maxExecUs, SM_UPDATE_LOOP_DELAY_MS);
             } else if (strcmp(profiles[i].name, "AM") == 0) {
-                if (profiles[i].maxExecUs >= (AM_UPDATE_LOOP_DELAY_MS * 1000)) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "AM execution time exceeding scheduled rate");
-                } else if (profiles[i].maxExecUs >= 0.8f * (AM_UPDATE_LOOP_DELAY_MS * 1000)) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "AM execution time about to exceed scheduled rate");
-                }
+                result |= reportLoopTiming(ZP_BIT_ID::AM_LOOP_TIMING, profiles[i].maxExecUs, AM_UPDATE_LOOP_DELAY_MS);
             } else if (strcmp(profiles[i].name, "TM") == 0) {
-                if (profiles[i].maxExecUs >= (TM_UPDATE_LOOP_DELAY_MS * 1000)) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "TM execution time exceeding scheduled rate");
-                } else if (profiles[i].maxExecUs >= 0.8f * (TM_UPDATE_LOOP_DELAY_MS * 1000)) {
-                    result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "TM execution time about to exceed scheduled rate");
-                }
+                result |= reportLoopTiming(ZP_BIT_ID::TM_LOOP_TIMING, profiles[i].maxExecUs, TM_UPDATE_LOOP_DELAY_MS);
             }
             #if LOG_TIMING
             snprintf((char*)profilerBuf, sizeof(profilerBuf), "%-12s %lu us      %lu hz", profiles[i].name, profiles[i].maxExecUs, profiles[i].avgRateHz);
@@ -165,6 +215,30 @@ void SystemManager::smUpdate() {
         #if LOG_TIMING
         result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, "-------TASK TIMINGS-------");
         #endif
+    }
+
+    // A disarm is what clears latched faults, so a fault cannot silently un-block arming
+    if (prevArmed && !armed) {
+        result |= ZP_BIT::clearLatched();
+    }
+    prevArmed = armed;
+
+    // Fire handlers for anything that changed state this tick
+    result |= ZP_BIT::dispatch();
+
+    // Re-nag about a blocking fault on the same interval the safety switch uses
+    ZP_BIT_ID blockingBit = ZP_BIT_ID::BIT_COUNT;
+    if (ZP_BIT::prearmCheck(blockingBit) != ZP_ERROR_OK) {
+        bitPrearmCntrMs += SM_UPDATE_LOOP_DELAY_MS;
+
+        if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
+            bitPrearmCntrMs = 0;
+            char prearmText[TM_QUEUE_STATUSTEXT_CHAR_COUNT];
+            snprintf(prearmText, sizeof(prearmText), "PreArm: %s", ZP_BIT::name(blockingBit));
+            result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, prearmText);
+        }
+    } else {
+        bitPrearmCntrMs = 0;
     }
 
     // Increment scheduling counter
@@ -215,13 +289,11 @@ ZP_ERROR_e SystemManager::safetySwitchUpdate() {
 ZP_ERROR_e SystemManager::updateBatteryFSM() {
     ZP_ERROR_e result = ZP_ERROR_OK;
     batteryData.isValid = false;         
-    MAV_BATTERY_CHARGE_STATE currentBatteryState;
 
-    result |= pmDriver->readData(&batteryData.pmData);
+    result |= ZP_BIT::report(ZP_BIT_ID::PM_DATA_VALID, pmDriver->readData(&batteryData.pmData));
 
     if (result == ZP_ERROR_OK) {
         batteryData.isValid = true;         
-        currentBatteryState = batteryData.chargeState;
 
         float lowVolt = 0.0f;
         float critVolt = 0.0f;
@@ -254,22 +326,16 @@ ZP_ERROR_e SystemManager::updateBatteryFSM() {
                 }
             }
 
-            // Logging --> once per transition, checks if the state has yet to be logged and does so 
-            if (currentBatteryState != batteryData.chargeState) {
-                switch (batteryData.chargeState) {
-                    case MAV_BATTERY_CHARGE_STATE_OK:
-                        result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, "Battery State: OK");
-                        break;
-                    case MAV_BATTERY_CHARGE_STATE_LOW:
-                        result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_WARNING, "Battery State: LOW");
-                        break;
-                    case MAV_BATTERY_CHARGE_STATE_CRITICAL:
-                        result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, "Battery State: CRITICAL");
-                        break;
-                    default:
-                        break;
-                }
-            }
+            // A severity ladder over two BITs: LOW is a warning, CRITICAL latches and blocks
+            // arming. Both are monotone, so a critical battery fails BATT_LOW as well. The FSM
+            // above has already applied BATT_LOW_TIMER, so both BITs use a zero debounce window.
+            const bool battLow = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_LOW) ||
+                                 (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
+            const bool battCritical = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
+
+            (void)ZP_BIT::report(ZP_BIT_ID::BATT_LOW, battLow ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
+            (void)ZP_BIT::report(ZP_BIT_ID::BATT_CRITICAL, battCritical ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
+
         }
     }
 
@@ -311,13 +377,39 @@ ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         rcDataMessage.pitch = rcChannelReversed[1] ? 100.0f - rcData.pitch : rcData.pitch;
         rcDataMessage.throttle = rcChannelReversed[2] ? 100.0f - rcData.throttle : rcData.throttle;
         rcDataMessage.yaw = rcChannelReversed[3] ? 100.0f - rcData.yaw : rcData.yaw;
-        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged;
+        ZP_BIT_ID blockingBit = ZP_BIT_ID::BIT_COUNT;
+        const bool bitPrearmOk = (ZP_BIT::prearmCheck(blockingBit) == ZP_ERROR_OK);
+
+        // The safety-switch term is load bearing, and BIT is now the second gate
+        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && bitPrearmOk;
         #ifdef PLANE
         rcDataMessage.flapAngle = rcData.aux2;
         #endif
         rcDataMessage.flightMode = fltMode;
 
         result |= amRCQueue->push(&rcDataMessage);
+    }
+    return result;
+}
+
+ZP_ERROR_e SystemManager::sendSysStatusToTelemetryManager() {
+    ZP_ERROR_e result = ZP_ERROR_OK;
+
+    uint32_t present = 0;
+    uint32_t enabled = 0;
+    uint32_t health = 0;
+    result |= ZP_BIT::getHealthMask(present, enabled, health);
+
+    TMMessage_t sysStatusMsg;
+    uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
+    result |= sysStatusPack(sysStatusMsg, currentTime, present, enabled, health,
+                            0, // load: no CPU load measurement yet
+                            batteryData.pmData.busVoltage,
+                            batteryData.pmData.current,
+                            static_cast<int8_t>(socEstimator.getSocPercentage()));
+
+    if (result == ZP_ERROR_OK) {
+        result |= tmQueue->push(&sysStatusMsg);
     }
     return result;
 }

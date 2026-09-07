@@ -12,9 +12,8 @@ AttitudeManager *amHandle = nullptr;
 SystemManager *smHandle = nullptr;
 TelemetryManager *tmHandle = nullptr;
 
-ZP_ERROR_e initManagers()
+void initManagers()
 {
-    ZP_ERROR_e result = ZP_ERROR_OK;
     // AM initialization
     amHandle = new (&amHandleStorage) AttitudeManager(
         systemUtilsHandle,
@@ -51,5 +50,4 @@ ZP_ERROR_e initManagers()
         amRCQueueHandle,
         messageBufferHandle
     );
-    return result;
 }

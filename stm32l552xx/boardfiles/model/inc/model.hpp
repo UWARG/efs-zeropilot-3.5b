@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-    ZP_ERROR_e initModel();
+    void initModel();
 
 #ifdef __cplusplus
 }

@@ -99,7 +99,6 @@ private:
 
     uint16_t amSchedulingCounter;
 
-    int noDataCount;
     bool failsafeTriggered;
 
     float motSpinMin;
