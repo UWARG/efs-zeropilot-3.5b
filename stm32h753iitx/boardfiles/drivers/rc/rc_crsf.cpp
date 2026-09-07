@@ -16,22 +16,24 @@ ZP_ERROR_e CRSFReceiver::getRCData(RCControl &data) {
 }
 
 ZP_ERROR_e CRSFReceiver::init() {
-    // start circular DMA
     rcData_.isDataNew = false;
-    if (HAL_UARTEx_ReceiveToIdle_DMA(uart_, crsfRxBuffer_, CRSF_PACKET_SIZE) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
-    }
+    return startDMA();
 }
 
 ZP_ERROR_e CRSFReceiver::startDMA() {
-    // start circular DMA
-    if (HAL_UARTEx_ReceiveToIdle_DMA(uart_, crsfRxBuffer_, CRSF_PACKET_SIZE) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
+    // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
+    if (uart_ == nullptr) {
+        return ZP_ERROR_NULLPTR;
     }
+
+    // start circular DMA
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(uart_, crsfRxBuffer_, CRSF_PACKET_SIZE);
+    if (status == HAL_BUSY) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
+    } else if (status != HAL_OK) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+    }
+    return ZP_ERROR_OK;
 }
 
 // Polynomial used in CRSF: 0xD5
