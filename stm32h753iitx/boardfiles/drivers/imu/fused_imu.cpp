@@ -42,7 +42,7 @@ ZP_ERROR_e FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {
                 break;
             }
             
-            // Concatonate the batches based on imu order, sort the exact order later in scaleIMUData
+            // Concatenate the batches based on imu order, sort the exact order later in scaleIMUData
             memcpy(rawFusedImuData + offset, rawImuBatch[i].data, sizeof(RawImu_t) * count);
             
             // Normalize IMU hardware timstamps to DWT ticks, cant compare hardware ticks between IMUs
