@@ -22,10 +22,6 @@ enum [[nodiscard]] ZP_ERROR_e : uint32_t {
     ZP_ERROR_EXT_API              = 1u << 16  // OR'd with a code above: failure came from HAL/RTOS/FatFs
 };
 
-// Deprecated alias, remove once every call site uses ZP_ERROR_INVALID_ARG
-constexpr ZP_ERROR_e ZP_ERROR_INVALID_PARAM = ZP_ERROR_INVALID_ARG;
-
-// Overload for bitwise accumulation
 inline ZP_ERROR_e& operator|=(ZP_ERROR_e& lhs, ZP_ERROR_e rhs) {
     lhs = static_cast<ZP_ERROR_e>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
     return lhs;

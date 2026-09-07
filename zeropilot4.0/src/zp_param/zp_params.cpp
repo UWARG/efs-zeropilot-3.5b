@@ -20,7 +20,7 @@ namespace ZP_PARAM {
         } 
         
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
-            result |= ZP_ERROR_INVALID_PARAM;
+            result |= ZP_ERROR_INVALID_ARG;
         }
 
         // Only proceed if no error bits have been set
@@ -277,7 +277,7 @@ namespace ZP_PARAM {
         uint16_t index = static_cast<uint16_t>(id);
 
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
-            result |= ZP_ERROR_INVALID_PARAM;
+            result |= ZP_ERROR_INVALID_ARG;
         } else {
             params[index].context = context;
             params[index].setter = setter;
@@ -291,7 +291,7 @@ namespace ZP_PARAM {
 
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
             out_value = 0.0f;
-            return ZP_ERROR_INVALID_PARAM;
+            return ZP_ERROR_INVALID_ARG;
         }
         out_value = params[index].paramValue;
         return ZP_ERROR_OK;
@@ -327,7 +327,7 @@ namespace ZP_PARAM {
 
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
             out_param = nullptr;
-            result |= ZP_ERROR_INVALID_PARAM;
+            result |= ZP_ERROR_INVALID_ARG;
         } else {
             out_param = &params[index];
         }

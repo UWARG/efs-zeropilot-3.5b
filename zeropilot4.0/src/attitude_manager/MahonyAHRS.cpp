@@ -138,7 +138,7 @@ ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, f
 
 ZP_ERROR_e Mahony::invSqrt(float x, float &output)
 {
-	if (x <= 0) return ZP_ERROR_INVALID_PARAM;
+	if (x <= 0) return ZP_ERROR_INVALID_ARG;
 
 	float halfx = 0.5f * x;
 	union { float f; long l; } i;
