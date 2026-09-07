@@ -144,7 +144,10 @@ ZP_ERROR_e initDrivers()
     IMU *imu1 = new IMU(&hspi1, GPIOC, GPIO_PIN_5, 1, IMU_ODR_1KHZ);
     imuHandle = new FusedIMU(&hspi1, imu0, imu1);
     pmHandle = new PowerModule(&hi2c1);
-    if (ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE) == 1) {
+    float rngfndEnable = 0.0f;
+    status = ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE, rngfndEnable);
+    if (status != ZP_ERROR_OK) Error_Handler();
+    if (static_cast<int>(rngfndEnable) == 1) {
         rangefinderHandle = new Rangefinder(&hi2c3);
     }
     barometerHandle = new Barometer(&hi2c2);

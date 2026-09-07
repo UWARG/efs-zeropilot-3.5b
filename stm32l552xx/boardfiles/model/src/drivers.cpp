@@ -125,7 +125,10 @@ ZP_ERROR_e initDrivers()
     telemLinkHandle = new RFD(&huart3);
     imuHandle = new IMU(&hspi2, GPIOF, GPIO_PIN_12, 0, IMU_ODR_1KHZ);
     pmHandle = new PowerModule(&hi2c1);
-    if (ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE) == 1) {
+    float rngfndEnable = 0.0f;
+    status = ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE, rngfndEnable);
+    if (status != ZP_ERROR_OK) Error_Handler();
+    if (static_cast<int>(rngfndEnable) == 1) {
         rangefinderHandle = new Rangefinder(&hi2c3);
     }
     barometerHandle = new Barometer(&hi2c2);
