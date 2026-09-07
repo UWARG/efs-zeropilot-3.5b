@@ -42,23 +42,27 @@ ZP_ERROR_e DshotMotorControl::set(uint32_t percent) {
     updateBuffer[DSHOT_BUF_LEN - 1] = 0;
 
     memcpy(dmaBuffer, updateBuffer, sizeof(updateBuffer));
-    if (HAL_TIM_PWM_Start_DMA(timer, timerChannel, (uint32_t*)dmaBuffer, DSHOT_BUF_LEN) != HAL_OK) {
-        // Error_Handler();    Error handling to be done
-        return ZP_ERROR_FAIL;
+    HAL_StatusTypeDef status = HAL_TIM_PWM_Start_DMA(timer, timerChannel, (uint32_t*)dmaBuffer, DSHOT_BUF_LEN);
+    if (status == HAL_BUSY) {
+        result |= ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
+    } else if (status != HAL_OK) {
+        result |= ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
     }
     return result;
 }
 
 ZP_ERROR_e DshotMotorControl::init() {
+    if (timer == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
     timer->Init.Prescaler = 0;
     timer->Init.Period = 799;
     if (HAL_TIM_Base_Init(timer) != HAL_OK) {
-        // Error_Handler();
-        return ZP_ERROR_FAIL;
+        return ZP_ERROR_EXT_API | ZP_ERROR_CONFIG;
     }
     setArm(false);
-    this->set(0);
-    return ZP_ERROR_OK;
+    return this->set(0);
 }
 
 ZP_ERROR_e DshotMotorControl::calculateCrc(uint16_t throttleVal, uint8_t telReq, uint8_t& crc) {
