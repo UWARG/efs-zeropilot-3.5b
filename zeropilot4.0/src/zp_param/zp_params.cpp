@@ -298,14 +298,15 @@ namespace ZP_PARAM {
     }
 
     ZP_ERROR_e setParamById(const char* paramId, float new_value) {
-        ZP_ERROR_e result = ZP_ERROR_FAIL;
+        ZP_ERROR_e result = ZP_ERROR_OK;
+        bool found = false;
 
         if (paramId == nullptr) {
             result |= ZP_ERROR_NULLPTR;
         } else {
             for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT); ++i) {
                 if (std::strncmp(params[i].paramId, paramId, PARAM_MAX_IDENTIFIER_LEN - 1) == 0) {
-                    result = ZP_ERROR_OK; // Found it, clear the generic FAIL bit
+                    found = true;
                     
                     if (params[i].setter != nullptr) {
                         result |= params[i].setter(params[i].context, new_value);
@@ -317,8 +318,12 @@ namespace ZP_PARAM {
                     break;
                 }
             }
+
+            if (!found) {
+                result |= ZP_ERROR_FAIL;
+            }
         }
-        
+
         return result;
     }
 
@@ -336,7 +341,8 @@ namespace ZP_PARAM {
     }
 
     ZP_ERROR_e getIndexById(const char* paramId, int16_t& out_index) {
-        ZP_ERROR_e result = ZP_ERROR_FAIL;
+        ZP_ERROR_e result = ZP_ERROR_OK;
+        bool found = false;
 
         if (paramId == nullptr) {
             out_index = -1;
@@ -345,13 +351,14 @@ namespace ZP_PARAM {
             for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT); ++i) {
                 if (std::strncmp(params[i].paramId, paramId, PARAM_MAX_IDENTIFIER_LEN - 1) == 0) {
                     out_index = static_cast<int16_t>(i);
-                    result = ZP_ERROR_OK; // Found it, clear the generic FAIL bit
+                    found = true;
                     break;
                 }
             }
-            
-            if (result != ZP_ERROR_OK) {
+
+            if (!found) {
                 out_index = -1;
+                result |= ZP_ERROR_FAIL;
             }
         }
 

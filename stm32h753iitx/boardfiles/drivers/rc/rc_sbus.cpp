@@ -96,7 +96,7 @@ ZP_ERROR_e SBUSReceiver::parse() {
 
         for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
             float value = 0.0f;
-            result = sbusToRCControl(buf, i, value);
+            result |= sbusToRCControl(buf, i, value);
             rcData.controlSignals[i] = value;
         }
 

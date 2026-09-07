@@ -28,7 +28,7 @@ TelemetryManager::TelemetryManager(
 
 TelemetryManager::~TelemetryManager() = default;
 
-ZP_ERROR_e TelemetryManager::tmUpdate() {
+void TelemetryManager::tmUpdate() {
     systemUtilsDriver->profilerBegin(profilerId);
     
     // Accumulate status across all steps using the |= operator
@@ -39,8 +39,6 @@ ZP_ERROR_e TelemetryManager::tmUpdate() {
     status |= transmit();
 
     systemUtilsDriver->profilerEnd(profilerId);
-    
-    return status;
 }
 
 ZP_ERROR_e TelemetryManager::processParamTx() {

@@ -26,7 +26,7 @@
 #endif
 
 class SITL_TELEM : public ITelemLink {
-    private:
+private:
         using Config = SITL_Driver_Configs::SITL_TELEM_Config;
     #ifdef _WIN32
         SOCKET sockfd; // Windows uses a specific SOCKET type
@@ -36,7 +36,7 @@ class SITL_TELEM : public ITelemLink {
         struct sockaddr_in destAddr;
         std::function<void(const std::string&, uint8_t)> telemLogCallback;
 
-    public:
+public:
         SITL_TELEM(const char* ip, int port, std::function<void(const std::string&, uint8_t)> telemLogCallback = nullptr)
             : telemLogCallback(telemLogCallback) {
     #ifdef _WIN32

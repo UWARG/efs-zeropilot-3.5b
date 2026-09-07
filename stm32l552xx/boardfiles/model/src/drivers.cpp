@@ -90,7 +90,7 @@ ZP_ERROR_e initDrivers()
     for (int i = 0; i < 8; i++) {
         // Determine if it is brushless DC motor
         float funcVal = 0.0f;
-        status = ZP_PARAM::get(SERVO_FUNC[i], funcVal);
+        status |= ZP_PARAM::get(SERVO_FUNC[i], funcVal);
         if (status != ZP_ERROR_OK) Error_Handler();
 
         MotorFunction_e func = static_cast<MotorFunction_e>(static_cast<int>(funcVal));
@@ -126,7 +126,7 @@ ZP_ERROR_e initDrivers()
     imuHandle = new IMU(&hspi2, GPIOF, GPIO_PIN_12, 0, IMU_ODR_1KHZ);
     pmHandle = new PowerModule(&hi2c1);
     float rngfndEnable = 0.0f;
-    status = ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE, rngfndEnable);
+    status |= ZP_PARAM::get(ZP_PARAM_ID::RNGFND_ENABLE, rngfndEnable);
     if (status != ZP_ERROR_OK) Error_Handler();
     if (static_cast<int>(rngfndEnable) == 1) {
         rangefinderHandle = new Rangefinder(&hi2c3);
@@ -141,15 +141,18 @@ ZP_ERROR_e initDrivers()
 
     // 5. Hardware Initialization (Fail-Fast)
     for (int i = 0; i < 8; i++) {
-        status = motorHandles[i]->init();
+        status |= motorHandles[i]->init();
         if (status != ZP_ERROR_OK) Error_Handler();
     }
 
-    if ((status = rcHandle->init()) != ZP_ERROR_OK) Error_Handler();
-    if ((status = telemLinkHandle->init()) != ZP_ERROR_OK) Error_Handler();
+    status |= rcHandle->init();
+    if (status != ZP_ERROR_OK) Error_Handler();
+    status |= telemLinkHandle->init();
+    if (status != ZP_ERROR_OK) Error_Handler();
     gpsHandle->init();
     imuHandle->init();
-    if ((status = pmHandle->init()) != ZP_ERROR_OK) Error_Handler();
+    status |= pmHandle->init();
+    if (status != ZP_ERROR_OK) Error_Handler();
     if (rangefinderHandle != nullptr) {
         rangefinderHandle->init();
     }

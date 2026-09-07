@@ -56,7 +56,7 @@ class SystemManager {
             IMessageQueue<char[100]> *smLoggerQueue
         );
 
-        ZP_ERROR_e smUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
+        void smUpdate(); // This function is the main function of SM, it should be called in the main loop of the system.
 
     private:
         ISystemUtils *systemUtilsDriver; // System utilities instance

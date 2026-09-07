@@ -44,7 +44,7 @@ SystemManager::SystemManager(
     systemUtilsDriver->profilerRegister("SM", &profilerId);
 }
 
-ZP_ERROR_e SystemManager::smUpdate() {
+void SystemManager::smUpdate() {
     ZP_ERROR_e result = ZP_ERROR_OK;
     systemUtilsDriver->profilerBegin(profilerId);
 
@@ -171,7 +171,6 @@ ZP_ERROR_e SystemManager::smUpdate() {
     smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
 
     systemUtilsDriver->profilerEnd(profilerId);
-    return result;
 }
 
 ZP_ERROR_e SystemManager::safetySwitchUpdate() {

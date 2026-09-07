@@ -44,7 +44,6 @@ set(ALL_TSRC
 set(CMAKE_C_COMPILER "gcc")
 set(CMAKE_CXX_COMPILER "g++")
 
-# C++17 for [[nodiscard]] on ZP_ERROR_e; matches the board and SITL builds
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-g")

@@ -53,7 +53,7 @@ public:
         MotorGroupInstance_t *mainMotorGroup
     );
 
-    ZP_ERROR_e amUpdate();
+    void amUpdate();
 
 private:
     static constexpr uint8_t NUM_MOTORS = 8;

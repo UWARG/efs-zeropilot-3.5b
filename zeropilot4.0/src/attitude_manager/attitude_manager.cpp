@@ -96,7 +96,7 @@ AttitudeManager::AttitudeManager(
         systemUtilsDriver->profilerRegister("AM", &profilerId);
 }
 
-ZP_ERROR_e AttitudeManager::amUpdate() {
+void AttitudeManager::amUpdate() {
     ZP_ERROR_e result = ZP_ERROR_OK;
 
 
@@ -235,9 +235,9 @@ ZP_ERROR_e AttitudeManager::amUpdate() {
     }
 
     // Get data from Queue and motor outputs
-    bool controlRes = getControlInputs(&controlMsg);
-    
-    if (controlRes != true) {
+    ZP_ERROR_e controlRes = getControlInputs(&controlMsg);
+
+    if (controlRes != ZP_ERROR_OK) {
         ++noDataCount;
 
         if (noDataCount * AM_UPDATE_LOOP_DELAY_MS > ((readParam(result, ZP_PARAM_ID::RC_FS_TIMEOUT)) * 1000)) {
@@ -267,7 +267,7 @@ ZP_ERROR_e AttitudeManager::amUpdate() {
             result |= outputToMotors(motorOutputs, false);
 
             systemUtilsDriver->profilerEnd(profilerId);
-            return result;
+            return;
         }
     } else {
         noDataCount = 0;
@@ -351,8 +351,6 @@ ZP_ERROR_e AttitudeManager::amUpdate() {
     setArmFlag = false;
     
     systemUtilsDriver->profilerEnd(profilerId);
-
-    return result;
 }
 
 ZP_ERROR_e AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {

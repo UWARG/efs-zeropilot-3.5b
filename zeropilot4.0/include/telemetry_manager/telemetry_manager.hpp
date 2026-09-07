@@ -53,7 +53,7 @@ class TelemetryManager {
     TelemetryManager(ISystemUtils *systemUtilsDriver, ITelemLink *telemLinkDriver, IMessageQueue<TMMessage_t>  *tmTXQueueDriver,  IMessageQueue<RCMotorControlMessage_t> *amQueueDriver,IMessageQueue<mavlink_message_t> *packedMsgBuffer);
     ~TelemetryManager();
 
-    ZP_ERROR_e tmUpdate();
+    void tmUpdate();
 
     TMParamSetup paramSetup;
 };

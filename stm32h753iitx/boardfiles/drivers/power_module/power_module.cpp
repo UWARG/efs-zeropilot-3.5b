@@ -74,19 +74,19 @@ void PowerModule::I2C_MemRxCpltCallback() {
 
     switch(callbackCount) {
         case 1: // read current
-            result = readRegister(REG_CURRENT.address, currentData, REG_CURRENT.byte_size, hi2c);
+            result |= readRegister(REG_CURRENT.address, currentData, REG_CURRENT.byte_size, hi2c);
             break;
         case 2: // read power
-            result = readRegister(REG_POWER.address, powerData, REG_POWER.byte_size, hi2c);
+            result |= readRegister(REG_POWER.address, powerData, REG_POWER.byte_size, hi2c);
             break;
         case 3: // read charge
-            result = readRegister(REG_CHARGE.address, chargeData, REG_CHARGE.byte_size, hi2c);
+            result |= readRegister(REG_CHARGE.address, chargeData, REG_CHARGE.byte_size, hi2c);
             break;
         case 4: // read energy
-            result = readRegister(REG_ENERGY.address, energyData, REG_ENERGY.byte_size, hi2c);
+            result |= readRegister(REG_ENERGY.address, energyData, REG_ENERGY.byte_size, hi2c);
             break;
         case 5: // read die temperature
-            result = readRegister(REG_DIETEMP.address, dietempData, REG_DIETEMP.byte_size, hi2c);
+            result |= readRegister(REG_DIETEMP.address, dietempData, REG_DIETEMP.byte_size, hi2c);
             break;
         case 6:
             callbackCount = 0;
