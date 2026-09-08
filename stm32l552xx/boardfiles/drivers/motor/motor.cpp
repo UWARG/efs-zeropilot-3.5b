@@ -13,7 +13,6 @@ ZP_Error MotorControl::set(uint32_t percent) {
     uint32_t ticks = 0;
     ticks = ((percent / 100.0) * (maxCCR - minCCR)) + minCCR;
 
-    // __HAL_TIM_SET_COMPARE is a register write, not a status-returning call
     __HAL_TIM_SET_COMPARE(timer, timerChannel, ticks);
     return ZP_ERROR_OK;
 }
