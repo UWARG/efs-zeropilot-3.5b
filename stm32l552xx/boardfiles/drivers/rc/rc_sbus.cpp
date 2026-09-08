@@ -64,9 +64,8 @@ UART_HandleTypeDef* SBUSReceiver::getHuart() {
 }
 
 ZP_Error SBUSReceiver::getRCData(RCControl &data) {
-    RCControl tmp = rcData;
+    data = rcData;
     rcData.isDataNew = false;
-    data = tmp;
     return ZP_ERROR_OK;
 }
 
@@ -76,7 +75,6 @@ ZP_Error SBUSReceiver::init() {
 }
 
 ZP_Error SBUSReceiver::startDMA() {
-    // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
     if (uart == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
