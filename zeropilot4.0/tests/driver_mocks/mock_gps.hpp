@@ -6,5 +6,5 @@
 
 class MockGPS : public IGPS {
     public:
-        MOCK_METHOD(GpsData_t, readData, (), (override));
-}; 
+        MOCK_METHOD(ZP_ERROR_e, readData, (GpsData_t &data), (override));
+};

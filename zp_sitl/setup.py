@@ -69,6 +69,7 @@ zeropilot = Extension(
         f'{zeropilot_root}/include/driver_ifaces',
         f'{zeropilot_root}/include/zp_param',
         f'{zeropilot_root}/include/zp_error',
+        f'{zeropilot_root}/include/bit',
         '../external/c_library_v2',
         '../external/c_library_v2/common',
         '../external/CMSIS-DSP/Include',
