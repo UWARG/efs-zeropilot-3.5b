@@ -248,7 +248,7 @@ bool GPS::receiveByte(uint8_t &byte, uint32_t deadline) {
 }
 
 ZP_ERROR_e GPS::readData(GpsData_t &data) {
-    // When nothing new has arrived since the last call, mark it as old and don't reparse the data
+    // Check if new data has arrived
     if (!dataReady) {
         tempData.isNew = false;
         data = tempData;

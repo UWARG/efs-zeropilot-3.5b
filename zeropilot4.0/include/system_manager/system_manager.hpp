@@ -42,6 +42,14 @@ static constexpr float SM_FLIGHTMODE5_MAX = 75.0f; // (1685 + 1815) / 2 = 1750 -
 static constexpr uint32_t SM_SAFETY_SWITCH_HOLD_THRESHOLD_MS = 2000;
 static constexpr uint32_t SM_SAFETY_SWITCH_BLINK_RATE_HZ = 2;
 static constexpr uint32_t SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S = 10; // Send safety switch prearm message every 10 seconds
+
+typedef struct {
+    ZP_BIT_ID      id;
+    BitLevel_e     level;    // severity failText is sent at
+    const char*    failText;
+    BitHandlerCb_t action;   // taken on the transition to FAILURE
+} SMBitHandler_t;
+
 class SystemManager {
     friend class SMParamSetup;
 
@@ -81,14 +89,23 @@ class SystemManager {
         uint32_t safetySwitchHoldCounterMs; // Counter to track how long the safety switch has been held
         bool safetySwitchTriggered;         // Flag to prevent toggling multiple times during a single long press
         uint32_t safetySwitchPrearmCntrMs;  // Counter to track time since last prearm message was sent
+        // Reports the failure and takes no action
+        static void reportBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state);
+
+        // Reports, then blocks arming until the pilot lowers the arm switch
+        static void disarmBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state);
+
+        static const SMBitHandler_t BIT_HANDLERS[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)];
+
         ZP_ERROR_e bindBitHandlers();
+        static const SMBitHandler_t& bitRow(ZP_BIT_ID id);
         ZP_ERROR_e reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs);
-        static void onBitChange(SystemManager* ctx, ZP_BIT_ID id, BitLevel_e level, BitState_e state);
 
         ZP_ERROR_e safetySwitchUpdate();    // Function to update the state of the safety switch and handle its logic
 
         bool rcConnected;
         bool prevArmed;
+        bool bitDisarmLatch; // Set by a BIT disarm action, cleared with the latched faults
         uint32_t bitPrearmCntrMs;
 
         bool rcChannelReversed[SM_RC_REVERSIBLE_COUNT];
@@ -114,4 +131,34 @@ class SystemManager {
 
         uint8_t profilerBuf[256];
         TaskProfile profiles[MAX_PROFILED_TASKS];
+};
+
+// Indexed by ZP_BIT_ID. The "PreArm:" prefix marks the rows that block arming, so the nag resends
+// the same literal instead of formatting one.
+//
+//  id                                    level                   failText
+inline const SMBitHandler_t SystemManager::BIT_HANDLERS[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
+    {ZP_BIT_ID::PARAM_TABLE_INIT,       BitLevel_e::CRITICAL, "PreArm: Param table init failed", reportBitCallback},
+    {ZP_BIT_ID::IMU_INIT,               BitLevel_e::CRITICAL, "PreArm: IMU init failed",         reportBitCallback},
+    {ZP_BIT_ID::GPS_INIT,               BitLevel_e::WARNING,  "GPS init failed",                 reportBitCallback},
+    {ZP_BIT_ID::BARO_INIT,              BitLevel_e::WARNING,  "Baro init failed",                reportBitCallback},
+    {ZP_BIT_ID::RC_INIT,                BitLevel_e::CRITICAL, "PreArm: RC init failed",          reportBitCallback},
+    {ZP_BIT_ID::PM_INIT,                BitLevel_e::WARNING,  "Power module init failed",        reportBitCallback},
+    {ZP_BIT_ID::TELEM_INIT,             BitLevel_e::WARNING,  "Telemetry init failed",           reportBitCallback},
+    {ZP_BIT_ID::RANGEFINDER_INIT,       BitLevel_e::WARNING,  "Rangefinder init failed",         reportBitCallback},
+    {ZP_BIT_ID::MOTOR_INIT,             BitLevel_e::CRITICAL, "PreArm: Motor init failed",       reportBitCallback},
+    {ZP_BIT_ID::CAN_INIT,               BitLevel_e::WARNING,  "CAN init failed",                 reportBitCallback},
+
+    {ZP_BIT_ID::RC_DATA_VALID,          BitLevel_e::CRITICAL, "PreArm: RC disconnected",         reportBitCallback},
+    {ZP_BIT_ID::IMU_DATA_VALID,         BitLevel_e::CRITICAL, "PreArm: IMU data invalid",        reportBitCallback},
+    {ZP_BIT_ID::GPS_DATA_VALID,         BitLevel_e::WARNING,  "GPS data invalid",                reportBitCallback},
+    {ZP_BIT_ID::BARO_DATA_VALID,        BitLevel_e::WARNING,  "Baro data invalid",               reportBitCallback},
+    {ZP_BIT_ID::PM_DATA_VALID,          BitLevel_e::WARNING,  "Power module data invalid",       reportBitCallback},
+    {ZP_BIT_ID::RANGEFINDER_DATA_VALID, BitLevel_e::WARNING,  "Rangefinder data invalid",        reportBitCallback},
+    {ZP_BIT_ID::TELEM_LINK_VALID,       BitLevel_e::WARNING,  "Telemetry link lost",             reportBitCallback},
+    {ZP_BIT_ID::BATT_LOW,               BitLevel_e::WARNING,  "Battery low",                     reportBitCallback},
+    {ZP_BIT_ID::BATT_CRITICAL,          BitLevel_e::CRITICAL, "PreArm: Battery critical",        reportBitCallback},
+    {ZP_BIT_ID::AM_LOOP_TIMING,         BitLevel_e::WARNING,  "AM loop overrun",                 reportBitCallback},
+    {ZP_BIT_ID::SM_LOOP_TIMING,         BitLevel_e::WARNING,  "SM loop overrun",                 reportBitCallback},
+    {ZP_BIT_ID::TM_LOOP_TIMING,         BitLevel_e::WARNING,  "TM loop overrun",                 reportBitCallback},
 };

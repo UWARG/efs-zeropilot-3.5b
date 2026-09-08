@@ -31,7 +31,7 @@ namespace ZP_BIT {
         // makes the lock-free table safe across the AM/SM/TM threads.
         //
         //  name                      phase                   level                failMs clearMs  mavSensorBit                              blocksArming   owner
-        constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::BIT_COUNT)] = {
+        constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
             {"PARAM_TABLE_INIT",  BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, 0,                                              true},  // initModel
             {"IMU_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_3D_GYRO,                  true},  // initDrivers
             {"GPS_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // initDrivers
@@ -57,10 +57,10 @@ namespace ZP_BIT {
             {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,   2000, 0,                                              false}, // SM   @1Hz
         };
 
-        BitStatus_t bitStatus[static_cast<uint16_t>(ZP_BIT_ID::BIT_COUNT)];
+        BitStatus_t bitStatus[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)];
         ISystemUtils* clockDriver = nullptr;
 
-        constexpr uint16_t BIT_TOTAL = static_cast<uint16_t>(ZP_BIT_ID::BIT_COUNT);
+        constexpr uint16_t BIT_TOTAL = static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS);
 
         inline bool indexValid(ZP_BIT_ID id) {
             return static_cast<uint16_t>(id) < BIT_TOTAL;
@@ -98,7 +98,7 @@ namespace ZP_BIT {
         const BitConfig_t& config = BIT_CONFIG[static_cast<uint16_t>(id)];
         BitStatus_t& state = bitStatus[static_cast<uint16_t>(id)];
 
-        const BitState_e observed = (status == ZP_ERROR_OK) ? BitState_e::PASSING : BitState_e::FAILING;
+        const BitState_e observed = (status == ZP_ERROR_OK) ? BitState_e::SUCCESS : BitState_e::FAILURE;
         const uint32_t now = clockDriver->getCurrentTimestampMs();
 
         // A change of run restarts the debounce window
@@ -111,35 +111,41 @@ namespace ZP_BIT {
         const uint32_t elapsedMs = now - state.edgeMs;
 
         BitState_e newLive = state.live;
-        if (observed == BitState_e::PASSING) {
+        if (observed == BitState_e::SUCCESS) {
             // A first-ever passing report resolves UNKNOWN immediately: the check demonstrably works
             if (state.live == BitState_e::UNKNOWN || elapsedMs >= state.clearMs) {
-                newLive = BitState_e::PASSING;
+                newLive = BitState_e::SUCCESS;
             }
         } else if (elapsedMs >= state.failMs) {
-            newLive = BitState_e::FAILING;
+            newLive = BitState_e::FAILURE;
         }
 
         if (newLive != state.live) {
             state.live = newLive;
             state.changed = true;
 
-            if (newLive == BitState_e::FAILING && config.level == BitLevel_e::CRITICAL) {
-                state.latched = BitState_e::FAILING;
+            if (newLive == BitState_e::FAILURE && config.level == BitLevel_e::CRITICAL) {
+                state.latched = BitState_e::FAILURE;
             }
         }
 
         return status;
     }
 
-    ZP_ERROR_e bindHandlerInternal(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
-        if (!indexValid(id)) {
-            return ZP_ERROR_RANGE;
-        }
+    namespace {
+        ZP_ERROR_e bindHandlerInternal(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
+            if (!indexValid(id)) {
+                return ZP_ERROR_RANGE;
+            }
 
-        bitStatus[static_cast<uint16_t>(id)].context = context;
-        bitStatus[static_cast<uint16_t>(id)].onChange = handler;
-        return ZP_ERROR_OK;
+            bitStatus[static_cast<uint16_t>(id)].context = context;
+            bitStatus[static_cast<uint16_t>(id)].onChange = handler;
+            return ZP_ERROR_OK;
+        }
+    }
+
+    ZP_ERROR_e bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
+        return bindHandlerInternal(id, context, handler);
     }
 
     ZP_ERROR_e dispatch() {
@@ -206,7 +212,7 @@ namespace ZP_BIT {
             }
 
             // UNKNOWN never blocks: hardware that is absent on this airframe is simply never reported
-            if (bitStatus[i].latched == BitState_e::FAILING || bitStatus[i].live == BitState_e::FAILING) {
+            if (bitStatus[i].latched == BitState_e::FAILURE || bitStatus[i].live == BitState_e::FAILURE) {
                 outFirstBlocking = static_cast<ZP_BIT_ID>(i);
                 return ZP_ERROR_NOT_READY;
             }
@@ -233,7 +239,7 @@ namespace ZP_BIT {
             outPresent |= sensorBit;
             outEnabled |= sensorBit;
 
-            if (bitStatus[i].live == BitState_e::PASSING) {
+            if (bitStatus[i].live == BitState_e::SUCCESS) {
                 outHealth |= sensorBit;
             } else {
                 failingMask |= sensorBit;
@@ -242,7 +248,7 @@ namespace ZP_BIT {
 
         outHealth &= ~failingMask;
 
-        ZP_BIT_ID blocking = ZP_BIT_ID::BIT_COUNT;
+        ZP_BIT_ID blocking = ZP_BIT_ID::NUM_BIT_IDS;
         outPresent |= MAV_SYS_STATUS_PREARM_CHECK;
         outEnabled |= MAV_SYS_STATUS_PREARM_CHECK;
         if (prearmCheck(blocking) == ZP_ERROR_OK) {

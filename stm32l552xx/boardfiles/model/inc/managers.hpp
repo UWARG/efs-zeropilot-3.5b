@@ -1,6 +1,5 @@
 #pragma once
 
-#include "zp_error.h"
 #include "attitude_manager.hpp"
 #include "system_manager.hpp"
 #include "telemetry_manager.hpp"

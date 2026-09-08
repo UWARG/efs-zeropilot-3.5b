@@ -1,15 +1,14 @@
 #pragma once
 #include <cstdint>
 
-// Accumulate-only error mask. Bits are set with |= and can never be cleared,
-// and assignment is deleted so an accumulated result cannot be overwritten.
 class [[nodiscard]] ZP_ERROR_e {
     public:
         constexpr ZP_ERROR_e() : bits(0) {}
         constexpr explicit ZP_ERROR_e(uint32_t rawBits) : bits(rawBits) {}
         constexpr ZP_ERROR_e(const ZP_ERROR_e&) = default;
-
+        
         ZP_ERROR_e& operator=(const ZP_ERROR_e&) = delete;
+        ZP_ERROR_e& operator=(const ZP_ERROR_e&&) = delete;
 
         ZP_ERROR_e& operator|=(const ZP_ERROR_e& rhs) {
             bits |= rhs.bits;

@@ -251,7 +251,7 @@ void AttitudeManager::amUpdate() {
     BitState_e rcState = BitState_e::UNKNOWN;
     result |= ZP_BIT::getLatched(ZP_BIT_ID::RC_DATA_VALID, rcState);
 
-    if (rcState == BitState_e::FAILING) {
+    if (rcState == BitState_e::FAILURE) {
         RCMotorControlMessage_t motorOutputs{0};
 
         #ifdef PLANE

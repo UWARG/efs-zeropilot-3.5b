@@ -5,7 +5,7 @@
 #include "rc_crsf.hpp"
 
 CRSFReceiver::CRSFReceiver(UART_HandleTypeDef* uart) : uart(uart) {
-    memset(crsfRxBuffer, 0, CRSF_BYTE_COUNT);
+    memset(crsfRxBuffer, 0, CRSF_PACKET_SIZE);
 }
 
 ZP_ERROR_e CRSFReceiver::getRCData(RCControl &data) {
@@ -27,7 +27,7 @@ ZP_ERROR_e CRSFReceiver::startDMA() {
     }
 
     // start circular DMA
-    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(uart, crsfRxBuffer, CRSF_BYTE_COUNT);
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(uart, crsfRxBuffer, CRSF_PACKET_SIZE);
     if (status == HAL_BUSY) {
         return ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
     } else if (status != HAL_OK) {

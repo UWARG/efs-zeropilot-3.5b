@@ -18,7 +18,6 @@
 #include "imu.hpp"
 #include "power_module.hpp"
 #include "dshot.hpp"
-#include "zp_error.h"
 #include "fused_imu.hpp"
 #include "fft.hpp"
 #include "tf02pro.hpp"

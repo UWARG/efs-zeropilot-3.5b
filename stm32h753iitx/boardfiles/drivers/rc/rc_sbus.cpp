@@ -64,7 +64,7 @@ UART_HandleTypeDef* SBUSReceiver::getHuart() {
 }
 
 ZP_ERROR_e SBUSReceiver::getRCData(RCControl &data) {
-	RCControl tmp = rcData;
+    RCControl tmp = rcData;
     rcData.isDataNew = false;
     data = tmp;
     return ZP_ERROR_OK;
@@ -72,41 +72,51 @@ ZP_ERROR_e SBUSReceiver::getRCData(RCControl &data) {
 
 ZP_ERROR_e SBUSReceiver::init() {
     rcData.isDataNew = false;
-    if (HAL_UARTEx_ReceiveToIdle_DMA(uart, (uint8_t*)rawSbus, SBUS_PACKET_SIZE) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
-    }
+    return startDMA();
 }
 
 ZP_ERROR_e SBUSReceiver::startDMA() {
-    if (HAL_UARTEx_ReceiveToIdle_DMA(uart, (uint8_t*)rawSbus, SBUS_PACKET_SIZE) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
+    // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
+    if (uart == nullptr) {
+        return ZP_ERROR_NULLPTR;
     }
+
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(uart, (uint8_t*)rawSbus, SBUS_PACKET_SIZE);
+    if (status == HAL_BUSY) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
+    } else if (status != HAL_OK) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+    }
+    return ZP_ERROR_OK;
 }
 
 ZP_ERROR_e SBUSReceiver::parse() {
-
     ZP_ERROR_e result = ZP_ERROR_OK;
     uint8_t *buf = (uint8_t*)rawSbus;
+    float sbusResult = 0.0f;
 
     if ((buf[0] == HEADER_) && (buf[SBUS_PACKET_SIZE-1] == FOOTER_)) {
 
         for (int i = 0; i < SBUS_CHANNEL_COUNT; i++) {
-            float value = 0.0f;
-            result |= sbusToRCControl(buf, i, value);
-            rcData.controlSignals[i] = value;
+            result |= sbusToRCControl(buf, i, sbusResult);
+            if (result == ZP_ERROR_OK) {
+                rcData.controlSignals[i] = sbusResult;
+            } else {
+                break;
+            }
         }
-
-        rcData.isDataNew = true;
+        if (result == ZP_ERROR_OK) {    
+            rcData.isDataNew = true;
+        }
+    } else {
+        result |= ZP_ERROR_PARSE;
     }
 
     return result;
 }
 
 ZP_ERROR_e SBUSReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx, float &output) {
+    ZP_ERROR_e result = ZP_ERROR_OK;
     uint16_t res = 0;
 
     for (int i = 0; i < SBUS_MAX_BTYES_PER_CHANNEL; i++) {
@@ -130,5 +140,5 @@ ZP_ERROR_e SBUSReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx, fl
     }
 
     output = static_cast<float>((res - SBUS_RANGE_MIN) * (100.0f / SBUS_RANGE_RANGE));
-    return ZP_ERROR_OK;
+    return result;
 }

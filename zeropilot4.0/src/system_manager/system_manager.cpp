@@ -6,6 +6,8 @@
 
 #define LOG_TIMING 0
 
+static MAV_SEVERITY toMavSeverity(BitLevel_e level);
+
 SystemManager::SystemManager(
     ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
@@ -33,6 +35,7 @@ SystemManager::SystemManager(
         safetySwitchPrearmCntrMs(0),
         rcConnected(false),
         prevArmed(false),
+        bitDisarmLatch(false),
         bitPrearmCntrMs(0),
         rcChannelReversed{},
         batteryData({PMData_t{}, MAV_BATTERY_CHARGE_STATE_OK, 0, 0}),
@@ -49,8 +52,13 @@ SystemManager::SystemManager(
 ZP_ERROR_e SystemManager::bindBitHandlers() {
     ZP_ERROR_e result = ZP_ERROR_OK;
 
-    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::BIT_COUNT); i++) {
-        result |= ZP_BIT::bindHandler(static_cast<ZP_BIT_ID>(i), this, onBitChange);
+    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
+        // Catches the table drifting out of step with ZP_BIT_ID
+        if (BIT_HANDLERS[i].id != static_cast<ZP_BIT_ID>(i)) {
+            result |= ZP_ERROR_CONFIG;
+            continue;
+        }
+        result |= ZP_BIT::bindHandler(static_cast<ZP_BIT_ID>(i), static_cast<void*>(this), BIT_HANDLERS[i].action);
     }
 
     // Preserve the timing of the failsafe this replaces
@@ -62,6 +70,17 @@ ZP_ERROR_e SystemManager::bindBitHandlers() {
     }
 
     return result;
+}
+
+const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
+    static const SMBitHandler_t unknownRow = {
+        ZP_BIT_ID::NUM_BIT_IDS, BitLevel_e::WARNING, "Unknown BIT failed", SystemManager::reportBitCallback
+    };
+
+    if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
+        return unknownRow;
+    }
+    return BIT_HANDLERS[static_cast<uint16_t>(id)];
 }
 
 ZP_ERROR_e SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
@@ -76,33 +95,6 @@ ZP_ERROR_e SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uin
 
     (void)ZP_BIT::report(id, timing);
     return ZP_ERROR_OK;
-}
-
-void SystemManager::onBitChange(SystemManager* ctx, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
-    if (ctx == nullptr) {
-        return;
-    }
-
-    // RC health drives the MAV_STATE ladder
-    if (id == ZP_BIT_ID::RC_DATA_VALID) {
-        ctx->rcConnected = (state == BitState_e::PASSING);
-    }
-
-    char text[TM_QUEUE_STATUSTEXT_CHAR_COUNT];
-    MAV_SEVERITY severity = MAV_SEVERITY_INFO;
-
-    if (state == BitState_e::FAILING) {
-        severity = (level == BitLevel_e::CRITICAL) ? MAV_SEVERITY_CRITICAL : MAV_SEVERITY_WARNING;
-        snprintf(text, sizeof(text), "%s FAIL", ZP_BIT::name(id));
-    } else if (state == BitState_e::PASSING) {
-        snprintf(text, sizeof(text), "%s OK", ZP_BIT::name(id));
-    } else {
-        return;
-    }
-
-    // Handlers are void by design; the send status is deliberately discarded here because there is
-    // no caller to propagate it to. A failure to report a fault is itself reported by TM_QUEUE bits.
-    (void)ctx->sendStatusTextToTelemetryManager(severity, text);
 }
 
 void SystemManager::smUpdate() {
@@ -133,6 +125,10 @@ void SystemManager::smUpdate() {
     }
     (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, rcHealth);
 
+    BitState_e rcBitState = BitState_e::UNKNOWN;
+    (void)ZP_BIT::getLive(ZP_BIT_ID::RC_DATA_VALID, rcBitState);
+    rcConnected = (rcBitState == BitState_e::SUCCESS);
+
     if (rcStatus == ZP_ERROR_OK && rcData.isDataNew) {
         result |= sendRCDataToAttitudeManager(rcData);
     }
@@ -152,7 +148,7 @@ void SystemManager::smUpdate() {
     }
 
     // Determine system status based on RC connection and arm state
-    ZP_BIT_ID emergencyBit = ZP_BIT_ID::BIT_COUNT;
+    ZP_BIT_ID emergencyBit = ZP_BIT_ID::NUM_BIT_IDS;
     const bool bitBlocking = (ZP_BIT::prearmCheck(emergencyBit) != ZP_ERROR_OK);
 
     MAV_STATE systemStatus = MAV_STATE_ACTIVE;
@@ -220,6 +216,7 @@ void SystemManager::smUpdate() {
     // A disarm is what clears latched faults, so a fault cannot silently un-block arming
     if (prevArmed && !armed) {
         result |= ZP_BIT::clearLatched();
+        bitDisarmLatch = false;
     }
     prevArmed = armed;
 
@@ -227,15 +224,14 @@ void SystemManager::smUpdate() {
     result |= ZP_BIT::dispatch();
 
     // Re-nag about a blocking fault on the same interval the safety switch uses
-    ZP_BIT_ID blockingBit = ZP_BIT_ID::BIT_COUNT;
+    ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
     if (ZP_BIT::prearmCheck(blockingBit) != ZP_ERROR_OK) {
         bitPrearmCntrMs += SM_UPDATE_LOOP_DELAY_MS;
 
         if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
             bitPrearmCntrMs = 0;
-            char prearmText[TM_QUEUE_STATUSTEXT_CHAR_COUNT];
-            snprintf(prearmText, sizeof(prearmText), "PreArm: %s", ZP_BIT::name(blockingBit));
-            result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, prearmText);
+            const SMBitHandler_t& blockingRow = bitRow(blockingBit);
+            result |= sendStatusTextToTelemetryManager(toMavSeverity(blockingRow.level), blockingRow.failText);
         }
     } else {
         bitPrearmCntrMs = 0;
@@ -377,11 +373,11 @@ ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         rcDataMessage.pitch = rcChannelReversed[1] ? 100.0f - rcData.pitch : rcData.pitch;
         rcDataMessage.throttle = rcChannelReversed[2] ? 100.0f - rcData.throttle : rcData.throttle;
         rcDataMessage.yaw = rcChannelReversed[3] ? 100.0f - rcData.yaw : rcData.yaw;
-        ZP_BIT_ID blockingBit = ZP_BIT_ID::BIT_COUNT;
+        ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
         const bool bitPrearmOk = (ZP_BIT::prearmCheck(blockingBit) == ZP_ERROR_OK);
 
         // The safety-switch term is load bearing, and BIT is now the second gate
-        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && bitPrearmOk;
+        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && bitPrearmOk && !bitDisarmLatch;
         #ifdef PLANE
         rcDataMessage.flapAngle = rcData.aux2;
         #endif
@@ -474,4 +470,32 @@ ZP_ERROR_e SystemManager::sendMessagesToLogger() {
         }
     }
     return result;
+}
+
+void SystemManager::reportBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
+    (void)level;
+    SystemManager* ctx = static_cast<SystemManager*>(context);
+    if (ctx == nullptr || state != BitState_e::FAILURE) {
+        return;
+    }
+
+    const SMBitHandler_t& row = bitRow(id);
+    (void)ctx->sendStatusTextToTelemetryManager(toMavSeverity(row.level), row.failText);
+}
+
+void SystemManager::disarmBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
+    reportBitCallback(context, id, level, state);
+
+    SystemManager* ctx = static_cast<SystemManager*>(context);
+    if (ctx == nullptr || state != BitState_e::FAILURE) {
+        return;
+    }
+
+    // Cleared only on the armed -> disarmed edge, so recovery alone cannot re-arm the aircraft
+    ctx->bitDisarmLatch = true;
+    (void)ctx->sendStatusTextToTelemetryManager(MAV_SEVERITY_EMERGENCY, "Disarming");
+}
+
+static MAV_SEVERITY toMavSeverity(BitLevel_e level) {
+    return (level == BitLevel_e::CRITICAL) ? MAV_SEVERITY_CRITICAL : MAV_SEVERITY_WARNING;
 }

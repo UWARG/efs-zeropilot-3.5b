@@ -9,20 +9,25 @@ MotorControl::MotorControl(TIM_HandleTypeDef *timer, uint32_t timerChannel, uint
 
 ZP_ERROR_e MotorControl::set(uint32_t percent) {
     percent = percent > 100 ? 100 : percent;
-    
+
     uint32_t ticks = 0;
     ticks = ((percent / 100.0) * (maxCCR - minCCR)) + minCCR;
 
-    if (__HAL_TIM_SET_COMPARE(timer, timerChannel, ticks) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
-    };
+    // __HAL_TIM_SET_COMPARE is a register write, not a status-returning call
+    __HAL_TIM_SET_COMPARE(timer, timerChannel, ticks);
+    return ZP_ERROR_OK;
 }
 
 ZP_ERROR_e MotorControl::init() {
+    if (timer == nullptr) {
+        return ZP_ERROR_NULLPTR;
+    }
+
     __HAL_TIM_SET_COMPARE(timer, timerChannel, minCCR);
-    HAL_TIM_PWM_Start(timer, timerChannel);
+
+    if (HAL_TIM_PWM_Start(timer, timerChannel) != HAL_OK) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+    }
     return ZP_ERROR_OK;
 }
 

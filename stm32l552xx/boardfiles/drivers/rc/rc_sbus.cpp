@@ -55,7 +55,7 @@ DataChunk_t channelMappings[SBUS_CHANNEL_COUNT][SBUS_MAX_BTYES_PER_CHANNEL] = {
 };
 
 SBUSReceiver::SBUSReceiver(UART_HandleTypeDef* uart) : uart(uart) {
-    memset(rawSbus, 0, SBUS_PACKET_SIZE);
+    memset((void*)rawSbus, 0, SBUS_PACKET_SIZE);
 }
 
 
@@ -72,24 +72,27 @@ ZP_ERROR_e SBUSReceiver::getRCData(RCControl &data) {
 
 ZP_ERROR_e SBUSReceiver::init() {
     rcData.isDataNew = false;
-    if (HAL_UARTEx_ReceiveToIdle_DMA(uart, rawSbus, SBUS_PACKET_SIZE) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
-    }
+    return startDMA();
 }
 
 ZP_ERROR_e SBUSReceiver::startDMA() {
-    if (HAL_UARTEx_ReceiveToIdle_DMA(uart, rawSbus, SBUS_PACKET_SIZE) == HAL_OK) {
-        return ZP_ERROR_OK;
-    } else {
-        return ZP_ERROR_FAIL;
+    // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
+    if (uart == nullptr) {
+        return ZP_ERROR_NULLPTR;
     }
+
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(uart, (uint8_t*)rawSbus, SBUS_PACKET_SIZE);
+    if (status == HAL_BUSY) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_BUSY;
+    } else if (status != HAL_OK) {
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+    }
+    return ZP_ERROR_OK;
 }
 
 ZP_ERROR_e SBUSReceiver::parse() {
     ZP_ERROR_e result = ZP_ERROR_OK;
-    uint8_t *buf = rawSbus;
+    uint8_t *buf = (uint8_t*)rawSbus;
     float sbusResult = 0.0f;
 
     if ((buf[0] == HEADER_) && (buf[SBUS_PACKET_SIZE-1] == FOOTER_)) {

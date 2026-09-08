@@ -52,7 +52,6 @@ ZP_ERROR_e RFD::init() {
 ZP_ERROR_e RFD::receiveCallback(uint16_t writeIdx) {
     ZP_ERROR_e result = ZP_ERROR_OK;
 
-    // A half transfer event carries no completed frame, so there is nothing to consume
     if (HAL_UARTEx_GetRxEventType(huart) != HAL_UART_RXEVENT_HT) {
         writeIndex = writeIdx % BUFFER_SIZE;
         uint16_t transferSize = 0;

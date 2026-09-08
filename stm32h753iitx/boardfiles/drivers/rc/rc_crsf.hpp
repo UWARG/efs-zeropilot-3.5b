@@ -2,8 +2,8 @@
 
 #include "rc_defines.hpp"
 #include "rc_iface.hpp"
-#include "stm32h7xx_hal.h"
 #include "zp_error.h"
+#include "stm32h7xx_hal.h"
 
 /**
  * @class CRSFReceiver
@@ -31,11 +31,10 @@ class CRSFReceiver : public IRCReceiver {
         ZP_ERROR_e startDMA();
 
         ZP_ERROR_e parse();
-
         UART_HandleTypeDef * getHuart();
-        
+
     private:
-        UART_HandleTypeDef *uart_;
-        RCControl rcData_;
-        uint8_t crsfRxBuffer_[CRSF_PACKET_SIZE];
+        UART_HandleTypeDef *uart;
+        RCControl rcData;
+        uint8_t crsfRxBuffer[CRSF_PACKET_SIZE];
 };

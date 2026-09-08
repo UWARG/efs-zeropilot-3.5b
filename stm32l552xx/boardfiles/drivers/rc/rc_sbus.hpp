@@ -36,7 +36,7 @@ class SBUSReceiver : public IRCReceiver {
     private:
         UART_HandleTypeDef *uart;
         RCControl rcData;
-        uint8_t rawSbus[SBUS_PACKET_SIZE];
+        uint8_t volatile rawSbus[SBUS_PACKET_SIZE];
 
         ZP_ERROR_e sbusToRCControl(uint8_t *buf, int channelMappingIdx, float &output);
 };

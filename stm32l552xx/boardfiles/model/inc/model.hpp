@@ -1,6 +1,5 @@
 #pragma once
 
-#include "zp_error.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -30,6 +30,9 @@ ZP_ERROR_e DshotMotorControl::set(uint32_t percent) {
     // 11 bits throttle + 1 bit telemetry request + 4 bits CRC
     uint8_t crc = 0;
     ZP_ERROR_e result = DshotMotorControl::calculateCrc(throttleVal, telReq, crc);
+    
+    if (result != ZP_ERROR_OK) return result;
+    
     uint16_t frame = ( (throttleVal & THROTTLE_MASK) << THROTTLE_SHIFT ) | ( (telReq & TEL_MASK) << TEL_SHIFT ) | (crc & CRC_MASK);
 
     // Encode each bit to CRC val into temp buffer
