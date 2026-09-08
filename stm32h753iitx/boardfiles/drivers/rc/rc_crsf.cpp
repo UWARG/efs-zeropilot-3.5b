@@ -21,7 +21,6 @@ ZP_Error CRSFReceiver::init() {
 }
 
 ZP_Error CRSFReceiver::startDMA() {
-    // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
     if (uart == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
