@@ -150,7 +150,7 @@ void initDrivers()
     (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_INIT, telemLinkHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::GPS1_INIT, gpsHandle->init());
-    (void)ZP_BIT::report(ZP_BIT_ID::IMU_INIT, (imuHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    (void)ZP_BIT::report(ZP_BIT_ID::IMU_INIT, imuHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::PM_INIT, pmHandle->init());
     if (rangefinderHandle != nullptr) {
         (void)ZP_BIT::report(ZP_BIT_ID::RANGEFINDER_INIT,

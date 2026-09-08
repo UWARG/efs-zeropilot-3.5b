@@ -7,7 +7,7 @@ class FusedIMU : public IIMU {
     public:
         FusedIMU(SPI_HandleTypeDef* spiHandle, IMU *imu0, IMU *imu1);
 
-        int init() override;
+        ZP_Error init() override;
         
         ZP_Error readRawData(RawImuBatch_t &rawDataBatch) override;
 

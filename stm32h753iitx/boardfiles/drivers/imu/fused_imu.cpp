@@ -6,16 +6,14 @@ FusedIMU::FusedIMU(SPI_HandleTypeDef* spiHandle, IMU *imu0, IMU *imu1) :
     imu{imu0, imu1},
     active_imu(0) {}
     
-int FusedIMU::init() {
-    bool status = true;
+ZP_Error FusedIMU::init() {
+    ZP_Error result = ZP_ERROR_OK;
     for (int i = 0; i < NUM_IMU; i++) {
         // Init all IMUs and check IMU health from whoami
-        if (imu[i]->init() == -1) {
-            status = false;
-        }
+        result |= imu[i]->init();
     }
     active_imu = 0;
-    return status ? 0 : -1;
+    return result;
 }
 
 ZP_Error FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {

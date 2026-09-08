@@ -94,7 +94,7 @@ IMU::IMU(SPI_HandleTypeDef *spiHandle,
     imuTxBuffer[0] = UB0_REG_FIFO_DATA | 0b10000000;
 }
 
-int IMU::init() {
+ZP_Error IMU::init() {
     csHigh();
     SystemUtils::dwtInit();
     reset();
@@ -145,7 +145,7 @@ int IMU::init() {
     }
     flushFIFO();
 
-    return (address == ICM42688P_IMU_WHOAMI) ? 0 : -1;
+    return (address == ICM42688P_IMU_WHOAMI) ? ZP_ERROR_OK : ZP_ERROR_CONFIG;
 }
 
 ZP_Error IMU::readRawData(RawImuBatch_t &rawDataBatch) {

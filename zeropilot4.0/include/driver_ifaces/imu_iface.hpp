@@ -10,7 +10,7 @@ protected:
 
 public:
     virtual ~IIMU() = default;
-	virtual int init() = 0;
+	virtual ZP_Error init() = 0;
 	virtual ZP_Error readRawData(RawImuBatch_t &rawDataBatch) = 0;
 	virtual ZP_Error scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) = 0;
 	virtual float getODRHz() = 0;

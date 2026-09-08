@@ -33,7 +33,7 @@ class IMU : public IIMU {
 			float uiFiltCutoffHz = 50.0f, ImuUiFiltOrder_t uiFiltOrder = IMU_UI_FILT_ORD_1ST);
 	
 		// Initialization
-		int init() override;
+		ZP_Error init() override;
 	
 		// Data reading, first read returns all 0s, subsequent reads return latest data
 		ZP_Error readRawData(RawImuBatch_t &rawDataBatch) override; // non-blocking

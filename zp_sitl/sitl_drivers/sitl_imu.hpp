@@ -19,9 +19,9 @@ private:
     static constexpr float DEG_TO_RAD = 0.0174532925f;
 
 public:
-    int init() override {
+    ZP_Error init() override {
         rawData.timestamp = 0; // Initialize timestamp
-        return 0; // Success
+        return ZP_ERROR_OK;
     }
     
     /**
