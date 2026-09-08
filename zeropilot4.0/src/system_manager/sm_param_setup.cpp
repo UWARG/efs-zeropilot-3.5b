@@ -5,15 +5,15 @@
 
 SMParamSetup::SMParamSetup(SystemManager* sm) : sm(sm) {}
 
-ZP_ERROR_e SMParamSetup::loadAllParams() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SMParamSetup::loadAllParams() {
+    ZP_Error result = ZP_ERROR_OK;
     static constexpr ZP_PARAM_ID FLTMODE_PARAMS[SM_FLIGHTMODE_COUNT] = {
         ZP_PARAM_ID::FLTMODE1, ZP_PARAM_ID::FLTMODE2, ZP_PARAM_ID::FLTMODE3,
         ZP_PARAM_ID::FLTMODE4, ZP_PARAM_ID::FLTMODE5, ZP_PARAM_ID::FLTMODE6
     };
     for (uint8_t i = 0; i < SM_FLIGHTMODE_COUNT; i++) {
         float val = 0.0f;
-        ZP_ERROR_e getResult = ZP_PARAM::get(FLTMODE_PARAMS[i], val);
+        ZP_Error getResult = ZP_PARAM::get(FLTMODE_PARAMS[i], val);
         result |= getResult;
         if (getResult == ZP_ERROR_OK) {
             sm->flightModes[i] = static_cast<FlightMode_e>(static_cast<uint32_t>(val));
@@ -26,7 +26,7 @@ ZP_ERROR_e SMParamSetup::loadAllParams() {
     };
     for (uint8_t i = 0; i < SM_RC_REVERSIBLE_COUNT; i++) {
         float val = 0.0f;
-        ZP_ERROR_e getResult = ZP_PARAM::get(RC_REVERSED_PARAMS[i], val);
+        ZP_Error getResult = ZP_PARAM::get(RC_REVERSED_PARAMS[i], val);
         result |= getResult;
         if (getResult == ZP_ERROR_OK) {
             result |= setRCReversed(sm, i, val);
@@ -36,8 +36,8 @@ ZP_ERROR_e SMParamSetup::loadAllParams() {
     return result;
 }
 
-ZP_ERROR_e SMParamSetup::bindAllParamCallbacks() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SMParamSetup::bindAllParamCallbacks() {
+    ZP_Error result = ZP_ERROR_OK;
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::FLTMODE1, sm, updateFltMode1);
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::FLTMODE2, sm, updateFltMode2);
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::FLTMODE3, sm, updateFltMode3);
@@ -52,19 +52,19 @@ ZP_ERROR_e SMParamSetup::bindAllParamCallbacks() {
     return result;
 }
 
-ZP_ERROR_e SMParamSetup::setFltMode(SystemManager* ctx, uint8_t idx, float val) {
+ZP_Error SMParamSetup::setFltMode(SystemManager* ctx, uint8_t idx, float val) {
     if (idx >= SM_FLIGHTMODE_COUNT) return ZP_ERROR_RANGE;
 
     uint32_t mode = static_cast<uint32_t>(val);
 
-    ZP_ERROR_e result = validateFlightMode(mode);
+    ZP_Error result = validateFlightMode(mode);
     if (result != ZP_ERROR_OK) return result;
 
     ctx->flightModes[idx] = static_cast<FlightMode_e>(mode);
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e SMParamSetup::setRCReversed(SystemManager* ctx, uint8_t idx, float val) {
+ZP_Error SMParamSetup::setRCReversed(SystemManager* ctx, uint8_t idx, float val) {
     if (idx >= SM_RC_REVERSIBLE_COUNT) return ZP_ERROR_RANGE;
 
     ctx->rcChannelReversed[idx] = (val != 0.0f);
@@ -72,15 +72,15 @@ ZP_ERROR_e SMParamSetup::setRCReversed(SystemManager* ctx, uint8_t idx, float va
 }
 
 // Flightmode param callbacks
-ZP_ERROR_e SMParamSetup::updateFltMode1(SystemManager* ctx, float val) { return setFltMode(ctx, 0, val); }
-ZP_ERROR_e SMParamSetup::updateFltMode2(SystemManager* ctx, float val) { return setFltMode(ctx, 1, val); }
-ZP_ERROR_e SMParamSetup::updateFltMode3(SystemManager* ctx, float val) { return setFltMode(ctx, 2, val); }
-ZP_ERROR_e SMParamSetup::updateFltMode4(SystemManager* ctx, float val) { return setFltMode(ctx, 3, val); }
-ZP_ERROR_e SMParamSetup::updateFltMode5(SystemManager* ctx, float val) { return setFltMode(ctx, 4, val); }
-ZP_ERROR_e SMParamSetup::updateFltMode6(SystemManager* ctx, float val) { return setFltMode(ctx, 5, val); }
+ZP_Error SMParamSetup::updateFltMode1(SystemManager* ctx, float val) { return setFltMode(ctx, 0, val); }
+ZP_Error SMParamSetup::updateFltMode2(SystemManager* ctx, float val) { return setFltMode(ctx, 1, val); }
+ZP_Error SMParamSetup::updateFltMode3(SystemManager* ctx, float val) { return setFltMode(ctx, 2, val); }
+ZP_Error SMParamSetup::updateFltMode4(SystemManager* ctx, float val) { return setFltMode(ctx, 3, val); }
+ZP_Error SMParamSetup::updateFltMode5(SystemManager* ctx, float val) { return setFltMode(ctx, 4, val); }
+ZP_Error SMParamSetup::updateFltMode6(SystemManager* ctx, float val) { return setFltMode(ctx, 5, val); }
 
 // Channel reverse callbacks
-ZP_ERROR_e SMParamSetup::setRC1Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 0, val); }
-ZP_ERROR_e SMParamSetup::setRC2Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 1, val); }
-ZP_ERROR_e SMParamSetup::setRC3Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 2, val); }
-ZP_ERROR_e SMParamSetup::setRC4Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 3, val); }
+ZP_Error SMParamSetup::setRC1Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 0, val); }
+ZP_Error SMParamSetup::setRC2Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 1, val); }
+ZP_Error SMParamSetup::setRC3Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 2, val); }
+ZP_Error SMParamSetup::setRC4Reversed(SystemManager* ctx, float val) { return setRCReversed(ctx, 3, val); }

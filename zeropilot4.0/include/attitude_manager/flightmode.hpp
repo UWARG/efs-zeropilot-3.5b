@@ -12,6 +12,6 @@ class Flightmode {
     public:
         virtual ~Flightmode() = default;
 
-        virtual ZP_ERROR_e activateFlightMode() = 0;
-        virtual ZP_ERROR_e runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) = 0;
+        virtual ZP_Error activateFlightMode() = 0;
+        virtual ZP_Error runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) = 0;
 };

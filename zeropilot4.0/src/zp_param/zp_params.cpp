@@ -10,8 +10,8 @@ namespace ZP_PARAM {
     static Param_t params[static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)];
 
     // Internal helper to initialize a single entry
-    static ZP_ERROR_e initParam(ZP_PARAM_ID id, const char* name, float default_val, uint8_t type) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    static ZP_Error initParam(ZP_PARAM_ID id, const char* name, float default_val, uint8_t type) {
+        ZP_Error result = ZP_ERROR_OK;
         uint16_t index = static_cast<uint16_t>(id);
 
         // Accumulate errors using the bitwise OR operator
@@ -37,8 +37,8 @@ namespace ZP_PARAM {
         return result;
     }
 
-    ZP_ERROR_e init() {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error init() {
+        ZP_Error result = ZP_ERROR_OK;
         std::memset(params, 0, sizeof(params));
 
 
@@ -272,8 +272,8 @@ namespace ZP_PARAM {
         return result;
     }
 
-    ZP_ERROR_e bindCallbackInternal(ZP_PARAM_ID id, void* context, ParamSetterCb_t setter) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error bindCallbackInternal(ZP_PARAM_ID id, void* context, ParamSetterCb_t setter) {
+        ZP_Error result = ZP_ERROR_OK;
         uint16_t index = static_cast<uint16_t>(id);
 
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
@@ -286,7 +286,7 @@ namespace ZP_PARAM {
         return result;
     }
 
-    ZP_ERROR_e get(ZP_PARAM_ID id, float& out_value) {
+    ZP_Error get(ZP_PARAM_ID id, float& out_value) {
         uint16_t index = static_cast<uint16_t>(id);
 
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
@@ -297,8 +297,8 @@ namespace ZP_PARAM {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e setParamById(const char* paramId, float new_value) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error setParamById(const char* paramId, float new_value) {
+        ZP_Error result = ZP_ERROR_OK;
         bool found = false;
 
         if (paramId == nullptr) {
@@ -327,8 +327,8 @@ namespace ZP_PARAM {
         return result;
     }
 
-    ZP_ERROR_e getParamByIndex(uint16_t index, Param_t*& out_param) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error getParamByIndex(uint16_t index, Param_t*& out_param) {
+        ZP_Error result = ZP_ERROR_OK;
 
         if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
             out_param = nullptr;
@@ -340,8 +340,8 @@ namespace ZP_PARAM {
         return result;
     }
 
-    ZP_ERROR_e getIndexById(const char* paramId, int16_t& out_index) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error getIndexById(const char* paramId, int16_t& out_index) {
+        ZP_Error result = ZP_ERROR_OK;
         bool found = false;
 
         if (paramId == nullptr) {

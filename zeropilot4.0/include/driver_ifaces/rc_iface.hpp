@@ -11,5 +11,5 @@ class IRCReceiver {
         virtual ~IRCReceiver() = default;
 
         // get RCControl data that is parsed from sbus
-        virtual ZP_ERROR_e getRCData(RCControl &data) = 0;
+        virtual ZP_Error getRCData(RCControl &data) = 0;
 };

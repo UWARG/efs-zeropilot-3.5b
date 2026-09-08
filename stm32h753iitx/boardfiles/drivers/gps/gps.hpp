@@ -19,7 +19,7 @@ class GPS : public IGPS {
 
         GpsProtocol_t getProtocol();
 
-        ZP_ERROR_e readData(GpsData_t &data) override;
+        ZP_Error readData(GpsData_t &data) override;
 
         bool init();
         void rxCallback(uint16_t size);

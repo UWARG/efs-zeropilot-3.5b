@@ -12,7 +12,7 @@ RFD::~RFD() {
     instance = nullptr;
 }
 
-ZP_ERROR_e RFD::transmit(const uint8_t* data, uint16_t size) {
+ZP_Error RFD::transmit(const uint8_t* data, uint16_t size) {
     if (huart == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
@@ -26,7 +26,7 @@ ZP_ERROR_e RFD::transmit(const uint8_t* data, uint16_t size) {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e RFD::getRXTransferSize(uint16_t idx, uint16_t& output) {
+ZP_Error RFD::getRXTransferSize(uint16_t idx, uint16_t& output) {
     if (idx > lastIdx) {
         output = (uint16_t)(idx - lastIdx);
     } else {
@@ -35,7 +35,7 @@ ZP_ERROR_e RFD::getRXTransferSize(uint16_t idx, uint16_t& output) {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e RFD::init() {
+ZP_Error RFD::init() {
     if (huart == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
@@ -49,8 +49,8 @@ ZP_ERROR_e RFD::init() {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e RFD::receiveCallback(uint16_t writeIdx) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error RFD::receiveCallback(uint16_t writeIdx) {
+    ZP_Error result = ZP_ERROR_OK;
 
     if (HAL_UARTEx_GetRxEventType(huart) != HAL_UART_RXEVENT_HT) {
         writeIndex = writeIdx % BUFFER_SIZE;
@@ -71,7 +71,7 @@ ZP_ERROR_e RFD::receiveCallback(uint16_t writeIdx) {
     return result;
 }
 
-ZP_ERROR_e RFD::receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) {
+ZP_Error RFD::receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) {
     if (buffer == nullptr) {
         return ZP_ERROR_NULLPTR;
     }

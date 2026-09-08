@@ -59,7 +59,7 @@ public:
         rawData.timestamp += SITL_Driver_Configs::SITL_DRIVER_UPDATE_RATE_HZ; // Increment timestamp for simulation
     }
     
-    ZP_ERROR_e readRawData(RawImuBatch_t &rawDataBatch) override {
+    ZP_Error readRawData(RawImuBatch_t &rawDataBatch) override {
         rawDataBatch = rawBatch;
         return ZP_ERROR_OK;
     }
@@ -75,7 +75,7 @@ public:
     /**
      * Reverses the raw data back into meaningful SI units (m/s^2 and rad/s)
      */
-    ZP_ERROR_e scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) override {
+    ZP_Error scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) override {
         if (rawDataBatch.data == nullptr) {
             return ZP_ERROR_NULLPTR;
         }

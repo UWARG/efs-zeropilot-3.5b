@@ -83,7 +83,7 @@ public:
     #endif
         }
         
-        ZP_ERROR_e transmit(const uint8_t* data, uint16_t size) override {
+        ZP_Error transmit(const uint8_t* data, uint16_t size) override {
     #ifdef _WIN32
             if (sockfd != INVALID_SOCKET) {
     #else
@@ -105,7 +105,7 @@ public:
         return ZP_ERROR_OK;
     }
 
-        ZP_ERROR_e receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) override {
+        ZP_Error receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) override {
     #ifdef _WIN32
             if (sockfd != INVALID_SOCKET) {
     #else

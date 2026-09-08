@@ -15,7 +15,7 @@ int32_t SocEstimator::getTimeRemaining(){
 void SocEstimator::calcStateOfCharge(BatteryData_t batteryData, int mode) {
     float currVoltage = batteryData.pmData.busVoltage;
 
-    ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error result = ZP_ERROR_OK;
     float battCapacityMah = 0.0f;
     float nCellsRaw = 0.0f;
     result |= ZP_PARAM::get(ZP_PARAM_ID::BATT_CAPACITY, battCapacityMah);

@@ -49,8 +49,8 @@ SystemManager::SystemManager(
     bindBitHandlers();
 }
 
-ZP_ERROR_e SystemManager::bindBitHandlers() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::bindBitHandlers() {
+    ZP_Error result = ZP_ERROR_OK;
 
     for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
         // Catches the table drifting out of step with ZP_BIT_ID
@@ -83,12 +83,12 @@ const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
     return BIT_HANDLERS[static_cast<uint16_t>(id)];
 }
 
-ZP_ERROR_e SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
+ZP_Error SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
     const uint32_t BUDGET_US = budgetMs * 1000;
 
     // Fails once a loop is sustained at 80% of its budget, matching the threshold the old
     // "about to exceed scheduled rate" warning used
-    ZP_ERROR_e timing = ZP_ERROR_OK;
+    ZP_Error timing = ZP_ERROR_OK;
     if (maxExecUs >= (BUDGET_US * 8) / 10) {
         timing |= ZP_ERROR_TIMEOUT;
     }
@@ -98,7 +98,7 @@ ZP_ERROR_e SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uin
 }
 
 void SystemManager::smUpdate() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error result = ZP_ERROR_OK;
     systemUtilsDriver->profilerBegin(profilerId);
 
     // Kick the watchdog
@@ -114,12 +114,12 @@ void SystemManager::smUpdate() {
     // Gate on this call's own status, not the tick-wide accumulator: bits from the watchdog or
     // safety switch above must not suppress RC passthrough, and they can no longer be cleared.
     RCControl rcData;
-    ZP_ERROR_e rcStatus = rcDriver->getRCData(rcData);
+    ZP_Error rcStatus = rcDriver->getRCData(rcData);
     result |= rcStatus;
 
     // A stale frame is a health failure rather than a driver error. RC_DATA_VALID's debounce
     // window is seeded from RC_FS_TIMEOUT, so this replaces the old oldDataCount timer exactly.
-    ZP_ERROR_e rcHealth = rcStatus;
+    ZP_Error rcHealth = rcStatus;
     if (!rcData.isDataNew) {
         rcHealth |= ZP_ERROR_NOT_READY;
     }
@@ -243,8 +243,8 @@ void SystemManager::smUpdate() {
     systemUtilsDriver->profilerEnd(profilerId);
 }
 
-ZP_ERROR_e SystemManager::safetySwitchUpdate() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::safetySwitchUpdate() {
+    ZP_Error result = ZP_ERROR_OK;
 
     // Safety switch logic
     if (safetySwitchDriver->isSafetySwitchPressed()) {
@@ -282,8 +282,8 @@ ZP_ERROR_e SystemManager::safetySwitchUpdate() {
     return result;
 }
 
-ZP_ERROR_e SystemManager::updateBatteryFSM() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::updateBatteryFSM() {
+    ZP_Error result = ZP_ERROR_OK;
     batteryData.isValid = false;         
 
     result |= ZP_BIT::report(ZP_BIT_ID::PM_DATA_VALID, pmDriver->readData(&batteryData.pmData));
@@ -338,8 +338,8 @@ ZP_ERROR_e SystemManager::updateBatteryFSM() {
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
+    ZP_Error result = ZP_ERROR_OK;
     TMMessage_t rcDataMsg;
     uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
     result |= rcDataPack(rcDataMsg, currentTime, rcData.controlSignals, INPUT_CHANNELS);
@@ -350,8 +350,8 @@ ZP_ERROR_e SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) 
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus) {
+    ZP_Error result = ZP_ERROR_OK;
     TMMessage_t hbDataMsg;
     uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
     result |= heartbeatPack(hbDataMsg, currentTime, baseMode, customMode, systemStatus);
@@ -362,11 +362,11 @@ ZP_ERROR_e SystemManager::sendHeartbeatDataToTelemetryManager(uint8_t baseMode, 
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
+ZP_Error SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     RCMotorControlMessage_t rcDataMessage;
     FlightMode_e fltMode;
 
-    ZP_ERROR_e result = decodeRawFlightMode(rcData.fltModeRaw, fltMode);
+    ZP_Error result = decodeRawFlightMode(rcData.fltModeRaw, fltMode);
 
     if (result == ZP_ERROR_OK) {
         rcDataMessage.roll = rcChannelReversed[0] ? 100.0f - rcData.roll : rcData.roll;
@@ -388,8 +388,8 @@ ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendSysStatusToTelemetryManager() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::sendSysStatusToTelemetryManager() {
+    ZP_Error result = ZP_ERROR_OK;
 
     uint32_t present = 0;
     uint32_t enabled = 0;
@@ -410,13 +410,13 @@ ZP_ERROR_e SystemManager::sendSysStatusToTelemetryManager() {
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId) {
+ZP_Error SystemManager::sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId) {
     static constexpr uint8_t VOLTAGE_LEN = 1;
     float voltages[VOLTAGE_LEN] = {batteryData.pmData.busVoltage};
 
     TMMessage_t batteryDataMsg;
     uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
-    ZP_ERROR_e result = batteryDataPack(batteryDataMsg, currentTime, batteryId,
+    ZP_Error result = batteryDataPack(batteryDataMsg, currentTime, batteryId,
                                         batteryData.pmData.temperature, voltages, VOLTAGE_LEN,
                                         batteryData.pmData.current,
                                         batteryData.pmData.charge,
@@ -431,8 +431,8 @@ ZP_ERROR_e SystemManager::sendBatteryDataToTelemetryManager(const BatteryData_t 
     return result;
 }
 
-ZP_ERROR_e SystemManager::sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id, uint8_t chunk_seq) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id, uint8_t chunk_seq) {
+    ZP_Error result = ZP_ERROR_OK;
     TMMessage_t statusTextMsg;
     uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();
     result |= statusTextPack(statusTextMsg, currentTime, severity, text, id, chunk_seq);
@@ -443,7 +443,7 @@ ZP_ERROR_e SystemManager::sendStatusTextToTelemetryManager(MAV_SEVERITY severity
     return result;
 }
 
-ZP_ERROR_e SystemManager::decodeRawFlightMode(float flightModeRawValue, FlightMode_e &outMode) {
+ZP_Error SystemManager::decodeRawFlightMode(float flightModeRawValue, FlightMode_e &outMode) {
     if (flightModeRawValue <= SM_FLIGHTMODE1_MAX) outMode = flightModes[0];
     else if (flightModeRawValue <= SM_FLIGHTMODE2_MAX) outMode = flightModes[1];
     else if (flightModeRawValue <= SM_FLIGHTMODE3_MAX) outMode = flightModes[2];
@@ -454,8 +454,8 @@ ZP_ERROR_e SystemManager::decodeRawFlightMode(float flightModeRawValue, FlightMo
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e SystemManager::sendMessagesToLogger() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SystemManager::sendMessagesToLogger() {
+    ZP_Error result = ZP_ERROR_OK;
     static char messages[16][100];
     int msgCount = 0;
     int queueCount = 0;

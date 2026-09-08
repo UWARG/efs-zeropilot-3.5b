@@ -6,5 +6,5 @@
 
 class MockRCReceiver : public IRCReceiver{
     public:
-       MOCK_METHOD(ZP_ERROR_e, getRCData, (RCControl &data), (override));
+       MOCK_METHOD(ZP_Error, getRCData, (RCControl &data), (override));
 };

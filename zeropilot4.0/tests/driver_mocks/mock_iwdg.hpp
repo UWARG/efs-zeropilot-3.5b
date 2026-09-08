@@ -5,5 +5,5 @@
 
 class MockWatchdog : public IIndependentWatchdog {
     public:
-        MOCK_METHOD(ZP_ERROR_e, refreshWatchdog, (), (override));
+        MOCK_METHOD(ZP_Error, refreshWatchdog, (), (override));
 };

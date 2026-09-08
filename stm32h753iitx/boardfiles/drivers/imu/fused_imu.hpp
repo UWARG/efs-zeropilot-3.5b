@@ -9,9 +9,9 @@ class FusedIMU : public IIMU {
 
         int init() override;
         
-        ZP_ERROR_e readRawData(RawImuBatch_t &rawDataBatch) override;
+        ZP_Error readRawData(RawImuBatch_t &rawDataBatch) override;
 
-        ZP_ERROR_e scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) override;
+        ZP_Error scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) override;
         
         void txRxCallback(); // Called in HAL_SPI_TxRxCpltCallback
 

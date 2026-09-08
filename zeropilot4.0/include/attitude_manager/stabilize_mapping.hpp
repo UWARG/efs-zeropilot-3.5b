@@ -9,9 +9,9 @@ class StabilizeMapping : public Flightmode{
     public: 
         StabilizeMapping(float control_iter_period_s, AcroMapping &acro) noexcept;
 
-        ZP_ERROR_e activateFlightMode() override;
+        ZP_Error activateFlightMode() override;
 
-        ZP_ERROR_e runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) override;
+        ZP_Error runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) override;
 
         // Setter *roll* for PID consts
         void setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept;

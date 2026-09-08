@@ -97,11 +97,11 @@ class SystemManager {
 
         static const SMBitHandler_t BIT_HANDLERS[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)];
 
-        ZP_ERROR_e bindBitHandlers();
+        ZP_Error bindBitHandlers();
         static const SMBitHandler_t& bitRow(ZP_BIT_ID id);
-        ZP_ERROR_e reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs);
+        ZP_Error reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs);
 
-        ZP_ERROR_e safetySwitchUpdate();    // Function to update the state of the safety switch and handle its logic
+        ZP_Error safetySwitchUpdate();    // Function to update the state of the safety switch and handle its logic
 
         bool rcConnected;
         bool prevArmed;
@@ -111,19 +111,19 @@ class SystemManager {
         bool rcChannelReversed[SM_RC_REVERSIBLE_COUNT];
         
         BatteryData_t batteryData;
-        ZP_ERROR_e updateBatteryFSM();
+        ZP_Error updateBatteryFSM();
         SocEstimator socEstimator;
 
-        ZP_ERROR_e sendRCDataToAttitudeManager(const RCControl &rcData);
-        ZP_ERROR_e sendRCDataToTelemetryManager(const RCControl &rcData);
-        ZP_ERROR_e sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
-        ZP_ERROR_e sendSysStatusToTelemetryManager();
-        ZP_ERROR_e sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId);
-        ZP_ERROR_e sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id = 0, uint8_t chunk_seq = 0);
+        ZP_Error sendRCDataToAttitudeManager(const RCControl &rcData);
+        ZP_Error sendRCDataToTelemetryManager(const RCControl &rcData);
+        ZP_Error sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
+        ZP_Error sendSysStatusToTelemetryManager();
+        ZP_Error sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId);
+        ZP_Error sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id = 0, uint8_t chunk_seq = 0);
 
-        ZP_ERROR_e decodeRawFlightMode(float flightModeRawValue, FlightMode_e& flightMode);
+        ZP_Error decodeRawFlightMode(float flightModeRawValue, FlightMode_e& flightMode);
 
-        ZP_ERROR_e sendMessagesToLogger();
+        ZP_Error sendMessagesToLogger();
 
         uint8_t profilerId;
 

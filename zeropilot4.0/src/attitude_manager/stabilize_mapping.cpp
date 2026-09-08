@@ -46,15 +46,15 @@ void StabilizeMapping::setRollPitchLimitAngle(float newRollPitchLimitAngle) noex
 PID *StabilizeMapping::getRollPID() noexcept { return &rollPID; }
 PID *StabilizeMapping::getPitchPID() noexcept { return &pitchPID; }
 
-ZP_ERROR_e StabilizeMapping::activateFlightMode() {
+ZP_Error StabilizeMapping::activateFlightMode() {
     resetControlLoopState();
     acroCLAW.resetControlLoopState();
     return ZP_ERROR_OK;
 }
 
 // Main control mapping function for STABILIZE mode
-ZP_ERROR_e StabilizeMapping::runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error StabilizeMapping::runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) {
+    ZP_Error result = ZP_ERROR_OK;
 
     // Outer angle loop runs once every ANGLE_LOOP_TO_INNER_LOOP_RATIO calls
     if (decimationCounter == 0) {

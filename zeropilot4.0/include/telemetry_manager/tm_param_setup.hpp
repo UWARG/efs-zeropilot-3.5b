@@ -7,8 +7,8 @@ class TelemetryManager;
 class TMParamSetup : public IParamSetup {
    public:
     explicit TMParamSetup(TelemetryManager* tm);
-    ZP_ERROR_e loadAllParams() override;
-    ZP_ERROR_e bindAllParamCallbacks() override;
+    ZP_Error loadAllParams() override;
+    ZP_Error bindAllParamCallbacks() override;
 
    private:
     TelemetryManager* tm;

@@ -7,7 +7,7 @@ MotorControl::MotorControl(TIM_HandleTypeDef *timer, uint32_t timerChannel, uint
     maxCCR(maxDutyCycle / 100.0 * timer->Init.Period),
     servoIdx(servoIdx) {}
 
-ZP_ERROR_e MotorControl::set(uint32_t percent) {
+ZP_Error MotorControl::set(uint32_t percent) {
     percent = percent > 100 ? 100 : percent;
 
     uint32_t ticks = 0;
@@ -18,7 +18,7 @@ ZP_ERROR_e MotorControl::set(uint32_t percent) {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e MotorControl::init() {
+ZP_Error MotorControl::init() {
     if (timer == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
@@ -35,7 +35,7 @@ void MotorControl::enableServo(GPIO_TypeDef* enGpioBase, uint16_t enGpioNum) {
     HAL_GPIO_WritePin(enGpioBase, enGpioNum, GPIO_PIN_SET);
 }
 
-ZP_ERROR_e MotorControl::enableServoSwitch(GPIO_TypeDef* csGpioBase, uint16_t csGpioNum, SPI_HandleTypeDef *hspi) {
+ZP_Error MotorControl::enableServoSwitch(GPIO_TypeDef* csGpioBase, uint16_t csGpioNum, SPI_HandleTypeDef *hspi) {
     uint8_t rx[2];
     static constexpr uint8_t tx[2] = {0xFF, 0xAC};
 

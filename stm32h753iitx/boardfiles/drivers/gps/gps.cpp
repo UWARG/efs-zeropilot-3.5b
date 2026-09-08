@@ -247,7 +247,7 @@ bool GPS::receiveByte(uint8_t &byte, uint32_t deadline) {
     return HAL_UART_Receive(huart, &byte, 1, (uint32_t)remainingTick) == HAL_OK;
 }
 
-ZP_ERROR_e GPS::readData(GpsData_t &data) {
+ZP_Error GPS::readData(GpsData_t &data) {
     // Check if new data has arrived
     if (!dataReady) {
         tempData.isNew = false;

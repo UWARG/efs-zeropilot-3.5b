@@ -8,7 +8,7 @@ static inline int usToPercent(float us) {
     return static_cast<int>((us - 1000.0f) / 10.0f);
 }
 
-static inline float readParam(ZP_ERROR_e &result, ZP_PARAM_ID id) {
+static inline float readParam(ZP_Error &result, ZP_PARAM_ID id) {
     float value = 0.0f;
     result |= ZP_PARAM::get(id, value);
     return value;
@@ -16,8 +16,8 @@ static inline float readParam(ZP_ERROR_e &result, ZP_PARAM_ID id) {
 
 AMParamSetup::AMParamSetup(AttitudeManager* am) : am(am) {}
 
-ZP_ERROR_e AMParamSetup::loadAllParams() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AMParamSetup::loadAllParams() {
+    ZP_Error result = ZP_ERROR_OK;
 
     #ifdef PLANE
     // FBWA params
@@ -132,8 +132,8 @@ ZP_ERROR_e AMParamSetup::loadAllParams() {
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::SERVO##N##_REVERSED, am, cbServoReversed<N-1>); \
     result |= ZP_PARAM::bindCallback(ZP_PARAM_ID::SERVO##N##_FUNCTION, am, cbServoFunction<N-1>);
 
-ZP_ERROR_e AMParamSetup::bindAllParamCallbacks() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AMParamSetup::bindAllParamCallbacks() {
+    ZP_Error result = ZP_ERROR_OK;
 
     // FBWA
     #ifdef PLANE
@@ -491,39 +491,39 @@ ZP_ERROR_e AMParamSetup::updateMotSpinArm(AttitudeManager* ctx, float val) {
 #endif
 
 // FFT Harmonic Notch Filter callbacks (only do bound checking as they cannot change at runtime)
-ZP_ERROR_e AMParamSetup::updateHarmonicNotchEnabled(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateHarmonicNotchEnabled(AttitudeManager* ctx, float val) {
     // Must be 0 or 1
     int v = static_cast<int>(val);
     if (v != 0 && v != 1) return ZP_ERROR_INVALID_ARG;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e AMParamSetup::updateHarmonicNotchWindowSize(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateHarmonicNotchWindowSize(AttitudeManager* ctx, float val) {
     // Must be power of 2 between 32 and 1024
     int v = static_cast<int>(val);
     if (v < 32 || v > 1024 || (v & (v - 1)) != 0) return ZP_ERROR_INVALID_ARG;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e AMParamSetup::updateHarmonicNotchMinFreqHz(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateHarmonicNotchMinFreqHz(AttitudeManager* ctx, float val) {
     // Must be between 20 and 400 Hz
     if (val < 20.0f || val > 400.0f) return ZP_ERROR_INVALID_ARG;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e AMParamSetup::updateHarmonicNotchBandwidthHz(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateHarmonicNotchBandwidthHz(AttitudeManager* ctx, float val) {
     // Must be between 5 and 250 Hz
     if (val < 5.0f || val > 250.0f) return ZP_ERROR_INVALID_ARG;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e AMParamSetup::updateHarmonicNotchAttenuationDB(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateHarmonicNotchAttenuationDB(AttitudeManager* ctx, float val) {
     // Must be between 5 and 50 dB
     if (val < 5.0f || val > 50.0f) return ZP_ERROR_INVALID_ARG;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e AMParamSetup::updateHarmonicNotchHarmonicsMask(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateHarmonicNotchHarmonicsMask(AttitudeManager* ctx, float val) {
     // Must be between 0 and 0xFFFF
     int v = static_cast<int>(val);
     if (v < 0 || v > 0xFFFF) return ZP_ERROR_INVALID_ARG;
@@ -531,28 +531,28 @@ ZP_ERROR_e AMParamSetup::updateHarmonicNotchHarmonicsMask(AttitudeManager* ctx, 
 }
 
 // Servo field helpers
-ZP_ERROR_e AMParamSetup::setServoTrim(AttitudeManager* ctx, uint8_t ch, float val) {
+ZP_Error AMParamSetup::setServoTrim(AttitudeManager* ctx, uint8_t ch, float val) {
     if (ch >= ctx->mainMotorGroup->motorCount || val < 0.0f || val > 2000.0f) return ZP_ERROR_INVALID_ARG;
     ctx->mainMotorGroup->motors[ch].trim = usToPercent(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::setServoMin(AttitudeManager* ctx, uint8_t ch, float val) {
+ZP_Error AMParamSetup::setServoMin(AttitudeManager* ctx, uint8_t ch, float val) {
     if (ch >= ctx->mainMotorGroup->motorCount || val < 0.0f || val > 2000.0f) return ZP_ERROR_INVALID_ARG;
     ctx->mainMotorGroup->motors[ch].min = usToPercent(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::setServoMax(AttitudeManager* ctx, uint8_t ch, float val) {
+ZP_Error AMParamSetup::setServoMax(AttitudeManager* ctx, uint8_t ch, float val) {
     if (ch >= ctx->mainMotorGroup->motorCount || val < 0.0f || val > 2000.0f) return ZP_ERROR_INVALID_ARG;
     ctx->mainMotorGroup->motors[ch].max = usToPercent(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::setServoReversed(AttitudeManager* ctx, uint8_t ch, float val) {
+ZP_Error AMParamSetup::setServoReversed(AttitudeManager* ctx, uint8_t ch, float val) {
     int v = static_cast<int>(val);
     if (ch >= ctx->mainMotorGroup->motorCount || (v != 0 && v != 1)) return ZP_ERROR_INVALID_ARG;
     ctx->mainMotorGroup->motors[ch].isInverted = v != 0;
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::setServoFunction(AttitudeManager* ctx, uint8_t ch, float val) {
+ZP_Error AMParamSetup::setServoFunction(AttitudeManager* ctx, uint8_t ch, float val) {
     if (ch >= ctx->mainMotorGroup->motorCount) return ZP_ERROR_INVALID_ARG;
     ctx->mainMotorGroup->motors[ch].function = static_cast<MotorFunction_e>(static_cast<int16_t>(val));
     return ZP_ERROR_OK;

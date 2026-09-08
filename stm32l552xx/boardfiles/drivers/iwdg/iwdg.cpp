@@ -4,7 +4,7 @@ IndependentWatchdog::IndependentWatchdog(IWDG_HandleTypeDef *hiwdg) : watchdog_(
     // empty
 }
 
-ZP_ERROR_e IndependentWatchdog::refreshWatchdog() {
+ZP_Error IndependentWatchdog::refreshWatchdog() {
     if (this->watchdog_ == nullptr) {
         return ZP_ERROR_NULLPTR;
     }

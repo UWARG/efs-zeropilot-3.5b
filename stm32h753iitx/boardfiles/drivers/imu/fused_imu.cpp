@@ -18,8 +18,8 @@ int FusedIMU::init() {
     return status ? 0 : -1;
 }
 
-ZP_ERROR_e FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {
+    ZP_Error result = ZP_ERROR_OK;
 
     // Check if all IMU is filled
     bool allImuFilled = true;
@@ -72,7 +72,7 @@ ZP_ERROR_e FusedIMU::readRawData(RawImuBatch_t &rawDataBatch) {
     return result;
 }
 
-ZP_ERROR_e FusedIMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) {
+ZP_Error FusedIMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) {
     // Guard to prevent recalculations when IMUs not filled with new data
     if (rawDataBatch.count == 0) {
         scaledFusedImuBatch.count = 0;
@@ -83,7 +83,7 @@ ZP_ERROR_e FusedIMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBa
         return ZP_ERROR_NULLPTR;
     }
 
-    ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error result = ZP_ERROR_OK;
 
     // Scale IMU data
     RawImuBatch_t temp; 

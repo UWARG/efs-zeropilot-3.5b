@@ -6,7 +6,7 @@
 #define PARAM_MAX_IDENTIFIER_LEN 17
 
 // Function pointer signature for parameter callbacks
-typedef ZP_ERROR_e (*ParamSetterCb_t)(void* context, float newValue);
+typedef ZP_Error (*ParamSetterCb_t)(void* context, float newValue);
 typedef struct {
     char paramId[PARAM_MAX_IDENTIFIER_LEN];
     float paramValue;
@@ -161,25 +161,25 @@ enum class ZP_PARAM_ID : uint16_t { // NOLINT
 
 namespace ZP_PARAM {
     // Initialize the registry (call once during system boot)
-    ZP_ERROR_e init();
+    ZP_Error init();
 
     // Bind a callback to a specific parameter
-    ZP_ERROR_e bindCallbackInternal(ZP_PARAM_ID id, void* context, ParamSetterCb_t setter);
+    ZP_Error bindCallbackInternal(ZP_PARAM_ID id, void* context, ParamSetterCb_t setter);
 
     // Templated wrapper for bindCallbackInternal
     template <typename T>
-    ZP_ERROR_e bindCallback(ZP_PARAM_ID id, T* context, ZP_ERROR_e (*setter)(T*, float)) {
+    ZP_Error bindCallback(ZP_PARAM_ID id, T* context, ZP_Error (*setter)(T*, float)) {
         return bindCallbackInternal(id, static_cast<void*>(context), reinterpret_cast<ParamSetterCb_t>(setter));
     }
 
     // Get current config value
-    ZP_ERROR_e get(ZP_PARAM_ID id, float& out_value);
+    ZP_Error get(ZP_PARAM_ID id, float& out_value);
 
     // MAVLink/Telemetry interaction
-    ZP_ERROR_e setParamById(const char* paramId, float new_value);
+    ZP_Error setParamById(const char* paramId, float new_value);
     
     // Accessors
-    ZP_ERROR_e getParamByIndex(uint16_t index, Param_t*& out_param);
-    ZP_ERROR_e getIndexById(const char* paramId, int16_t& out_index);
+    ZP_Error getParamByIndex(uint16_t index, Param_t*& out_param);
+    ZP_Error getIndexById(const char* paramId, int16_t& out_index);
     uint16_t getCount();
 }

@@ -6,7 +6,7 @@
 #include "unit_conversions.hpp"
 #include <limits>
 
-static inline float readParam(ZP_ERROR_e &result, ZP_PARAM_ID id) {
+static inline float readParam(ZP_Error &result, ZP_PARAM_ID id) {
     float value = 0.0f;
     result |= ZP_PARAM::get(id, value);
     return value;
@@ -97,7 +97,7 @@ AttitudeManager::AttitudeManager(
 }
 
 void AttitudeManager::amUpdate() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error result = ZP_ERROR_OK;
 
 
     systemUtilsDriver->profilerBegin(profilerId);
@@ -122,7 +122,7 @@ void AttitudeManager::amUpdate() {
     // Send IMU raw data to telemetry manager
     RawImuBatch_t imuData = {};
     ScaledImuBatch_t scaledImuData = {};
-    ZP_ERROR_e imuStatus = imuDriver->readRawData(imuData);
+    ZP_Error imuStatus = imuDriver->readRawData(imuData);
     imuStatus |= imuDriver->scaleIMUData(imuData, scaledImuData);
     result |= ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, imuStatus);
     for (int i = 0; i < scaledImuData.count; i++) {
@@ -237,7 +237,7 @@ void AttitudeManager::amUpdate() {
     }
 
     // Get data from Queue and motor outputs
-    ZP_ERROR_e controlRes = getControlInputs(&controlMsg);
+    ZP_Error controlRes = getControlInputs(&controlMsg);
 
     // An empty queue is the normal case at the 1 kHz AM rate between SM's 20 Hz pushes, so only a
     // genuine queue fault is worth accumulating.
@@ -365,9 +365,9 @@ void AttitudeManager::amUpdate() {
     systemUtilsDriver->profilerEnd(profilerId);
 }
 
-ZP_ERROR_e AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
+ZP_Error AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMsg) {
     int count = 0;
-    ZP_ERROR_e result = amQueue->count(count);
+    ZP_Error result = amQueue->count(count);
     if (result != ZP_ERROR_OK) {
         return result;
     }
@@ -378,8 +378,8 @@ ZP_ERROR_e AttitudeManager::getControlInputs(RCMotorControlMessage_t *pControlMs
     return amQueue->get(pControlMsg);
 }
 
-ZP_ERROR_e AttitudeManager::outputToMotors(const RCMotorControlMessage_t outputControlMsg, bool groundIdle) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::outputToMotors(const RCMotorControlMessage_t outputControlMsg, bool groundIdle) {
+    ZP_Error result = ZP_ERROR_OK;
 
 
     #ifdef PLANE
@@ -464,8 +464,8 @@ ZP_ERROR_e AttitudeManager::outputToMotors(const RCMotorControlMessage_t outputC
 }
 
 
-ZP_ERROR_e AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsData) {
+    ZP_Error result = ZP_ERROR_OK;
 
     if (!gpsData.isNew) return result;
 
@@ -505,8 +505,8 @@ ZP_ERROR_e AttitudeManager::sendGPSDataToTelemetryManager(const GpsData_t &gpsDa
     return result;
 }
 
-ZP_ERROR_e AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imuData) {
+    ZP_Error result = ZP_ERROR_OK;
 
     TMMessage_t imuDataMsg;
     result |= rawImuDataPack(
@@ -526,8 +526,8 @@ ZP_ERROR_e AttitudeManager::sendRawIMUDataToTelemetryManager(const RawImu_t &imu
     return result;
 }
 
-ZP_ERROR_e AttitudeManager::sendAttitudeDataToTelemetryManager(const Attitude_t &attitude) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::sendAttitudeDataToTelemetryManager(const Attitude_t &attitude) {
+    ZP_Error result = ZP_ERROR_OK;
 
     TMMessage_t attitudeDataMsg;
     result |= attitudeDataPack(
@@ -544,8 +544,8 @@ ZP_ERROR_e AttitudeManager::sendAttitudeDataToTelemetryManager(const Attitude_t 
     return result;
 }
 
-ZP_ERROR_e AttitudeManager::sendPressureDataToTelemetryManager(const BaroData_t &baroData) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::sendPressureDataToTelemetryManager(const BaroData_t &baroData) {
+    ZP_Error result = ZP_ERROR_OK;
 
     TMMessage_t pressureDataMsg;
     result |= scaledPressurePack(
@@ -563,8 +563,8 @@ ZP_ERROR_e AttitudeManager::sendPressureDataToTelemetryManager(const BaroData_t 
     return result;
 }
 
-ZP_ERROR_e AttitudeManager::sendRangefinderDataToTelemetryManager(const RangefinderData_t &rangefinderData) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::sendRangefinderDataToTelemetryManager(const RangefinderData_t &rangefinderData) {
+    ZP_Error result = ZP_ERROR_OK;
 
     float invalidQuaternion[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -589,8 +589,8 @@ ZP_ERROR_e AttitudeManager::sendRangefinderDataToTelemetryManager(const Rangefin
     return result;
 }
 
-ZP_ERROR_e AttitudeManager::sendServoOutputRawToTelemetryManager() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AttitudeManager::sendServoOutputRawToTelemetryManager() {
+    ZP_Error result = ZP_ERROR_OK;
 
     TMMessage_t servoOutputMsg;
     result |= servoOutputRawPack(

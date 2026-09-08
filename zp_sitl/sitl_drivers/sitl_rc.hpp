@@ -17,7 +17,7 @@ public:
         rcData.isDataNew = true;
     }
     
-    ZP_ERROR_e getRCData(RCControl &data) override {
+    ZP_Error getRCData(RCControl &data) override {
         data = rcData;
         return ZP_ERROR_OK;
     }

@@ -36,8 +36,8 @@ class IMU : public IIMU {
 		int init() override;
 	
 		// Data reading, first read returns all 0s, subsequent reads return latest data
-		ZP_ERROR_e readRawData(RawImuBatch_t &rawDataBatch) override; // non-blocking
-		ZP_ERROR_e scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) override;
+		ZP_Error readRawData(RawImuBatch_t &rawDataBatch) override; // non-blocking
+		ZP_Error scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) override;
 	
 		void txRxCallback(); // Called in HAL_SPI_TxRxCpltCallback
 	

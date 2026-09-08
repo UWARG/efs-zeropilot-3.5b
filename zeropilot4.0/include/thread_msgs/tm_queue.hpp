@@ -141,14 +141,14 @@ typedef struct TMMessage{
     uint32_t timeBootMs = 0;
 } TMMessage_t;
 
-inline ZP_ERROR_e heartbeatPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status) {
+inline ZP_Error heartbeatPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status) {
     const TMMessageData_t DATA = {.heartbeatData = {base_mode, custom_mode, system_status}};
     data = TMMessage_t{TMMessage_t::HEARTBEAT_DATA, DATA, time_boot_ms};
     return ZP_ERROR_OK;
 }
 
-inline ZP_ERROR_e statusTextPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t severity, const char text[TM_QUEUE_STATUSTEXT_CHAR_COUNT], uint16_t id, uint8_t chunk_seq) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+inline ZP_Error statusTextPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t severity, const char text[TM_QUEUE_STATUSTEXT_CHAR_COUNT], uint16_t id, uint8_t chunk_seq) {
+    ZP_Error result = ZP_ERROR_OK;
     if (text == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     } else {
@@ -167,7 +167,7 @@ inline ZP_ERROR_e statusTextPack(TMMessage_t &data, uint32_t time_boot_ms, uint8
     return result;
 }
 
-inline ZP_ERROR_e gpsRawDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t fix_type, int32_t lat, int32_t lon, int32_t alt,
+inline ZP_Error gpsRawDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t fix_type, int32_t lat, int32_t lon, int32_t alt,
                                  uint16_t eph, uint16_t epv, uint16_t vel, uint16_t cog, uint8_t satellites_visible) {
     const TMMessageData_t DATA = {
         .gpsRawData = {
@@ -178,7 +178,7 @@ inline ZP_ERROR_e gpsRawDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8
     return ZP_ERROR_OK;
 }
 
-inline ZP_ERROR_e scaledPressurePack(TMMessage_t &data, uint32_t time_boot_ms, float press_abs_kpa, float press_diff_kpa,
+inline ZP_Error scaledPressurePack(TMMessage_t &data, uint32_t time_boot_ms, float press_abs_kpa, float press_diff_kpa,
                                      float temperature_degC, float temperature_press_diff_degC) {
     float pressAbs = press_abs_kpa * 10.0f; // kPa -> hPa
     float pressDiff = press_diff_kpa * 10.0f; // kPa -> hPa
@@ -194,8 +194,8 @@ inline ZP_ERROR_e scaledPressurePack(TMMessage_t &data, uint32_t time_boot_ms, f
     return ZP_ERROR_OK;
 }
 
-inline ZP_ERROR_e servoOutputRawPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t port, const uint16_t servo_values[16]) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+inline ZP_Error servoOutputRawPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t port, const uint16_t servo_values[16]) {
+    ZP_Error result = ZP_ERROR_OK;
     if (servo_values == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     } else {
@@ -213,8 +213,8 @@ inline ZP_ERROR_e servoOutputRawPack(TMMessage_t &data, uint32_t time_boot_ms, u
     return result;
 }
 
-inline ZP_ERROR_e rcDataPack(TMMessage_t &data, uint32_t time_boot_ms, const float* controlSignals, uint8_t size) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+inline ZP_Error rcDataPack(TMMessage_t &data, uint32_t time_boot_ms, const float* controlSignals, uint8_t size) {
+    ZP_Error result = ZP_ERROR_OK;
     if (controlSignals == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     }
@@ -233,11 +233,11 @@ inline ZP_ERROR_e rcDataPack(TMMessage_t &data, uint32_t time_boot_ms, const flo
     return result;
 }
 
-inline ZP_ERROR_e batteryDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t battery_id, float temperature,
+inline ZP_Error batteryDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t battery_id, float temperature,
                                   float *voltages, uint8_t voltage_len, float current_instantaneous,
                                   float charge_accumulated, float energy_consumed, int8_t battery_remaining,
                                   int32_t time_remaining, uint8_t charge_state) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error result = ZP_ERROR_OK;
     if (voltages == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     }
@@ -278,7 +278,7 @@ inline ZP_ERROR_e batteryDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint
     return result;
 }
 
-inline ZP_ERROR_e rawImuDataPack(TMMessage_t &data, uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro) {
+inline ZP_Error rawImuDataPack(TMMessage_t &data, uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro) {
     const TMMessageData_t DATA = {
         .rawImuData = {
             xacc, yacc, zacc, xgyro, ygyro, zgyro
@@ -288,7 +288,7 @@ inline ZP_ERROR_e rawImuDataPack(TMMessage_t &data, uint32_t time_boot_ms, int16
     return ZP_ERROR_OK;
 }
 
-inline ZP_ERROR_e attitudeDataPack(TMMessage_t &data, uint32_t time_boot_ms, float roll, float pitch, float yaw) {
+inline ZP_Error attitudeDataPack(TMMessage_t &data, uint32_t time_boot_ms, float roll, float pitch, float yaw) {
     const TMMessageData_t DATA = {
         .attitudeData = {
             roll, pitch, yaw
@@ -298,8 +298,8 @@ inline ZP_ERROR_e attitudeDataPack(TMMessage_t &data, uint32_t time_boot_ms, flo
     return ZP_ERROR_OK;
 }
 
-inline ZP_ERROR_e distanceSensorDataPack(TMMessage_t &data, uint32_t time_boot_ms, float min_distance, float max_distance, float current_distance, uint8_t id, float covariance, float horizontal_fov_rad, float vertical_fov_rad, float quaternion[4], uint8_t signal_quality_pct) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+inline ZP_Error distanceSensorDataPack(TMMessage_t &data, uint32_t time_boot_ms, float min_distance, float max_distance, float current_distance, uint8_t id, float covariance, float horizontal_fov_rad, float vertical_fov_rad, float quaternion[4], uint8_t signal_quality_pct) {
+    ZP_Error result = ZP_ERROR_OK;
     if (quaternion == nullptr) {
         result |= ZP_ERROR_NULLPTR;
     } else {
@@ -319,7 +319,7 @@ inline ZP_ERROR_e distanceSensorDataPack(TMMessage_t &data, uint32_t time_boot_m
     return result;
 }
 
-inline ZP_ERROR_e sysStatusPack(TMMessage_t &data, uint32_t time_boot_ms, uint32_t sensors_present,
+inline ZP_Error sysStatusPack(TMMessage_t &data, uint32_t time_boot_ms, uint32_t sensors_present,
                                 uint32_t sensors_enabled, uint32_t sensors_health, uint16_t load,
                                 float voltage_battery, float current_battery, int8_t battery_remaining) {
     const uint16_t SCALED_VOLTAGE = static_cast<uint16_t>(voltage_battery * 1000.0f); // V -> mV

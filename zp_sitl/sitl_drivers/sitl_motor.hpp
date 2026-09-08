@@ -5,12 +5,12 @@ class SITL_Motor : public IMotorControl {
 public:
     SITL_Motor() = default;
 
-    ZP_ERROR_e set(uint32_t percent) override {
+    ZP_Error set(uint32_t percent) override {
         currentPercent = percent;
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e init() override {
+    ZP_Error init() override {
         return ZP_ERROR_OK;
     }
 

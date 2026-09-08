@@ -148,7 +148,7 @@ int IMU::init() {
     return (address == ICM42688P_IMU_WHOAMI) ? 0 : -1;
 }
 
-ZP_ERROR_e IMU::readRawData(RawImuBatch_t &rawDataBatch) {
+ZP_Error IMU::readRawData(RawImuBatch_t &rawDataBatch) {
     // Dont start another dma transaction when in the middle of one transaction
     if (!dmaDone) {
         rawImuDataBatch.count = 0;
@@ -161,7 +161,7 @@ ZP_ERROR_e IMU::readRawData(RawImuBatch_t &rawDataBatch) {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e IMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) {
+ZP_Error IMU::scaleIMUData(const RawImuBatch_t &rawDataBatch, ScaledImuBatch_t &scaledDataBatch) {
     if (rawDataBatch.data == nullptr) {
         return ZP_ERROR_NULLPTR;
     }

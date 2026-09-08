@@ -34,14 +34,14 @@ FBWAMapping::FBWAMapping(float control_iter_period_s) noexcept :
 }
 
 // Setter *roll* for PID consts
-ZP_ERROR_e FBWAMapping::setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    ZP_ERROR_e result = rollPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+ZP_Error FBWAMapping::setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
+    ZP_Error result = rollPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
     return result;
 }
 
 // Setter for *pitch* PID consts
-ZP_ERROR_e FBWAMapping::setPitchPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    ZP_ERROR_e result = pitchPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+ZP_Error FBWAMapping::setPitchPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
+    ZP_Error result = pitchPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
     return result;
 }
 
@@ -56,8 +56,8 @@ void FBWAMapping::setPitchFFConstant(float newPitchFFConst) noexcept {
 }
 
 // Resetter for both roll and pitch PIDs (needed for unit testing)
-ZP_ERROR_e FBWAMapping::resetControlLoopState() noexcept {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error FBWAMapping::resetControlLoopState() noexcept {
+    ZP_Error result = ZP_ERROR_OK;
     result |= rollPID.pidInitState();
     result |= pitchPID.pidInitState();
     prevRollSetpoint = 0.0f;
@@ -68,47 +68,47 @@ ZP_ERROR_e FBWAMapping::resetControlLoopState() noexcept {
 }
 
 // Setter for *yaw* rudder mixing const
-ZP_ERROR_e FBWAMapping::setYawRudderMixingConstant(float newMixingConst) noexcept {
+ZP_Error FBWAMapping::setYawRudderMixingConstant(float newMixingConst) noexcept {
     yawRudderMixingConst = newMixingConst;
     return ZP_ERROR_OK;
 }
 
 // Setter for *rollLimitDeg*
-ZP_ERROR_e FBWAMapping::setRollLimitDeg(float newRollLimitDeg) noexcept {
+ZP_Error FBWAMapping::setRollLimitDeg(float newRollLimitDeg) noexcept {
     rollLimitRad = ZP_UNITS::deg2rad(newRollLimitDeg);
     return ZP_ERROR_OK;
 }
 
 // Setter for *pitchLimitMaxDeg*
-ZP_ERROR_e FBWAMapping::setPitchLimitMaxDeg(float newPitchLimitMaxDeg) noexcept {
+ZP_Error FBWAMapping::setPitchLimitMaxDeg(float newPitchLimitMaxDeg) noexcept {
     pitchLimitMaxRad = ZP_UNITS::deg2rad(newPitchLimitMaxDeg);
     return ZP_ERROR_OK;
 }
 
 // Setter for *pitchLimitMinDeg*
-ZP_ERROR_e FBWAMapping::setPitchLimitMinDeg(float newPitchLimitMinDeg) noexcept {
+ZP_Error FBWAMapping::setPitchLimitMinDeg(float newPitchLimitMinDeg) noexcept {
     pitchLimitMinRad = ZP_UNITS::deg2rad(newPitchLimitMinDeg);
     return ZP_ERROR_OK;
 }
 
 // Getter for PID objects
-ZP_ERROR_e FBWAMapping::getRollPID(PID*& out_rollPID) noexcept { 
+ZP_Error FBWAMapping::getRollPID(PID*& out_rollPID) noexcept { 
     out_rollPID = &rollPID; 
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e FBWAMapping::getPitchPID(PID*& out_pitchPID) noexcept { 
+ZP_Error FBWAMapping::getPitchPID(PID*& out_pitchPID) noexcept { 
     out_pitchPID = &pitchPID; 
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e FBWAMapping::activateFlightMode() {
+ZP_Error FBWAMapping::activateFlightMode() {
     return resetControlLoopState();
 }
 
 // Main control mapping function for FBWA mode
-ZP_ERROR_e FBWAMapping::runControl(RCMotorControlMessage_t &controlOutput, const RCMotorControlMessage_t controlInput, const DroneState_t &droneState) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error FBWAMapping::runControl(RCMotorControlMessage_t &controlOutput, const RCMotorControlMessage_t controlInput, const DroneState_t &droneState) {
+    ZP_Error result = ZP_ERROR_OK;
 
     // Roll SP: Maps [0, 100] to [-limit, +limit]
     float rollSetpoint = ((controlInput.roll / MAX_RC_INPUT_VAL) * 2.0f - 1.0f) * rollLimitRad;

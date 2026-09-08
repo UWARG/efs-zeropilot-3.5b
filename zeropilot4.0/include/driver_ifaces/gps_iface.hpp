@@ -47,5 +47,5 @@ class IGPS {
     public:
         virtual ~IGPS() = default;
 
-        virtual ZP_ERROR_e readData(GpsData_t &data) = 0;
+        virtual ZP_Error readData(GpsData_t &data) = 0;
 };

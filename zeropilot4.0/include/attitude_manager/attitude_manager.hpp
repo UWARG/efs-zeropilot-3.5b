@@ -113,16 +113,16 @@ private:
     uint32_t lastTimestamp;
     bool haveLastImuTimestamp;
 
-    ZP_ERROR_e getControlInputs(RCMotorControlMessage_t *pControlMsg);
+    ZP_Error getControlInputs(RCMotorControlMessage_t *pControlMsg);
 
-    ZP_ERROR_e outputToMotors(RCMotorControlMessage_t outputControlMsg, bool groundIdle);
+    ZP_Error outputToMotors(RCMotorControlMessage_t outputControlMsg, bool groundIdle);
 
-    ZP_ERROR_e sendGPSDataToTelemetryManager(const GpsData_t &gpsData);
-    ZP_ERROR_e sendRawIMUDataToTelemetryManager(const RawImu_t &imuData);
-    ZP_ERROR_e sendAttitudeDataToTelemetryManager(const Attitude_t &attitude);
-    ZP_ERROR_e sendPressureDataToTelemetryManager(const BaroData_t &baroData);
-    ZP_ERROR_e sendRangefinderDataToTelemetryManager(const RangefinderData_t &rangefinderData);
-    ZP_ERROR_e sendServoOutputRawToTelemetryManager();
+    ZP_Error sendGPSDataToTelemetryManager(const GpsData_t &gpsData);
+    ZP_Error sendRawIMUDataToTelemetryManager(const RawImu_t &imuData);
+    ZP_Error sendAttitudeDataToTelemetryManager(const Attitude_t &attitude);
+    ZP_Error sendPressureDataToTelemetryManager(const BaroData_t &baroData);
+    ZP_Error sendRangefinderDataToTelemetryManager(const RangefinderData_t &rangefinderData);
+    ZP_Error sendServoOutputRawToTelemetryManager();
 
     uint8_t profilerId;
 

@@ -9,8 +9,8 @@ class AttitudeManager;
 class AMParamSetup : public IParamSetup {
    public:
     explicit AMParamSetup(AttitudeManager* am);
-    ZP_ERROR_e loadAllParams() override;
-    ZP_ERROR_e bindAllParamCallbacks() override;
+    ZP_Error loadAllParams() override;
+    ZP_Error bindAllParamCallbacks() override;
 
    private:
     AttitudeManager* am;
@@ -70,24 +70,24 @@ class AMParamSetup : public IParamSetup {
     #endif
 
     // FFT Harmonic Notch Filter param callbacks
-    static ZP_ERROR_e updateHarmonicNotchEnabled(AttitudeManager* ctx, float val);
-    static ZP_ERROR_e updateHarmonicNotchWindowSize(AttitudeManager* ctx, float val);
-    static ZP_ERROR_e updateHarmonicNotchMinFreqHz(AttitudeManager* ctx, float val);
-    static ZP_ERROR_e updateHarmonicNotchBandwidthHz(AttitudeManager* ctx, float val);
-    static ZP_ERROR_e updateHarmonicNotchAttenuationDB(AttitudeManager* ctx, float val);
-    static ZP_ERROR_e updateHarmonicNotchHarmonicsMask(AttitudeManager* ctx, float val);
+    static ZP_Error updateHarmonicNotchEnabled(AttitudeManager* ctx, float val);
+    static ZP_Error updateHarmonicNotchWindowSize(AttitudeManager* ctx, float val);
+    static ZP_Error updateHarmonicNotchMinFreqHz(AttitudeManager* ctx, float val);
+    static ZP_Error updateHarmonicNotchBandwidthHz(AttitudeManager* ctx, float val);
+    static ZP_Error updateHarmonicNotchAttenuationDB(AttitudeManager* ctx, float val);
+    static ZP_Error updateHarmonicNotchHarmonicsMask(AttitudeManager* ctx, float val);
 
     // Servo param callback helpers
-    static ZP_ERROR_e setServoTrim(AttitudeManager* ctx, uint8_t ch, float val);
-    static ZP_ERROR_e setServoMin(AttitudeManager* ctx, uint8_t ch, float val);
-    static ZP_ERROR_e setServoMax(AttitudeManager* ctx, uint8_t ch, float val);
-    static ZP_ERROR_e setServoReversed(AttitudeManager* ctx, uint8_t ch, float val);
-    static ZP_ERROR_e setServoFunction(AttitudeManager* ctx, uint8_t ch, float val);
+    static ZP_Error setServoTrim(AttitudeManager* ctx, uint8_t ch, float val);
+    static ZP_Error setServoMin(AttitudeManager* ctx, uint8_t ch, float val);
+    static ZP_Error setServoMax(AttitudeManager* ctx, uint8_t ch, float val);
+    static ZP_Error setServoReversed(AttitudeManager* ctx, uint8_t ch, float val);
+    static ZP_Error setServoFunction(AttitudeManager* ctx, uint8_t ch, float val);
 
     // Compile-time: each instantiation is a distinct function pointer
-    template <uint8_t Ch> static ZP_ERROR_e cbServoTrim(AttitudeManager* ctx, float v)     { return setServoTrim(ctx, Ch, v); }
-    template <uint8_t Ch> static ZP_ERROR_e cbServoMin(AttitudeManager* ctx, float v)      { return setServoMin(ctx, Ch, v); }
-    template <uint8_t Ch> static ZP_ERROR_e cbServoMax(AttitudeManager* ctx, float v)      { return setServoMax(ctx, Ch, v); }
-    template <uint8_t Ch> static ZP_ERROR_e cbServoReversed(AttitudeManager* ctx, float v) { return setServoReversed(ctx, Ch, v); }
-    template <uint8_t Ch> static ZP_ERROR_e cbServoFunction(AttitudeManager* ctx, float v) { return setServoFunction(ctx, Ch, v); }
+    template <uint8_t Ch> static ZP_Error cbServoTrim(AttitudeManager* ctx, float v)     { return setServoTrim(ctx, Ch, v); }
+    template <uint8_t Ch> static ZP_Error cbServoMin(AttitudeManager* ctx, float v)      { return setServoMin(ctx, Ch, v); }
+    template <uint8_t Ch> static ZP_Error cbServoMax(AttitudeManager* ctx, float v)      { return setServoMax(ctx, Ch, v); }
+    template <uint8_t Ch> static ZP_Error cbServoReversed(AttitudeManager* ctx, float v) { return setServoReversed(ctx, Ch, v); }
+    template <uint8_t Ch> static ZP_Error cbServoFunction(AttitudeManager* ctx, float v) { return setServoFunction(ctx, Ch, v); }
 };

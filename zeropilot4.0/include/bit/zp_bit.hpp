@@ -54,41 +54,41 @@ typedef void (*BitHandlerCb_t)(void* context, ZP_BIT_ID id, BitLevel_e level, Bi
 
 namespace ZP_BIT {
 
-    ZP_ERROR_e init(ISystemUtils* clock);
+    ZP_Error init(ISystemUtils* clock);
 
     // Reports the status of one BIT
-    ZP_ERROR_e report(ZP_BIT_ID id, ZP_ERROR_e status);
+    ZP_Error report(ZP_BIT_ID id, ZP_Error status);
 
     /*
     @brief Registers a handler for a BIT when the status changes
     @param context: pointer to a context object that can be accessed in the handler
     */
-    ZP_ERROR_e bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler);
+    ZP_Error bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler);
 
     // Fires the handlers for each BIT which had a live state change
-    ZP_ERROR_e dispatch();
+    ZP_Error dispatch();
 
     // Clears every latched fault
-    ZP_ERROR_e clearLatched();
+    ZP_Error clearLatched();
 
     /*
     @brief Sets the persistence value for a BIT for a state change
     @param failMs: The time to declare a BIT to be failed
     @param clearMs: The time to declare a BIT to be successful
     */
-    ZP_ERROR_e setPersistence(ZP_BIT_ID id, uint32_t failMs, uint32_t clearMs);
+    ZP_Error setPersistence(ZP_BIT_ID id, uint32_t failMs, uint32_t clearMs);
 
     // Get live state
-    ZP_ERROR_e getLive(ZP_BIT_ID id, BitState_e& outState);
+    ZP_Error getLive(ZP_BIT_ID id, BitState_e& outState);
     
     // Get latched state
-    ZP_ERROR_e getLatched(ZP_BIT_ID id, BitState_e& outState);
+    ZP_Error getLatched(ZP_BIT_ID id, BitState_e& outState);
 
     // ZP_ERROR_OK means armable. Otherwise outFirstBlocking is the first BIT that blocks arming
-    ZP_ERROR_e prearmCheck(ZP_BIT_ID& outFirstBlocking);
+    ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking);
 
     // MAVLink SYS_STATUS onboard_control_sensors_* bitmasks
-    ZP_ERROR_e getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth);
+    ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth);
 
     const char* name(ZP_BIT_ID id);
 }

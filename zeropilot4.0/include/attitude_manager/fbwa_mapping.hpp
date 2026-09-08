@@ -9,15 +9,15 @@ class FBWAMapping : public Flightmode {
         FBWAMapping(float control_iter_period_s) noexcept;
 
 
-        ZP_ERROR_e activateFlightMode() override;
+        ZP_Error activateFlightMode() override;
 
-        ZP_ERROR_e runControl(RCMotorControlMessage_t &controlOutput, const RCMotorControlMessage_t controlInput, const DroneState_t &droneState) override;
+        ZP_Error runControl(RCMotorControlMessage_t &controlOutput, const RCMotorControlMessage_t controlInput, const DroneState_t &droneState) override;
         
         // Setter *roll* for PID consts
-        ZP_ERROR_e setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept;
+        ZP_Error setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept;
 
         // Setter for *pitch* PID consts
-        ZP_ERROR_e setPitchPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept;
+        ZP_Error setPitchPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept;
 
         // Setter for *roll* FF const
         void setRollFFConstant(float newRollFFConst) noexcept;
@@ -26,23 +26,23 @@ class FBWAMapping : public Flightmode {
         void setPitchFFConstant(float newPitchFFConst) noexcept;
 
         // Setter for *yaw* rudder mixing const
-        ZP_ERROR_e setYawRudderMixingConstant(float newMixingConst) noexcept;
+        ZP_Error setYawRudderMixingConstant(float newMixingConst) noexcept;
 
         // Setter for *rollLimitRad*
-        ZP_ERROR_e setRollLimitDeg(float newRollLimitDeg) noexcept;
+        ZP_Error setRollLimitDeg(float newRollLimitDeg) noexcept;
 
         // Setter for *pitchLimitMaxRad*
-        ZP_ERROR_e setPitchLimitMaxDeg(float newPitchLimitMaxDeg) noexcept;
+        ZP_Error setPitchLimitMaxDeg(float newPitchLimitMaxDeg) noexcept;
 
         // Setter for *pitchLimitMinRad*
-        ZP_ERROR_e setPitchLimitMinDeg(float newPitchLimitMinDeg) noexcept;
+        ZP_Error setPitchLimitMinDeg(float newPitchLimitMinDeg) noexcept;
 
         // Resetter for both roll and pitch PIDs (needed for unit testing)
-        ZP_ERROR_e resetControlLoopState() noexcept;
+        ZP_Error resetControlLoopState() noexcept;
 
         // Getter for PID objects
-        ZP_ERROR_e getRollPID(PID* &rollpid) noexcept;
-        ZP_ERROR_e getPitchPID(PID* &pitchPID) noexcept;
+        ZP_Error getRollPID(PID* &rollpid) noexcept;
+        ZP_Error getPitchPID(PID* &pitchPID) noexcept;
 
         // Destructor
         ~FBWAMapping() noexcept override = default;

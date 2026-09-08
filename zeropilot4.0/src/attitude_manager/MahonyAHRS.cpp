@@ -56,10 +56,10 @@ Mahony::Mahony()
 //-------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt)
+ZP_Error Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt)
 {
 	if (!isInitialized) return ZP_ERROR_NOT_READY;
-	ZP_ERROR_e result = ZP_ERROR_OK;
+	ZP_Error result = ZP_ERROR_OK;
     float recipNorm;
     float halfvx, halfvy, halfvz;
     float halfex, halfey, halfez;
@@ -136,7 +136,7 @@ ZP_ERROR_e Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, f
 //-------------------------------------------------------------------------------------------
 // Fast inverse square-root
 
-ZP_ERROR_e Mahony::invSqrt(float x, float &output)
+ZP_Error Mahony::invSqrt(float x, float &output)
 {
 	if (x <= 0) return ZP_ERROR_INVALID_ARG;
 

@@ -62,14 +62,14 @@ PID *AcroMapping::getRollPID() noexcept { return &rollPID; }
 PID *AcroMapping::getPitchPID() noexcept { return &pitchPID; }
 PID *AcroMapping::getYawPID() noexcept { return &yawPID; }
 
-ZP_ERROR_e AcroMapping::activateFlightMode() {
+ZP_Error AcroMapping::activateFlightMode() {
     resetControlLoopState();
     return ZP_ERROR_OK;
 }
 
 // Main control mapping function for ACRO mode
-ZP_ERROR_e AcroMapping::runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error AcroMapping::runControl(RCMotorControlMessage_t &controlOutput, RCMotorControlMessage_t controlInput, const DroneState_t &droneState) {
+    ZP_Error result = ZP_ERROR_OK;
 
     // Setpoints: Maps [0, 100] to [-limit, +limit]
     float rollRateSetpoint = ((controlInput.roll / MAX_RC_INPUT_VAL) * 2.0f - 1.0f) * rollLimitRate;

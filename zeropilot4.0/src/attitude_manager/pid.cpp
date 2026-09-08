@@ -10,7 +10,7 @@ PID::PID(float kp, float ki, float kd, float tau,
             integralMaxLim((integralMaxPct / 100.0f) * outputMaxLim) {}
 
 // Initialization method - Can be used as resetter
-ZP_ERROR_e PID::pidInitState() noexcept {
+ZP_Error PID::pidInitState() noexcept {
     pidIntegral = 0.0f;
     prevError = 0.0f;
     pidDerivative = 0.0f;
@@ -18,7 +18,7 @@ ZP_ERROR_e PID::pidInitState() noexcept {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e PID::setConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
+ZP_Error PID::setConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
     kp = newKp;
     ki = newKi;
     kd = newKd;
@@ -35,8 +35,8 @@ void PID::setTau(float newTau) noexcept { tau = newTau; }
 void PID::setIntegralMinLimPct(uint8_t pct) noexcept { integralMinLim = (pct / 100.0f) * outputMinLim; }
 void PID::setIntegralMaxLimPct(uint8_t pct) noexcept { integralMaxLim = (pct / 100.0f) * outputMaxLim; }
 
-ZP_ERROR_e PID::pidOutput(float setpoint, float measurement, float &output) noexcept {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error PID::pidOutput(float setpoint, float measurement, float &output) noexcept {
+    ZP_Error result = ZP_ERROR_OK;
 
     // Calculate error
     float error = setpoint - measurement;

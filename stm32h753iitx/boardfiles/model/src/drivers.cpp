@@ -104,7 +104,7 @@ void initDrivers()
 
     // Motors (servo index matches SERVOx param)
     float val = 0.0f;
-    ZP_ERROR_e paramStatus = ZP_PARAM::get(ZP_PARAM_ID::MOT_PWM_TYPE, val);
+    ZP_Error paramStatus = ZP_PARAM::get(ZP_PARAM_ID::MOT_PWM_TYPE, val);
     uint32_t servoType = static_cast<uint32_t>(val);
 
     for (int i = 0; i < 8; i++) {

@@ -33,26 +33,26 @@ void TelemetryManager::tmUpdate() {
     systemUtilsDriver->profilerBegin(profilerId);
     
     // Accumulate status across all steps using the |= operator
-    ZP_ERROR_e status = ZP_ERROR_OK;
+    ZP_Error status = ZP_ERROR_OK;
 
-    ZP_ERROR_e linkStatus = receive();
+    ZP_Error linkStatus = receive();
     status |= linkStatus;
     status |= processParamTx();
     status |= processTXMsgQueue();
 
-    ZP_ERROR_e txStatus = transmit();
+    ZP_Error txStatus = transmit();
     status |= txStatus;
 
     // TELEM_LINK_VALID covers the radio itself, so only the two calls that touch it are reported
-    ZP_ERROR_e linkHealth = linkStatus;
+    ZP_Error linkHealth = linkStatus;
     linkHealth |= txStatus;
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_LINK_VALID, linkHealth);
 
     systemUtilsDriver->profilerEnd(profilerId);
 }
 
-ZP_ERROR_e TelemetryManager::processParamTx() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error TelemetryManager::processParamTx() {
+    ZP_Error result = ZP_ERROR_OK;
     constexpr uint8_t BURST_SZ = 4;
 
     for (uint8_t i = 0; i < BURST_SZ; ++i) {
@@ -74,8 +74,8 @@ ZP_ERROR_e TelemetryManager::processParamTx() {
     return result;
 }
 
-ZP_ERROR_e TelemetryManager::processTXMsgQueue() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error TelemetryManager::processTXMsgQueue() {
+    ZP_Error result = ZP_ERROR_OK;
     int count = 0;
 
     result |= tmTXQueueDriver->count(count);
@@ -207,8 +207,8 @@ ZP_ERROR_e TelemetryManager::processTXMsgQueue() {
     return result;
 }
 
-ZP_ERROR_e TelemetryManager::transmit() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error TelemetryManager::transmit() {
+    ZP_Error result = ZP_ERROR_OK;
     mavlink_message_t msgToTX{};
     uint16_t txBufIdx = 0;
 
@@ -244,8 +244,8 @@ ZP_ERROR_e TelemetryManager::transmit() {
     return result;
 }
 
-ZP_ERROR_e TelemetryManager::receive() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error TelemetryManager::receive() {
+    ZP_Error result = ZP_ERROR_OK;
     mavlink_message_t msgToRX{};
     uint16_t receivedBytes = 0;
 
@@ -262,8 +262,8 @@ ZP_ERROR_e TelemetryManager::receive() {
     return result;
 }
 
-ZP_ERROR_e TelemetryManager::processRxMsg(const mavlink_message_t &msg) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error TelemetryManager::processRxMsg(const mavlink_message_t &msg) {
+    ZP_Error result = ZP_ERROR_OK;
     
     switch (msg.msgid) {
         case MAVLINK_MSG_ID_PARAM_REQUEST_LIST: {
@@ -309,8 +309,8 @@ ZP_ERROR_e TelemetryManager::processRxMsg(const mavlink_message_t &msg) {
     return result;
 }
 
-ZP_ERROR_e TelemetryManager::enqueueParamValueTx(uint16_t index) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error TelemetryManager::enqueueParamValueTx(uint16_t index) {
+    ZP_Error result = ZP_ERROR_OK;
     Param_t* p = nullptr;
 
     result |= ZP_PARAM::getParamByIndex(index, p);

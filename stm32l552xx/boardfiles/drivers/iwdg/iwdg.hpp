@@ -14,5 +14,5 @@ class IndependentWatchdog : public IIndependentWatchdog{
         /**
          * @brief reset watchdog timer
          */
-        ZP_ERROR_e refreshWatchdog() override;
+        ZP_Error refreshWatchdog() override;
 };

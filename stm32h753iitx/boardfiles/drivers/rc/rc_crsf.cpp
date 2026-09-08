@@ -8,19 +8,19 @@ CRSFReceiver::CRSFReceiver(UART_HandleTypeDef* uart) : uart(uart) {
     memset(crsfRxBuffer, 0, CRSF_PACKET_SIZE);
 }
 
-ZP_ERROR_e CRSFReceiver::getRCData(RCControl &data) {
+ZP_Error CRSFReceiver::getRCData(RCControl &data) {
     RCControl tmp = rcData;
     rcData.isDataNew = false;
     data = tmp;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e CRSFReceiver::init() {
+ZP_Error CRSFReceiver::init() {
     rcData.isDataNew = false;
     return startDMA();
 }
 
-ZP_ERROR_e CRSFReceiver::startDMA() {
+ZP_Error CRSFReceiver::startDMA() {
     // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
     if (uart == nullptr) {
         return ZP_ERROR_NULLPTR;
@@ -37,7 +37,7 @@ ZP_ERROR_e CRSFReceiver::startDMA() {
 }
 
 // Polynomial used in CRSF: 0xD5
-static ZP_ERROR_e crsf_crc8(const uint8_t *data, uint8_t len, uint8_t &output) {
+static ZP_Error crsf_crc8(const uint8_t *data, uint8_t len, uint8_t &output) {
     uint8_t crc = 0;
     while (len--) {
         crc ^= *data++;
@@ -52,8 +52,8 @@ static ZP_ERROR_e crsf_crc8(const uint8_t *data, uint8_t len, uint8_t &output) {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e CRSFReceiver::parse() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error CRSFReceiver::parse() {
+    ZP_Error result = ZP_ERROR_OK;
     uint8_t *buf = crsfRxBuffer;
 
     // Validate sync byte and frame type

@@ -13,20 +13,20 @@ public:
     RFD(UART_HandleTypeDef* huart);
     ~RFD();
 
-    ZP_ERROR_e transmit(const uint8_t* data, uint16_t size) override;
-    ZP_ERROR_e receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) override;
+    ZP_Error transmit(const uint8_t* data, uint16_t size) override;
+    ZP_Error receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) override;
 
     // Getters
     UART_HandleTypeDef* getHuart() const;
 
     // DMA callback
-    ZP_ERROR_e receiveCallback(uint16_t size);
+    ZP_Error receiveCallback(uint16_t size);
 
     // Start DMA
-    ZP_ERROR_e init();
+    ZP_Error init();
 
 private:
-    ZP_ERROR_e getRXTransferSize(uint16_t idx, uint16_t& output);
+    ZP_Error getRXTransferSize(uint16_t idx, uint16_t& output);
     UART_HandleTypeDef* huart;
     uint8_t rxBuffer[BUFFER_SIZE];
 

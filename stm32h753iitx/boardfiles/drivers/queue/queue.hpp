@@ -20,7 +20,7 @@ public:
      * @param message variable to receive data
      * @retval status code
      */
-    ZP_ERROR_e get(T *message) override {
+    ZP_Error get(T *message) override {
         if (message == nullptr) return ZP_ERROR_NULLPTR;
         osStatus_t status = osMessageQueueGet(*queueId, message, 0, timeToTicks(100));
         return (status == osOK) ? ZP_ERROR_OK : ZP_ERROR_FAIL;
@@ -31,7 +31,7 @@ public:
      * @param message data to be transmitted
      * @retval status code
      */
-    ZP_ERROR_e push(T *message) override {
+    ZP_Error push(T *message) override {
         if (message == nullptr) return ZP_ERROR_NULLPTR;
         osStatus_t status = osMessageQueuePut(*queueId, message, 0, timeToTicks(100));
         return (status == osOK) ? ZP_ERROR_OK : ZP_ERROR_FAIL;
@@ -40,7 +40,7 @@ public:
     /**
      * @brief returns the number of messages in the queue
      */
-    ZP_ERROR_e count(int &count_value) override {
+    ZP_Error count(int &count_value) override {
         count_value = static_cast<int>(osMessageQueueGetCount(*queueId));
         return ZP_ERROR_OK;
     }
@@ -49,7 +49,7 @@ public:
      * @brief Returns remaining space left in the queue
      * @retval number of available slots for messages
      */
-    ZP_ERROR_e remainingCapacity(int &capacity) override {
+    ZP_Error remainingCapacity(int &capacity) override {
         capacity = static_cast<int>(osMessageQueueGetSpace(*queueId));
         return ZP_ERROR_OK;
     }

@@ -63,19 +63,19 @@ UART_HandleTypeDef* SBUSReceiver::getHuart() {
     return uart;
 }
 
-ZP_ERROR_e SBUSReceiver::getRCData(RCControl &data) {
+ZP_Error SBUSReceiver::getRCData(RCControl &data) {
     RCControl tmp = rcData;
     rcData.isDataNew = false;
     data = tmp;
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e SBUSReceiver::init() {
+ZP_Error SBUSReceiver::init() {
     rcData.isDataNew = false;
     return startDMA();
 }
 
-ZP_ERROR_e SBUSReceiver::startDMA() {
+ZP_Error SBUSReceiver::startDMA() {
     // HAL_UARTEx_ReceiveToIdle_DMA dereferences the handle without checking it
     if (uart == nullptr) {
         return ZP_ERROR_NULLPTR;
@@ -90,8 +90,8 @@ ZP_ERROR_e SBUSReceiver::startDMA() {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e SBUSReceiver::parse() {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SBUSReceiver::parse() {
+    ZP_Error result = ZP_ERROR_OK;
     uint8_t *buf = (uint8_t*)rawSbus;
     float sbusResult = 0.0f;
 
@@ -115,8 +115,8 @@ ZP_ERROR_e SBUSReceiver::parse() {
     return result;
 }
 
-ZP_ERROR_e SBUSReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx, float &output) {
-    ZP_ERROR_e result = ZP_ERROR_OK;
+ZP_Error SBUSReceiver::sbusToRCControl(uint8_t *buf, int channelMappingIdx, float &output) {
+    ZP_Error result = ZP_ERROR_OK;
     uint16_t res = 0;
 
     for (int i = 0; i < SBUS_MAX_BTYES_PER_CHANNEL; i++) {

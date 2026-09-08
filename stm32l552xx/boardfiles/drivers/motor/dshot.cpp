@@ -18,7 +18,7 @@ DshotMotorControl::DshotMotorControl(TIM_HandleTypeDef *timer, uint32_t timerCha
     timerChannel(timerChannel), 
     telReq(telReq){}
 
-ZP_ERROR_e DshotMotorControl::set(uint32_t percent) {
+ZP_Error DshotMotorControl::set(uint32_t percent) {
     percent =  (percent > 100) ? 100 : percent;
 
     // Throttle 0 = disarm, 48-2047 = active throttle range
@@ -29,7 +29,7 @@ ZP_ERROR_e DshotMotorControl::set(uint32_t percent) {
 
     // 11 bits throttle + 1 bit telemetry request + 4 bits CRC
     uint8_t crc = 0;
-    ZP_ERROR_e result = DshotMotorControl::calculateCrc(throttleVal, telReq, crc);
+    ZP_Error result = DshotMotorControl::calculateCrc(throttleVal, telReq, crc);
     
     if (result != ZP_ERROR_OK) return result;
     
@@ -54,7 +54,7 @@ ZP_ERROR_e DshotMotorControl::set(uint32_t percent) {
     return result;
 }
 
-ZP_ERROR_e DshotMotorControl::init() {
+ZP_Error DshotMotorControl::init() {
     if (timer == nullptr) {
         return ZP_ERROR_NULLPTR;
     }
@@ -68,7 +68,7 @@ ZP_ERROR_e DshotMotorControl::init() {
     return this->set(0);
 }
 
-ZP_ERROR_e DshotMotorControl::calculateCrc(uint16_t throttleVal, uint8_t telReq, uint8_t& crc) {
+ZP_Error DshotMotorControl::calculateCrc(uint16_t throttleVal, uint8_t telReq, uint8_t& crc) {
     uint16_t preCrc = (throttleVal << 1) | telReq;
     crc = (preCrc ^ (preCrc >> 4) ^ (preCrc >> 8)) & CRC_MASK;
     return ZP_ERROR_OK;

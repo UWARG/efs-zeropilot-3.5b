@@ -25,7 +25,7 @@ private:
 	float integralFBx, integralFBy, integralFBz;  // integral error terms scaled by Ki
 	float invSampleFreq;
 	float roll, pitch, yaw;
-	static ZP_ERROR_e invSqrt(float x, float &output);
+	static ZP_Error invSqrt(float x, float &output);
 	bool isInitialized = false;
 
 //-------------------------------------------------------------------------------------------
@@ -34,8 +34,8 @@ private:
 public:
 	Mahony();
 	// Initializer
-    ZP_ERROR_e begin(float sampleFrequency) { 
-        ZP_ERROR_e result = ZP_ERROR_OK;
+    ZP_Error begin(float sampleFrequency) { 
+        ZP_Error result = ZP_ERROR_OK;
 
         if (sampleFrequency <= 0.0f) {
             result |= ZP_ERROR_INVALID_ARG;
@@ -51,10 +51,10 @@ public:
         return result;
     }
 
-	ZP_ERROR_e updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt);
+	ZP_Error updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt);
 
-	ZP_ERROR_e getAttitude(Attitude_t& out_attitude) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+	ZP_Error getAttitude(Attitude_t& out_attitude) {
+        ZP_Error result = ZP_ERROR_OK;
    
         if (!isInitialized) {
             result |= ZP_ERROR_NOT_READY;
@@ -68,8 +68,8 @@ public:
         return result;
     }
 
-	ZP_ERROR_e getAttitudeRadians(Attitude_t& out_attitude) {
-        ZP_ERROR_e result = ZP_ERROR_OK;
+	ZP_Error getAttitudeRadians(Attitude_t& out_attitude) {
+        ZP_Error result = ZP_ERROR_OK;
    
         if (!isInitialized) {
             result |= ZP_ERROR_NOT_READY;

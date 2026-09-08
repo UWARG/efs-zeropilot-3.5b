@@ -7,7 +7,7 @@ MotorControl::MotorControl(TIM_HandleTypeDef *timer, uint32_t timerChannel, uint
     maxCCR(maxDutyCycle / 100.0 * timer->Init.Period),
     servoIdx(servoIdx) {}
 
-ZP_ERROR_e MotorControl::set(uint32_t percent) {
+ZP_Error MotorControl::set(uint32_t percent) {
     percent = percent > 100 ? 100 : percent;
 
     uint32_t ticks = 0;
@@ -18,7 +18,7 @@ ZP_ERROR_e MotorControl::set(uint32_t percent) {
     return ZP_ERROR_OK;
 }
 
-ZP_ERROR_e MotorControl::init() {
+ZP_Error MotorControl::init() {
     if (timer == nullptr) {
         return ZP_ERROR_NULLPTR;
     }

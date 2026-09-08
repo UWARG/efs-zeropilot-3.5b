@@ -67,7 +67,7 @@ namespace ZP_BIT {
         }
     }
 
-    ZP_ERROR_e init(ISystemUtils* clock) {
+    ZP_Error init(ISystemUtils* clock) {
         if (clock == nullptr) {
             return ZP_ERROR_NULLPTR;
         }
@@ -89,7 +89,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e report(ZP_BIT_ID id, ZP_ERROR_e status) {
+    ZP_Error report(ZP_BIT_ID id, ZP_Error status) {
         // Reporting must never alter the caller's status, even when BIT itself is misused
         if (!indexValid(id) || clockDriver == nullptr) {
             return status;
@@ -133,7 +133,7 @@ namespace ZP_BIT {
     }
 
     namespace {
-        ZP_ERROR_e bindHandlerInternal(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
+        ZP_Error bindHandlerInternal(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
             if (!indexValid(id)) {
                 return ZP_ERROR_RANGE;
             }
@@ -144,11 +144,11 @@ namespace ZP_BIT {
         }
     }
 
-    ZP_ERROR_e bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
+    ZP_Error bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
         return bindHandlerInternal(id, context, handler);
     }
 
-    ZP_ERROR_e dispatch() {
+    ZP_Error dispatch() {
         for (uint16_t i = 0; i < BIT_TOTAL; i++) {
             if (!bitStatus[i].changed) {
                 continue;
@@ -167,7 +167,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e clearLatched() {
+    ZP_Error clearLatched() {
         for (uint16_t i = 0; i < BIT_TOTAL; i++) {
             bitStatus[i].latched = bitStatus[i].live;
         }
@@ -175,7 +175,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e setPersistence(ZP_BIT_ID id, uint32_t failMs, uint32_t clearMs) {
+    ZP_Error setPersistence(ZP_BIT_ID id, uint32_t failMs, uint32_t clearMs) {
         if (!indexValid(id)) {
             return ZP_ERROR_RANGE;
         }
@@ -185,7 +185,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e getLive(ZP_BIT_ID id, BitState_e& outState) {
+    ZP_Error getLive(ZP_BIT_ID id, BitState_e& outState) {
         if (!indexValid(id)) {
             outState = BitState_e::UNKNOWN;
             return ZP_ERROR_RANGE;
@@ -195,7 +195,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e getLatched(ZP_BIT_ID id, BitState_e& outState) {
+    ZP_Error getLatched(ZP_BIT_ID id, BitState_e& outState) {
         if (!indexValid(id)) {
             outState = BitState_e::UNKNOWN;
             return ZP_ERROR_RANGE;
@@ -205,7 +205,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e prearmCheck(ZP_BIT_ID& outFirstBlocking) {
+    ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking) {
         for (uint16_t i = 0; i < BIT_TOTAL; i++) {
             if (!BIT_CONFIG[i].blocksArming) {
                 continue;
@@ -221,7 +221,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_ERROR_e getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth) {
+    ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth) {
         outPresent = 0;
         outEnabled = 0;
         outHealth = 0;
