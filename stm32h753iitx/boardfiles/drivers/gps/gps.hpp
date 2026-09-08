@@ -21,9 +21,9 @@ class GPS : public IGPS {
 
         ZP_Error readData(GpsData_t &data) override;
 
-        bool init();
+        ZP_Error init();
         void rxCallback(uint16_t size);
-        HAL_StatusTypeDef restartDMA();
+        ZP_Error restartDMA();
 
     private:
         GpsProtocol_t protocol = NMEA;

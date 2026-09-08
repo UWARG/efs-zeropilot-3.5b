@@ -80,13 +80,13 @@ static int8_t hexValue(uint8_t c);
 GPS::GPS(UART_HandleTypeDef* huart) :
     huart(huart) {}
 
-bool GPS::init() {
+ZP_Error GPS::init() {
     SET_BIT(huart->Instance->CR3, USART_CR3_OVRDIS);
 
     // Configure before starting the DMA receive, waitForAck() is polling
     protocol = configureUBX() ? UBX : NMEA;
 
-    return restartDMA() == HAL_OK;
+    return restartDMA();
 }
 
 /*
@@ -291,14 +291,14 @@ void GPS::rxCallback(uint16_t size) {
     restartDMA();
 }
 
-HAL_StatusTypeDef GPS::restartDMA() {
+ZP_Error GPS::restartDMA() {
     HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(
         huart,
         (uint8_t*)rxBuffer,
         MAX_NMEA_DATA_LENGTH
     );
     __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_HT);
-    return status;
+    return status == HAL_OK ? ZP_ERROR_OK : ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 }
 
 UART_HandleTypeDef* GPS::getHuart() {

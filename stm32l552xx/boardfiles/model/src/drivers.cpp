@@ -149,8 +149,7 @@ void initDrivers()
 
     (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_INIT, telemLinkHandle->init());
-    // These ifaces still return bool/int; Stage D0 converts them to ZP_Error.
-    (void)ZP_BIT::report(ZP_BIT_ID::GPS_INIT, gpsHandle->init() ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    (void)ZP_BIT::report(ZP_BIT_ID::GPS1_INIT, gpsHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::IMU_INIT, (imuHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
     (void)ZP_BIT::report(ZP_BIT_ID::PM_INIT, pmHandle->init());
     if (rangefinderHandle != nullptr) {
@@ -165,7 +164,5 @@ void initDrivers()
     }
     mainMotorGroup = {motorInstances, 8};
 
-    // A param read failing here is a param-table problem, so it lands on the same BIT that
-    // ZP_PARAM::init() reports to. Nothing is returned: every failure is already recorded.
     (void)ZP_BIT::report(ZP_BIT_ID::PARAM_TABLE_INIT, paramStatus);
 }

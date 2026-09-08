@@ -34,7 +34,8 @@ namespace ZP_BIT {
         constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
             {"PARAM_TABLE_INIT",  BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, 0,                                              true},  // initModel
             {"IMU_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_3D_GYRO,                  true},  // initDrivers
-            {"GPS_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // initDrivers
+            {"GPS1_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // initDrivers
+            {"GPS2_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // initDrivers, H7 only
             {"BARO_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE,        false}, // initDrivers
             {"RC_INIT",           BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_RC_RECEIVER,              true},  // initDrivers
             {"PM_INIT",           BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_BATTERY,                  false}, // initDrivers

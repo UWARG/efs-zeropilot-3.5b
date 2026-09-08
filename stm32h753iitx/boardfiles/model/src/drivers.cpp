@@ -170,11 +170,9 @@ void initDrivers() {
     canControllerHandle = new CANController(&hfdcan1, systemUtilsHandle);
 
     (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
-    // These ifaces still return bool/int; Stage D0 converts them to ZP_Error.
-    // Both GPS inits must run, so evaluate them before combining rather than short-circuiting.
-    const bool gps1Ok = gps1Handle->init();
-    const bool gps2Ok = gps2Handle->init();
-    (void)ZP_BIT::report(ZP_BIT_ID::GPS_INIT, (gps1Ok && gps2Ok) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    
+    (void)ZP_BIT::report(ZP_BIT_ID::GPS1_INIT, gps1Handle->init());
+    (void)ZP_BIT::report(ZP_BIT_ID::GPS2_INIT, gps2Handle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::IMU_INIT, (imuHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_INIT, telemLinkHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::PM_INIT, pmHandle->init());
@@ -191,7 +189,5 @@ void initDrivers() {
 
     mainMotorGroup = {motorInstances, 8};
 
-    // A param read failing here is a param-table problem, so it lands on the same BIT that
-    // ZP_PARAM::init() reports to. Nothing is returned: every failure is already recorded.
     (void)ZP_BIT::report(ZP_BIT_ID::PARAM_TABLE_INIT, paramStatus);
 }

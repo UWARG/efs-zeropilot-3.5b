@@ -140,7 +140,8 @@ class SystemManager {
 inline const SMBitHandler_t SystemManager::BIT_HANDLERS[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
     {ZP_BIT_ID::PARAM_TABLE_INIT,       BitLevel_e::CRITICAL, "PreArm: Param table init failed", reportBitCallback},
     {ZP_BIT_ID::IMU_INIT,               BitLevel_e::CRITICAL, "PreArm: IMU init failed",         reportBitCallback},
-    {ZP_BIT_ID::GPS_INIT,               BitLevel_e::WARNING,  "GPS init failed",                 reportBitCallback},
+    {ZP_BIT_ID::GPS1_INIT,              BitLevel_e::WARNING,  "GPS1 init failed",                reportBitCallback},
+    {ZP_BIT_ID::GPS2_INIT,              BitLevel_e::WARNING,  "GPS2 init failed",                reportBitCallback},
     {ZP_BIT_ID::BARO_INIT,              BitLevel_e::WARNING,  "Baro init failed",                reportBitCallback},
     {ZP_BIT_ID::RC_INIT,                BitLevel_e::CRITICAL, "PreArm: RC init failed",          reportBitCallback},
     {ZP_BIT_ID::PM_INIT,                BitLevel_e::WARNING,  "Power module init failed",        reportBitCallback},

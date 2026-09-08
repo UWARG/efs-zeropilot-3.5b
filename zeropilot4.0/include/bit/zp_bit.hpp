@@ -24,7 +24,8 @@ enum class ZP_BIT_ID : uint16_t { // NOLINT
     //  POWER_ON
     PARAM_TABLE_INIT,
     IMU_INIT,
-    GPS_INIT,
+    GPS1_INIT,
+    GPS2_INIT,
     BARO_INIT,
     RC_INIT,
     PM_INIT,
