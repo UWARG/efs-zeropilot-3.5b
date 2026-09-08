@@ -6,8 +6,8 @@
 template <typename T>
 class MockMessageQueue : public IMessageQueue<T> {
     public:
-        MOCK_METHOD(ZP_ERROR_e, get, (T *message), (override));
-        MOCK_METHOD(ZP_ERROR_e, push, (T *message), (override));
-        MOCK_METHOD(ZP_ERROR_e, count, (int &count_value), (override));
-        MOCK_METHOD(ZP_ERROR_e, remainingCapacity, (int &capacity), (override));
+        MOCK_METHOD(ZP_Error, get, (T *message), (override));
+        MOCK_METHOD(ZP_Error, push, (T *message), (override));
+        MOCK_METHOD(ZP_Error, count, (int &count_value), (override));
+        MOCK_METHOD(ZP_Error, remainingCapacity, (int &capacity), (override));
 };

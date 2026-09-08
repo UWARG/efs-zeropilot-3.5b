@@ -148,7 +148,7 @@ void initDrivers()
 
     (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_INIT, telemLinkHandle->init());
-    // These ifaces still return bool/int; Stage D0 converts them to ZP_ERROR_e.
+    // These ifaces still return bool/int; Stage D0 converts them to ZP_Error.
     (void)ZP_BIT::report(ZP_BIT_ID::GPS_INIT, gpsHandle->init() ? ZP_ERROR_OK : ZP_ERROR_FAIL);
     (void)ZP_BIT::report(ZP_BIT_ID::IMU_INIT, (imuHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
     (void)ZP_BIT::report(ZP_BIT_ID::PM_INIT, pmHandle->init());

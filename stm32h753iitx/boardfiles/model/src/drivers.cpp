@@ -171,7 +171,7 @@ void initDrivers()
     canControllerHandle = new CANController(&hfdcan1, systemUtilsHandle);
 
     (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
-    // These ifaces still return bool/int; Stage D0 converts them to ZP_ERROR_e.
+    // These ifaces still return bool/int; Stage D0 converts them to ZP_Error.
     // Both GPS inits must run, so evaluate them before combining rather than short-circuiting.
     const bool gps1Ok = gps1Handle->init();
     const bool gps2Ok = gps2Handle->init();

@@ -218,272 +218,272 @@ ZP_Error AMParamSetup::bindAllParamCallbacks() {
 
 #ifdef PLANE
 // FBWA callbacks
-ZP_ERROR_e AMParamSetup::updatePIDRollKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDRollKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getRollPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getRollPID(pid);
     if (result == ZP_ERROR_OK) pid->setKp(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDRollKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDRollKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getRollPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getRollPID(pid);
     if (result == ZP_ERROR_OK) pid->setKi(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDRollKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDRollKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getRollPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getRollPID(pid);
     if (result == ZP_ERROR_OK) pid->setKd(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDRollTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDRollTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getRollPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getRollPID(pid);
     if (result == ZP_ERROR_OK) pid->setTau(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDRollIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDRollIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getRollPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getRollPID(pid);
     if (result == ZP_ERROR_OK) {
         pid->setIntegralMinLimPct(static_cast<uint8_t>(val));
         pid->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     }
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDRollFF(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDRollFF(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->fbwaCLAW.setRollFFConstant(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updatePIDPitchKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDPitchKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getPitchPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getPitchPID(pid);
     if (result == ZP_ERROR_OK) pid->setKp(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDPitchKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDPitchKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getPitchPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getPitchPID(pid);
     if (result == ZP_ERROR_OK) pid->setKi(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDPitchKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDPitchKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getPitchPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getPitchPID(pid);
     if (result == ZP_ERROR_OK) pid->setKd(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDPitchTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDPitchTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getPitchPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getPitchPID(pid);
     if (result == ZP_ERROR_OK) pid->setTau(val);
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDPitchIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDPitchIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     PID* pid = nullptr;
-    ZP_ERROR_e result = ctx->fbwaCLAW.getPitchPID(pid);
+    ZP_Error result = ctx->fbwaCLAW.getPitchPID(pid);
     if (result == ZP_ERROR_OK) {
         pid->setIntegralMinLimPct(static_cast<uint8_t>(val));
         pid->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     }
     return result;
 }
-ZP_ERROR_e AMParamSetup::updatePIDPitchFF(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePIDPitchFF(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->fbwaCLAW.setPitchFFConstant(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateKffRddrmix(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateKffRddrmix(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 1.0f) return ZP_ERROR_INVALID_ARG;
     return ctx->fbwaCLAW.setYawRudderMixingConstant(val);
 }
-ZP_ERROR_e AMParamSetup::updateRollLimitDeg(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRollLimitDeg(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 90.0f) return ZP_ERROR_INVALID_ARG;
     return ctx->fbwaCLAW.setRollLimitDeg(val);
 }
-ZP_ERROR_e AMParamSetup::updatePitchLimMaxDeg(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePitchLimMaxDeg(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 90.0f) return ZP_ERROR_INVALID_ARG;
     return ctx->fbwaCLAW.setPitchLimitMaxDeg(val);
 }
-ZP_ERROR_e AMParamSetup::updatePitchLimMinDeg(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updatePitchLimMinDeg(AttitudeManager* ctx, float val) {
     if (val < -90.0f || val > 0.0f) return ZP_ERROR_INVALID_ARG;
     return ctx->fbwaCLAW.setPitchLimitMinDeg(val);
 }
 #endif
 #ifdef QUADCOPTER
 // Acro callbacks
-ZP_ERROR_e AMParamSetup::updateRatePIDRollKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDRollKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getRollPID()->setKp(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDRollKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDRollKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getRollPID()->setKi(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDRollKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDRollKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getRollPID()->setKd(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDRollTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDRollTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getRollPID()->setTau(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDRollIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDRollIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getRollPID()->setIntegralMinLimPct(static_cast<uint8_t>(val));
     ctx->acroCLAW.getRollPID()->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDPitchKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDPitchKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getPitchPID()->setKp(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDPitchKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDPitchKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getPitchPID()->setKi(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDPitchKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDPitchKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getPitchPID()->setKd(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDPitchTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDPitchTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getPitchPID()->setTau(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDPitchIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDPitchIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getPitchPID()->setIntegralMinLimPct(static_cast<uint8_t>(val));
     ctx->acroCLAW.getPitchPID()->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDYawKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDYawKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getYawPID()->setKp(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDYawKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDYawKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getYawPID()->setKi(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDYawKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDYawKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getYawPID()->setKd(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDYawTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDYawTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getYawPID()->setTau(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRatePIDYawIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRatePIDYawIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.getYawPID()->setIntegralMinLimPct(static_cast<uint8_t>(val));
     ctx->acroCLAW.getYawPID()->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRollPitchLimitRate(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRollPitchLimitRate(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 1080.0f) return ZP_ERROR_INVALID_ARG;
     const float RATE_RAD_PER_SEC = ZP_UNITS::deg2rad(val);
     ctx->acroCLAW.setRollLimitRate(RATE_RAD_PER_SEC);
     ctx->acroCLAW.setPitchLimitRate(RATE_RAD_PER_SEC);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateYawLimitRate(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateYawLimitRate(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 1080.0f) return ZP_ERROR_INVALID_ARG;
     ctx->acroCLAW.setYawLimitRate(ZP_UNITS::deg2rad(val));
     return ZP_ERROR_OK;
 }
 // Stabilize callbacks
-ZP_ERROR_e AMParamSetup::updateAngPIDRollKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDRollKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getRollPID()->setKp(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDRollKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDRollKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getRollPID()->setKi(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDRollKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDRollKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getRollPID()->setKd(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDRollTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDRollTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getRollPID()->setTau(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDRollIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDRollIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getRollPID()->setIntegralMinLimPct(static_cast<uint8_t>(val));
     ctx->stabilizeCLAW.getRollPID()->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDPitchKp(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDPitchKp(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getPitchPID()->setKp(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDPitchKi(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDPitchKi(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getPitchPID()->setKi(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDPitchKd(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDPitchKd(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getPitchPID()->setKd(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDPitchTau(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDPitchTau(AttitudeManager* ctx, float val) {
     if (val < 0.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getPitchPID()->setTau(val);
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateAngPIDPitchIMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateAngPIDPitchIMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 100.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.getPitchPID()->setIntegralMinLimPct(static_cast<uint8_t>(val));
     ctx->stabilizeCLAW.getPitchPID()->setIntegralMaxLimPct(static_cast<uint8_t>(val));
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateRollPitchLimitAng(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateRollPitchLimitAng(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 45.0f) return ZP_ERROR_INVALID_ARG;
     ctx->stabilizeCLAW.setRollPitchLimitAngle(val);
     return ZP_ERROR_OK;
 }
 static constexpr float MOT_SPIN_RANGE_MIN_SEPARATION = 0.05f; // Guard against motSpinMin == motSpinMax, which would give no RPY authority
 
-ZP_ERROR_e AMParamSetup::updateMotSpinMin(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateMotSpinMin(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 1.0f || val > ctx->motSpinMax - MOT_SPIN_RANGE_MIN_SEPARATION) return ZP_ERROR_INVALID_ARG;
     ctx->motSpinMin = val;
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateMotSpinMax(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateMotSpinMax(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 1.0f || val < ctx->motSpinMin + MOT_SPIN_RANGE_MIN_SEPARATION) return ZP_ERROR_INVALID_ARG;
     ctx->motSpinMax = val;
     return ZP_ERROR_OK;
 }
-ZP_ERROR_e AMParamSetup::updateMotSpinArm(AttitudeManager* ctx, float val) {
+ZP_Error AMParamSetup::updateMotSpinArm(AttitudeManager* ctx, float val) {
     if (val < 0.0f || val > 1.0f) return ZP_ERROR_INVALID_ARG;
     ctx->motSpinArm = val;
     return ZP_ERROR_OK;
