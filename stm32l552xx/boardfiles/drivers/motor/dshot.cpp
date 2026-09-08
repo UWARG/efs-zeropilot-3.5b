@@ -1,8 +1,8 @@
 #include "dshot.hpp"
 #include <cstring>
 
-static constexpr uint16_t DSHOT_1_CCR =	600; // CCR for dshot300 logic 1 
-static constexpr uint16_t DSHOT_0_CCR = 300; // CCR for dshot300 logic 0 
+static constexpr uint16_t DSHOT_1_CCR =	275; // CCR for dshot300 logic 1 
+static constexpr uint16_t DSHOT_0_CCR = 137; // CCR for dshot300 logic 0 
 
 static constexpr uint16_t MAX_THROTTLE = 2047; // 11 bit max val
 static constexpr uint16_t MIN_THROTTLE = 48; // 0-47 reserved for special commands
@@ -60,7 +60,7 @@ ZP_Error DshotMotorControl::init() {
     }
 
     timer->Init.Prescaler = 0;
-    timer->Init.Period = 799;
+    timer->Init.Period = 366;
     if (HAL_TIM_Base_Init(timer) != HAL_OK) {
         return ZP_ERROR_EXT_API | ZP_ERROR_CONFIG;
     }
