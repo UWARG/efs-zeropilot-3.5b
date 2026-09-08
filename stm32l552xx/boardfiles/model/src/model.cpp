@@ -7,8 +7,11 @@
 
 void initModel()
 {
-  // Params first: initDrivers reads the servo table while constructing the motor handles.
-  // BIT itself is started inside initDrivers, once SystemUtils provides its clock.
+  // SystemUtils first: BIT needs its millisecond clock before any driver reports into it.
+  initSystemUtils();
+  (void)ZP_BIT::init(systemUtilsHandle);
+
+  // Params before drivers: initDrivers reads the servo table while constructing motor handles
   ZP_Error paramStatus = ZP_PARAM::init();
 
   initDrivers();

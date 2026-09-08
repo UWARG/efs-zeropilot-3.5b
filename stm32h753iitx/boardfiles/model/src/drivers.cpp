@@ -89,14 +89,13 @@ const ZP_PARAM_ID SERVO_FUNC[8] = {
 // ----------------------------------------------------------------------------
 // Initialization
 // ----------------------------------------------------------------------------
-void initDrivers()
-{
-    // Core utilities
+// Split out so initModel can start BIT off this clock before any driver reports into it
+void initSystemUtils() {
     systemUtilsHandle = new SystemUtils();
+}
 
-    // BIT needs the millisecond clock, so it starts as soon as SystemUtils exists and before any
-    // driver init result is reported. Nothing to trap on: if it cannot start, reports no-op.
-    (void)ZP_BIT::init(systemUtilsHandle);
+void initDrivers() {
+    // Core utilities
     mathUtilsHandle = new MathUtils();
     fftHandle = new FFT();
     iwdgHandle = new IndependentWatchdog(&hiwdg1);
