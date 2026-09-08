@@ -1,5 +1,5 @@
 #pragma once
-#include "stm32h7xx_hal.h"
+#include "stm32h7xx.h"
 
 #ifdef __cplusplus
 #include <cstdint>
