@@ -73,23 +73,23 @@ ZP_ERROR_e SystemManager::bindBitHandlers() {
 }
 
 const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
-    static const SMBitHandler_t unknownRow = {
+    static const SMBitHandler_t UNKNOWN_ROW = {
         ZP_BIT_ID::NUM_BIT_IDS, BitLevel_e::WARNING, "Unknown BIT failed", SystemManager::reportBitCallback
     };
 
     if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
-        return unknownRow;
+        return UNKNOWN_ROW;
     }
     return BIT_HANDLERS[static_cast<uint16_t>(id)];
 }
 
 ZP_ERROR_e SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
-    const uint32_t budgetUs = budgetMs * 1000;
+    const uint32_t BUDGET_US = budgetMs * 1000;
 
     // Fails once a loop is sustained at 80% of its budget, matching the threshold the old
     // "about to exceed scheduled rate" warning used
     ZP_ERROR_e timing = ZP_ERROR_OK;
-    if (maxExecUs >= (budgetUs * 8) / 10) {
+    if (maxExecUs >= (BUDGET_US * 8) / 10) {
         timing |= ZP_ERROR_TIMEOUT;
     }
 
@@ -149,10 +149,10 @@ void SystemManager::smUpdate() {
 
     // Determine system status based on RC connection and arm state
     ZP_BIT_ID emergencyBit = ZP_BIT_ID::NUM_BIT_IDS;
-    const bool bitBlocking = (ZP_BIT::prearmCheck(emergencyBit) != ZP_ERROR_OK);
+    const bool BIT_BLOCKING = (ZP_BIT::prearmCheck(emergencyBit) != ZP_ERROR_OK);
 
     MAV_STATE systemStatus = MAV_STATE_ACTIVE;
-    if (bitBlocking && armed) {
+    if (BIT_BLOCKING && armed) {
         systemStatus = MAV_STATE_EMERGENCY;
     } else if (!rcConnected) {
         systemStatus = MAV_STATE_CRITICAL;
@@ -325,12 +325,12 @@ ZP_ERROR_e SystemManager::updateBatteryFSM() {
             // A severity ladder over two BITs: LOW is a warning, CRITICAL latches and blocks
             // arming. Both are monotone, so a critical battery fails BATT_LOW as well. The FSM
             // above has already applied BATT_LOW_TIMER, so both BITs use a zero debounce window.
-            const bool battLow = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_LOW) ||
+            const bool IS_BATT_LOW = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_LOW) ||
                                  (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
-            const bool battCritical = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
+            const bool IS_BATT_CRITICAL = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
 
-            (void)ZP_BIT::report(ZP_BIT_ID::BATT_LOW, battLow ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
-            (void)ZP_BIT::report(ZP_BIT_ID::BATT_CRITICAL, battCritical ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
+            (void)ZP_BIT::report(ZP_BIT_ID::BATT_LOW, IS_BATT_LOW ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
+            (void)ZP_BIT::report(ZP_BIT_ID::BATT_CRITICAL, IS_BATT_CRITICAL ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
 
         }
     }
@@ -374,10 +374,10 @@ ZP_ERROR_e SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         rcDataMessage.throttle = rcChannelReversed[2] ? 100.0f - rcData.throttle : rcData.throttle;
         rcDataMessage.yaw = rcChannelReversed[3] ? 100.0f - rcData.yaw : rcData.yaw;
         ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
-        const bool bitPrearmOk = (ZP_BIT::prearmCheck(blockingBit) == ZP_ERROR_OK);
+        const bool BIT_PREARM_OK = (ZP_BIT::prearmCheck(blockingBit) == ZP_ERROR_OK);
 
         // The safety-switch term is load bearing, and BIT is now the second gate
-        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && bitPrearmOk && !bitDisarmLatch;
+        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && BIT_PREARM_OK && !bitDisarmLatch;
         #ifdef PLANE
         rcDataMessage.flapAngle = rcData.aux2;
         #endif

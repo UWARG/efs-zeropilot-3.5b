@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-class [[nodiscard]] ZP_ERROR_e {
+class [[nodiscard]] ZP_ERROR_e { // NOLINT
     public:
         constexpr ZP_ERROR_e() : bits(0) {}
         constexpr explicit ZP_ERROR_e(uint32_t rawBits) : bits(rawBits) {}

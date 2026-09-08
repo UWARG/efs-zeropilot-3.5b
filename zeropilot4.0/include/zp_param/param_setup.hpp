@@ -1,5 +1,7 @@
 #pragma once
 
+#include "zp_error.h"
+
 class IParamSetup {
    public:
     virtual ~IParamSetup() = default;

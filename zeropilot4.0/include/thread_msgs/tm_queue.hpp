@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string.h>
+#include "zp_error.h"
 
 static constexpr uint8_t TM_QUEUE_STATUSTEXT_CHAR_COUNT = 50;
 static constexpr uint8_t TM_QUEUE_RC_CHANNELS_COUNT = 18;
@@ -321,13 +322,13 @@ inline ZP_ERROR_e distanceSensorDataPack(TMMessage_t &data, uint32_t time_boot_m
 inline ZP_ERROR_e sysStatusPack(TMMessage_t &data, uint32_t time_boot_ms, uint32_t sensors_present,
                                 uint32_t sensors_enabled, uint32_t sensors_health, uint16_t load,
                                 float voltage_battery, float current_battery, int8_t battery_remaining) {
-    const uint16_t scaledVoltage = static_cast<uint16_t>(voltage_battery * 1000.0f); // V -> mV
-    const int16_t scaledCurrent = static_cast<int16_t>(current_battery * 100.0f);    // A -> cA
+    const uint16_t SCALED_VOLTAGE = static_cast<uint16_t>(voltage_battery * 1000.0f); // V -> mV
+    const int16_t SCALED_CURRENT = static_cast<int16_t>(current_battery * 100.0f);    // A -> cA
 
     const TMMessageData_t DATA = {
         .sysStatusData = {
             sensors_present, sensors_enabled, sensors_health,
-            load, scaledVoltage, scaledCurrent, battery_remaining
+            load, SCALED_VOLTAGE, SCALED_CURRENT, battery_remaining
         }
     };
     data = TMMessage_t{TMMessage_t::SYS_STATUS_DATA, DATA, time_boot_ms};

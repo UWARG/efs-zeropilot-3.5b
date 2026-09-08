@@ -98,25 +98,25 @@ namespace ZP_BIT {
         const BitConfig_t& config = BIT_CONFIG[static_cast<uint16_t>(id)];
         BitStatus_t& state = bitStatus[static_cast<uint16_t>(id)];
 
-        const BitState_e observed = (status == ZP_ERROR_OK) ? BitState_e::SUCCESS : BitState_e::FAILURE;
-        const uint32_t now = clockDriver->getCurrentTimestampMs();
+        const BitState_e OBSERVED = (status == ZP_ERROR_OK) ? BitState_e::SUCCESS : BitState_e::FAILURE;
+        const uint32_t NOW = clockDriver->getCurrentTimestampMs();
 
         // A change of run restarts the debounce window
-        if (state.runState != observed) {
-            state.runState = observed;
-            state.edgeMs = now;
+        if (state.runState != OBSERVED) {
+            state.runState = OBSERVED;
+            state.edgeMs = NOW;
         }
 
         // Unsigned subtraction, so the 49-day timestamp wrap is handled without a special case
-        const uint32_t elapsedMs = now - state.edgeMs;
+        const uint32_t ELAPSED_MS = NOW - state.edgeMs;
 
         BitState_e newLive = state.live;
-        if (observed == BitState_e::SUCCESS) {
+        if (OBSERVED == BitState_e::SUCCESS) {
             // A first-ever passing report resolves UNKNOWN immediately: the check demonstrably works
-            if (state.live == BitState_e::UNKNOWN || elapsedMs >= state.clearMs) {
+            if (state.live == BitState_e::UNKNOWN || ELAPSED_MS >= state.clearMs) {
                 newLive = BitState_e::SUCCESS;
             }
-        } else if (elapsedMs >= state.failMs) {
+        } else if (ELAPSED_MS >= state.failMs) {
             newLive = BitState_e::FAILURE;
         }
 
@@ -231,18 +231,18 @@ namespace ZP_BIT {
         uint32_t failingMask = 0;
 
         for (uint16_t i = 0; i < BIT_TOTAL; i++) {
-            const uint32_t sensorBit = BIT_CONFIG[i].mavSensorBit;
-            if (sensorBit == 0 || bitStatus[i].live == BitState_e::UNKNOWN) {
+            const uint32_t SENSOR_BIT = BIT_CONFIG[i].mavSensorBit;
+            if (SENSOR_BIT == 0 || bitStatus[i].live == BitState_e::UNKNOWN) {
                 continue;
             }
 
-            outPresent |= sensorBit;
-            outEnabled |= sensorBit;
+            outPresent |= SENSOR_BIT;
+            outEnabled |= SENSOR_BIT;
 
             if (bitStatus[i].live == BitState_e::SUCCESS) {
-                outHealth |= sensorBit;
+                outHealth |= SENSOR_BIT;
             } else {
-                failingMask |= sensorBit;
+                failingMask |= SENSOR_BIT;
             }
         }
 

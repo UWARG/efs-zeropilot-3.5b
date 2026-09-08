@@ -111,8 +111,8 @@ void AttitudeManager::amUpdate() {
 
     // Read barometer data
     BaroData_t baroData;
-    const bool baroOk = barometerDriver->readData(baroData);
-    (void)ZP_BIT::report(ZP_BIT_ID::BARO_DATA_VALID, baroOk ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    const bool BARO_OK = barometerDriver->readData(baroData);
+    (void)ZP_BIT::report(ZP_BIT_ID::BARO_DATA_VALID, BARO_OK ? ZP_ERROR_OK : ZP_ERROR_FAIL);
 
     // Send scaled pressure data to TM
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_SCALED_PRESSURE_DATA_RATE_HZ) == 0) {
