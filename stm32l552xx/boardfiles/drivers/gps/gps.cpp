@@ -288,7 +288,7 @@ void GPS::rxCallback(uint16_t size) {
         dataReady = true;
     }
 
-    restartDMA();
+    (void)restartDMA();
 }
 
 ZP_Error GPS::restartDMA() {

@@ -143,9 +143,12 @@ void initDrivers()
     messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
 
     // 5. Hardware Initialization (Fail-Fast)
+    // Accumulate so one motor failing is not erased by the next one succeeding
+    ZP_Error motorStatus = ZP_ERROR_OK;
     for (int i = 0; i < 8; i++) {
-        (void)ZP_BIT::report(ZP_BIT_ID::MOTOR_INIT, motorHandles[i]->init());
+        motorStatus |= motorHandles[i]->init();
     }
+    (void)ZP_BIT::report(ZP_BIT_ID::MOTOR_INIT, motorStatus);
 
     (void)ZP_BIT::report(ZP_BIT_ID::RC_INIT, rcHandle->init());
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_INIT, telemLinkHandle->init());

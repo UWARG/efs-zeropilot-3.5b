@@ -81,7 +81,7 @@ ZP_Error Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, flo
 {
 	if (!isInitialized) return ZP_ERROR_NOT_READY;
 	ZP_Error result = ZP_ERROR_OK;
-    float recipNorm;
+    float recipNorm = 0.0f;
     float halfvx, halfvy, halfvz;
     float halfex, halfey, halfez;
     float qa, qb, qc;
@@ -91,41 +91,45 @@ ZP_Error Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, flo
 	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
 
 		// Normalise accelerometer measurement
-		result |= invSqrt(ax * ax + ay * ay + az * az, recipNorm);		
-		ax *= recipNorm;
-		ay *= recipNorm;
-		az *= recipNorm;
+		ZP_Error normStatus = invSqrt(ax * ax + ay * ay + az * az, recipNorm);
+		result |= normStatus;
 
-		// Estimated direction of gravity
-		halfvx = q0 * q2 - q1 * q3;
-		halfvy = -(q0 * q1 + q2 * q3);
-		halfvz = 0.5f - q0 * q0 - q3 * q3;
+		if (normStatus == ZP_ERROR_OK) {
+			ax *= recipNorm;
+			ay *= recipNorm;
+			az *= recipNorm;
 
-		// Error is sum of cross product between estimated
-		// and measured direction of gravity
-		halfex = (ay * halfvz - az * halfvy);
-		halfey = (az * halfvx - ax * halfvz);
-		halfez = (ax * halfvy - ay * halfvx);
+			// Estimated direction of gravity
+			halfvx = q0 * q2 - q1 * q3;
+			halfvy = -(q0 * q1 + q2 * q3);
+			halfvz = 0.5f - q0 * q0 - q3 * q3;
 
-		// Compute and apply integral feedback if enabled
-		if(twoKi > 0.0f) {
-			// integral error scaled by Ki
-			integralFBx += twoKi * halfex * dt;
-			integralFBy += twoKi * halfey * dt;
-			integralFBz += twoKi * halfez * dt;
-			gx += integralFBx;	// apply integral feedback
-			gy += integralFBy;
-			gz += integralFBz;
-		} else {
-			integralFBx = 0.0f;	// prevent integral windup
-			integralFBy = 0.0f;
-			integralFBz = 0.0f;
+			// Error is sum of cross product between estimated
+			// and measured direction of gravity
+			halfex = (ay * halfvz - az * halfvy);
+			halfey = (az * halfvx - ax * halfvz);
+			halfez = (ax * halfvy - ay * halfvx);
+
+			// Compute and apply integral feedback if enabled
+			if(twoKi > 0.0f) {
+				// integral error scaled by Ki
+				integralFBx += twoKi * halfex * dt;
+				integralFBy += twoKi * halfey * dt;
+				integralFBz += twoKi * halfez * dt;
+				gx += integralFBx;	// apply integral feedback
+				gy += integralFBy;
+				gz += integralFBz;
+			} else {
+				integralFBx = 0.0f;	// prevent integral windup
+				integralFBy = 0.0f;
+				integralFBz = 0.0f;
+			}
+
+			// Apply proportional feedback
+			gx += twoKp * halfex;
+			gy += twoKp * halfey;
+			gz += twoKp * halfez;
 		}
-
-		// Apply proportional feedback
-		gx += twoKp * halfex;
-		gy += twoKp * halfey;
-		gz += twoKp * halfez;
 	}
 
 	// Integrate rate of change of quaternion

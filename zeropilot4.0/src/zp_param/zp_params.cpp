@@ -361,7 +361,7 @@ namespace ZP_PARAM {
     
             // Only proceed if no error bits have been set
             if (result == ZP_ERROR_OK) {
-                std::strncpy(params[index].paramId, name, PARAM_MAX_IDENTIFIER_LEN - 1);
+                std::strncpy(params[index].paramId, name, PARAM_MAX_IDENTIFIER_LEN);
                 params[index].paramId[PARAM_MAX_IDENTIFIER_LEN - 1] = '\0';
                 
                 params[index].paramValue = default_val;

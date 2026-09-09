@@ -160,12 +160,14 @@ void initDrivers() {
     messageBufferHandle = new MessageQueue<mavlink_message_t>(&messageBufferId);
 
     // Initialize hardware components
-   for (int i = 0; i < 8; i++) {
-        (void)ZP_BIT::report(ZP_BIT_ID::MOTOR_INIT, motorHandles[i]->init());
+    ZP_Error motorStatus = ZP_ERROR_OK;
+    for (int i = 0; i < 8; i++) {
+        motorStatus |= motorHandles[i]->init();
     }
 
     MotorControl::enableServo(GPIOF, GPIO_PIN_1);
-    MotorControl::enableServoSwitch(GPIOE, GPIO_PIN_3, &hspi4);
+    motorStatus |= MotorControl::enableServoSwitch(GPIOE, GPIO_PIN_3, &hspi4);
+    (void)ZP_BIT::report(ZP_BIT_ID::MOTOR_INIT, motorStatus);
 
     canControllerHandle = new CANController(&hfdcan1, systemUtilsHandle);
 
