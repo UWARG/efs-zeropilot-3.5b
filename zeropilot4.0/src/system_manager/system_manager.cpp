@@ -74,7 +74,7 @@ ZP_Error SystemManager::bindBitHandlers() {
 
 const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
     static const SMBitHandler_t UNKNOWN_ROW = {
-        ZP_BIT_ID::NUM_BIT_IDS, BitLevel_e::WARNING, "Unknown BIT failed", SystemManager::reportBitCallback
+        ZP_BIT_ID::NUM_BIT_IDS, "Unknown BIT failed", SystemManager::reportBitCallback
     };
 
     if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
@@ -230,8 +230,8 @@ void SystemManager::smUpdate() {
 
         if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
             bitPrearmCntrMs = 0;
-            const SMBitHandler_t& blockingRow = bitRow(blockingBit);
-            result |= sendStatusTextToTelemetryManager(toMavSeverity(blockingRow.level), blockingRow.failText);
+            // Only CRITICAL BITs block arming, so the nag severity is fixed
+            result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, bitRow(blockingBit).failText);
         }
     } else {
         bitPrearmCntrMs = 0;
@@ -475,14 +475,12 @@ ZP_Error SystemManager::sendMessagesToLogger() {
 }
 
 void SystemManager::reportBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
-    (void)level;
     SystemManager* ctx = static_cast<SystemManager*>(context);
     if (ctx == nullptr || state != BitState_e::FAILURE) {
         return;
     }
 
-    const SMBitHandler_t& row = bitRow(id);
-    (void)ctx->sendStatusTextToTelemetryManager(toMavSeverity(row.level), row.failText);
+    (void)ctx->sendStatusTextToTelemetryManager(toMavSeverity(level), bitRow(id).failText);
 }
 
 void SystemManager::disarmBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
