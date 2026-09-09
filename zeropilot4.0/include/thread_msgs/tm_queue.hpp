@@ -283,9 +283,14 @@ inline ZP_Error batteryDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_
 }
 
 inline ZP_Error rawImuDataPack(TMMessage_t &data, uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro) {
+    int16_t xmag = 0;
+    int16_t ymag = 0;
+    int16_t zmag = 0;
+    uint8_t id = 0;
+    int16_t temperature = 0;
     const TMMessageData_t DATA = {
         .rawImuData = {
-            xacc, yacc, zacc, xgyro, ygyro, zgyro
+            xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag, id, temperature
         }
     };
     data = TMMessage_t{TMMessage_t::RAW_IMU_DATA, DATA, time_boot_ms};
@@ -293,9 +298,12 @@ inline ZP_Error rawImuDataPack(TMMessage_t &data, uint32_t time_boot_ms, int16_t
 }
 
 inline ZP_Error attitudeDataPack(TMMessage_t &data, uint32_t time_boot_ms, float roll, float pitch, float yaw) {
+    float rollspeed = 0.0f;
+    float pitchspeed = 0.0f;
+    float yawspeed = 0.0f;
     const TMMessageData_t DATA = {
         .attitudeData = {
-            roll, pitch, yaw
+            roll, pitch, yaw, rollspeed, pitchspeed, yawspeed
         }
     };
     data = TMMessage_t{TMMessage_t::ATTITUDE_DATA, DATA, time_boot_ms};
