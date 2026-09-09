@@ -15,31 +15,31 @@ AcroMapping::AcroMapping(float control_iter_period_s) noexcept :
     rollLimitRate(0.0f),
     pitchLimitRate(0.0f),
     yawLimitRate(0.0f) {
-        rollPID.pidInitState();
-        pitchPID.pidInitState();
-        yawPID.pidInitState();
+        (void)rollPID.pidInitState();
+        (void)pitchPID.pidInitState();
+        (void)yawPID.pidInitState();
 }
 
 // Setter *roll* for PID consts
 void AcroMapping::setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    rollPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+    (void)rollPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
 }
 
 // Setter for *pitch* PID consts
 void AcroMapping::setPitchPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    pitchPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+    (void)pitchPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
 }
 
 // Setter for *yaw* PID consts
 void AcroMapping::setYawPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    yawPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+    (void)yawPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
 }
 
 // Resetter for both roll and pitch PIDs (needed for unit testing)
 void AcroMapping::resetControlLoopState() noexcept {
-    rollPID.pidInitState();
-    pitchPID.pidInitState();
-    yawPID.pidInitState();
+    (void)rollPID.pidInitState();
+    (void)pitchPID.pidInitState();
+    (void)yawPID.pidInitState();
 }
 
 // Setter for *rollLimitRate* in rad / s

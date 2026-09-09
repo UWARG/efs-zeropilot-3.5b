@@ -43,29 +43,28 @@ SystemManager::SystemManager(
         profilerId(0),
         paramSetup(this)
 {
-    paramSetup.loadAllParams();
-    paramSetup.bindAllParamCallbacks();
+    (void)paramSetup.loadAllParams();
+    (void)paramSetup.bindAllParamCallbacks();
     systemUtilsDriver->profilerRegister("SM", &profilerId);
-    bindBitHandlers();
+    (void)bindBitHandlers();
 }
 
 void SystemManager::smUpdate() {
-    ZP_Error result = ZP_ERROR_OK;
     systemUtilsDriver->profilerBegin(profilerId);
 
     // Kick the watchdog
-    result |= iwdgDriver->refreshWatchdog();
+    (void)iwdgDriver->refreshWatchdog();
 
     // Update the state of the safety switch if the driver is available
     if (safetySwitchDriver != nullptr) {
-        result |= safetySwitchUpdate();
+        (void)safetySwitchUpdate();
     }
 
 
     // Get RC data from the RC receiver and passthrough to AM if new.
     RCControl rcData;
     ZP_Error rcStatus = rcDriver->getRCData(rcData);
-    result |= rcStatus;
+    (void)rcStatus;
 
     ZP_Error rcHealth = rcStatus;
     if (!rcData.isDataNew) {
@@ -78,12 +77,12 @@ void SystemManager::smUpdate() {
     rcConnected = (rcBitState == BitState_e::SUCCESS);
 
     if (rcStatus == ZP_ERROR_OK && rcData.isDataNew) {
-        result |= sendRCDataToAttitudeManager(rcData);
+        (void)sendRCDataToAttitudeManager(rcData);
     }
 
     // Send RC data to TM
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_RC_DATA_RATE_HZ) == 0) {
-        result |= sendRCDataToTelemetryManager(rcData);
+        (void)sendRCDataToTelemetryManager(rcData);
     }
 
     // Set armed status based on SM_RC_ARM_THRESHOLD
@@ -110,32 +109,33 @@ void SystemManager::smUpdate() {
 
     // Decode flight mode from raw value and include in custom mode for HEARTBEAT telemetry
     FlightMode_e flightMode;
-    result |= decodeRawFlightMode(rcData.fltModeRaw, flightMode);
+    (void)decodeRawFlightMode(rcData.fltModeRaw, flightMode);
     uint32_t customMode = static_cast<uint32_t>(flightMode);
 
     // Send Heartbeat data to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {
-        result |= sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
+        (void)sendHeartbeatDataToTelemetryManager(baseMode, customMode, systemStatus);
     }
 
     // Send SYS_STATUS sensor health to TM at a 1Hz rate
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_SYS_STATUS_RATE_HZ) == 0) {
-        result |= sendSysStatusToTelemetryManager();
+        (void)sendSysStatusToTelemetryManager();
     }
 
     // Monitor Battery State and send Battery Data to TM at a 1Hz rate
     if (updateBatteryFSM() == ZP_ERROR_OK) {
         socEstimator.calcStateOfCharge(batteryData, SOC_CHARGE_DISCHARGE_MODE);
         if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_BATTERY_DATA_RATE_HZ) == 0) {
-            result |= sendBatteryDataToTelemetryManager(batteryData, 0);
+            (void)sendBatteryDataToTelemetryManager(batteryData, 0);
         }
     }
 
     // Log if new messages
+    // Gate on this call's own status: a watchdog or RC bit must not suppress logging
     int counter = 0;
-    result |= smLoggerQueue->count(counter);
-    if (counter > 0 && result == ZP_ERROR_OK) {
-        result |= sendMessagesToLogger();
+    ZP_Error countStatus = smLoggerQueue->count(counter);
+    if (counter > 0 && countStatus == ZP_ERROR_OK) {
+        (void)sendMessagesToLogger();
     }
 
     // Send profiler stats at 1Hz
@@ -145,30 +145,30 @@ void SystemManager::smUpdate() {
 
         for (uint8_t i = 0; i < count; i++) {
             if (strcmp(profiles[i].name, "SM") == 0) {
-                result |= reportLoopTiming(ZP_BIT_ID::SM_LOOP_TIMING, profiles[i].maxExecUs, SM_UPDATE_LOOP_DELAY_MS);
+                (void)reportLoopTiming(ZP_BIT_ID::SM_LOOP_TIMING, profiles[i].maxExecUs, SM_UPDATE_LOOP_DELAY_MS);
             } else if (strcmp(profiles[i].name, "AM") == 0) {
-                result |= reportLoopTiming(ZP_BIT_ID::AM_LOOP_TIMING, profiles[i].maxExecUs, AM_UPDATE_LOOP_DELAY_MS);
+                (void)reportLoopTiming(ZP_BIT_ID::AM_LOOP_TIMING, profiles[i].maxExecUs, AM_UPDATE_LOOP_DELAY_MS);
             } else if (strcmp(profiles[i].name, "TM") == 0) {
-                result |= reportLoopTiming(ZP_BIT_ID::TM_LOOP_TIMING, profiles[i].maxExecUs, TM_UPDATE_LOOP_DELAY_MS);
+                (void)reportLoopTiming(ZP_BIT_ID::TM_LOOP_TIMING, profiles[i].maxExecUs, TM_UPDATE_LOOP_DELAY_MS);
             }
             #if LOG_TIMING
             snprintf((char*)profilerBuf, sizeof(profilerBuf), "%-12s %lu us      %lu hz", profiles[i].name, profiles[i].maxExecUs, profiles[i].avgRateHz);
-            result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, (char*)profilerBuf);
+            (void)sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, (char*)profilerBuf);
             #endif
         }
         #if LOG_TIMING
-        result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, "-------TASK TIMINGS-------");
+        (void)sendStatusTextToTelemetryManager(MAV_SEVERITY_INFO, "-------TASK TIMINGS-------");
         #endif
     }
 
     if (prevArmed && !armed) {
-        result |= ZP_BIT::clearLatched();
+        (void)ZP_BIT::clearLatched();
         bitDisarmLatch = false;
     }
     prevArmed = armed;
 
     // Fire handlers for anything that changed state this tick
-    result |= ZP_BIT::dispatch();
+    (void)ZP_BIT::dispatch();
 
     ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
     if (ZP_BIT::prearmCheck(blockingBit) != ZP_ERROR_OK) {
@@ -176,7 +176,7 @@ void SystemManager::smUpdate() {
 
         if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
             bitPrearmCntrMs = 0;
-            result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, bitRow(blockingBit).failText);
+            (void)sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, bitRow(blockingBit).failText);
         }
     } else {
         bitPrearmCntrMs = 0;

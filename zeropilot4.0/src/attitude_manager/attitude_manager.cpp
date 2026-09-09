@@ -61,8 +61,8 @@ AttitudeManager::AttitudeManager(
     haveLastImuTimestamp(false),
     profilerId(0),
     paramSetup(this) {
-        paramSetup.loadAllParams();
-        paramSetup.bindAllParamCallbacks();
+        (void)paramSetup.loadAllParams();
+        (void)paramSetup.bindAllParamCallbacks();
 
         harmonicNotchConfig.sampleFreqHz = imuDriver->getODRHz();
         harmonicNotchFilter.init(harmonicNotchConfig);
@@ -91,13 +91,12 @@ AttitudeManager::AttitudeManager(
         */
 
         // Activate the activeCLAW
-        activeCLAW->activateFlightMode();
+        (void)activeCLAW->activateFlightMode();
 
         systemUtilsDriver->profilerRegister("AM", &profilerId);
 }
 
 void AttitudeManager::amUpdate() {
-    ZP_Error result = ZP_ERROR_OK;
 
 
     systemUtilsDriver->profilerBegin(profilerId);
@@ -106,7 +105,7 @@ void AttitudeManager::amUpdate() {
 
     // Send servo output raw data to telemetry manager
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_SERVO_OUTPUT_RAW_RATE_HZ) == 0) {
-        result |= sendServoOutputRawToTelemetryManager();
+        (void)sendServoOutputRawToTelemetryManager();
     }
 
     // Read barometer data
@@ -116,7 +115,7 @@ void AttitudeManager::amUpdate() {
 
     // Send scaled pressure data to TM
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_SCALED_PRESSURE_DATA_RATE_HZ) == 0) {
-        result |= sendPressureDataToTelemetryManager(baroData);
+        (void)sendPressureDataToTelemetryManager(baroData);
     }
 
     // Send IMU raw data to telemetry manager
@@ -124,7 +123,7 @@ void AttitudeManager::amUpdate() {
     ScaledImuBatch_t scaledImuData = {};
     ZP_Error imuStatus = imuDriver->readRawData(imuData);
     imuStatus |= imuDriver->scaleIMUData(imuData, scaledImuData);
-    result |= imuStatus;
+    (void)imuStatus;
     (void)ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, imuStatus);
     for (int i = 0; i < scaledImuData.count; i++) {
         if (scaledImuData.data[i].imuId == 0) { // Only feed one IMU's data for FFT sampling as we need a continuous time stream.
@@ -159,7 +158,7 @@ void AttitudeManager::amUpdate() {
 
         float dt = deltaTicks * TIMESTAMP_RESOLUTION;
         
-        result |= mahonyFilter.updateIMU(
+        (void)mahonyFilter.updateIMU(
             scaledImuData.data[i].xgyro - startupGyroBias.x,
             scaledImuData.data[i].ygyro - startupGyroBias.y,
             scaledImuData.data[i].zgyro - startupGyroBias.z,
@@ -192,23 +191,23 @@ void AttitudeManager::amUpdate() {
     }
 
     Attitude_t attitude = {};
-    result |= mahonyFilter.getAttitudeRadians(attitude);
+    (void)mahonyFilter.getAttitudeRadians(attitude);
     droneState.roll = attitude.roll;
     droneState.pitch = attitude.pitch;
     droneState.yaw = attitude.yaw;
 
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_RAW_IMU_DATA_RATE_HZ) == 0) {
-        if (imuData.count > 0) { sendRawIMUDataToTelemetryManager(imuData.data[imuData.count - 1]); } // Send the last packed of IMU data 
+        if (imuData.count > 0) { (void)sendRawIMUDataToTelemetryManager(imuData.data[imuData.count - 1]); } // Send the last packed of IMU data 
     }
 
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_ATTITUDE_DATA_RATE_HZ) == 0) {
-        result |= sendAttitudeDataToTelemetryManager(attitude);
+        (void)sendAttitudeDataToTelemetryManager(attitude);
     }
 
     // Get GPS data
     GpsData_t gpsData = {};
     ZP_Error gpsStatus = gpsDriver->readData(gpsData);
-    result |= gpsStatus;
+    (void)gpsStatus;
     (void)ZP_BIT::report(ZP_BIT_ID::GPS_DATA_VALID, gpsStatus);
     if (gpsData.isNew) {
         lastValidGps = gpsData;
@@ -217,7 +216,7 @@ void AttitudeManager::amUpdate() {
     // Send GPS data to telemetry manager
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_GPS_DATA_RATE_HZ) == 0) {
         if (lastValidGps.isNew) {
-            result |= sendGPSDataToTelemetryManager(lastValidGps);
+            (void)sendGPSDataToTelemetryManager(lastValidGps);
             lastValidGps.isNew = false; // Mark as sent to telemetry manager, so if no new GPS data is valid the same data is not sent again
         }
     }
@@ -234,7 +233,7 @@ void AttitudeManager::amUpdate() {
     // Send rangefinder data to telemetry manager
     if (amSchedulingCounter % (AM_SCHEDULING_RATE_HZ / AM_TELEMETRY_DISTANCE_SENSOR_DATA_RATE_HZ) == 0) {
         if (lastNewRangefinderData.isNew) {
-            result |= sendRangefinderDataToTelemetryManager(lastNewRangefinderData);
+            (void)sendRangefinderDataToTelemetryManager(lastNewRangefinderData);
             lastNewRangefinderData.isNew = false; // Mark as sent to telemetry manager, so if no new rangefinder data is valid the same data is not sent again
         }
     }
@@ -243,11 +242,11 @@ void AttitudeManager::amUpdate() {
     ZP_Error controlRes = getControlInputs(&controlMsg);
 
     if (controlRes != ZP_ERROR_NOT_READY) {
-        result |= controlRes;
+        (void)controlRes;
     }
 
     BitState_e rcState = BitState_e::UNKNOWN;
-    result |= ZP_BIT::getLatched(ZP_BIT_ID::RC_DATA_VALID, rcState);
+    (void)ZP_BIT::getLatched(ZP_BIT_ID::RC_DATA_VALID, rcState);
 
     if (rcState == BitState_e::FAILURE) {
         RCMotorControlMessage_t motorOutputs{0};
@@ -269,11 +268,11 @@ void AttitudeManager::amUpdate() {
 
         if (!failsafeTriggered) {
             char errorMsg[100] = "Failsafe triggered";
-            result |= smLoggerQueue->push(&errorMsg);
+            (void)smLoggerQueue->push(&errorMsg);
             failsafeTriggered = true;
         }
 
-        result |= outputToMotors(motorOutputs, false);
+        (void)outputToMotors(motorOutputs, false);
 
         setArmFlag = false;
 
@@ -283,7 +282,7 @@ void AttitudeManager::amUpdate() {
 
     if (failsafeTriggered) {
         char errorMsg[100] = "Motor control restored";
-        result |= smLoggerQueue->push(&errorMsg);
+        (void)smLoggerQueue->push(&errorMsg);
         failsafeTriggered = false;
     }
 
@@ -291,7 +290,7 @@ void AttitudeManager::amUpdate() {
         setArmFlag = true;
         armedFlag = controlMsg.arm;
         if (armedFlag) {
-            result |= activeCLAW->activateFlightMode();
+            (void)activeCLAW->activateFlightMode();
         }
     }
 
@@ -317,7 +316,7 @@ void AttitudeManager::amUpdate() {
             #endif
             
         }
-        result |= activeCLAW->activateFlightMode();
+        (void)activeCLAW->activateFlightMode();
         currentFlightMode = controlMsg.flightMode;
     }
 
@@ -325,7 +324,7 @@ void AttitudeManager::amUpdate() {
     #ifdef QUADCOPTER
     groundIdle = armedFlag && !failsafeTriggered && ((controlMsg.throttle / 100.0f) <= MOT_GND_IDLE_THR);
     if (groundIdlePrev && !groundIdle) {
-        result |= activeCLAW->activateFlightMode(); // Clean PID state on ground idle exit
+        (void)activeCLAW->activateFlightMode(); // Clean PID state on ground idle exit
     }
     groundIdlePrev = groundIdle;
     #endif
@@ -336,7 +335,7 @@ void AttitudeManager::amUpdate() {
     // Run the active control law (skip while armed but grounded idle)
     RCMotorControlMessage_t motorOutputs = controlMsg;
     if (!groundIdle) {
-        result |= activeCLAW->runControl(motorOutputs, controlMsg, droneState);
+        (void)activeCLAW->runControl(motorOutputs, controlMsg, droneState);
     }
 
     // Disarm logic
@@ -352,7 +351,7 @@ void AttitudeManager::amUpdate() {
     }
 
     // Output to motors
-    result |= outputToMotors(motorOutputs, groundIdle);
+    (void)outputToMotors(motorOutputs, groundIdle);
 
     setArmFlag = false;
     

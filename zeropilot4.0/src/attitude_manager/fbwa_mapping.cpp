@@ -29,8 +29,8 @@ FBWAMapping::FBWAMapping(float control_iter_period_s) noexcept :
     prevFilteredRollRate(0.0f),
     prevFilteredPitchRate(0.0f)
 {
-    rollPID.pidInitState();
-    pitchPID.pidInitState();
+    (void)rollPID.pidInitState();
+    (void)pitchPID.pidInitState();
 }
 
 // Setter *roll* for PID consts

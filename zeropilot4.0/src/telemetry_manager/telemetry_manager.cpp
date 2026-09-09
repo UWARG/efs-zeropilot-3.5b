@@ -22,8 +22,8 @@ TelemetryManager::TelemetryManager(
     profilerId(0),
     paramSetup(this){
 
-    paramSetup.loadAllParams();
-    paramSetup.bindAllParamCallbacks();
+    (void)paramSetup.loadAllParams();
+    (void)paramSetup.bindAllParamCallbacks();
     systemUtilsDriver->profilerRegister("TM", &profilerId);
 }
 
@@ -32,15 +32,11 @@ TelemetryManager::~TelemetryManager() = default;
 void TelemetryManager::tmUpdate() {
     systemUtilsDriver->profilerBegin(profilerId);
     
-    ZP_Error status = ZP_ERROR_OK;
-
     ZP_Error linkStatus = receive();
-    status |= linkStatus;
-    status |= processParamTx();
-    status |= processTXMsgQueue();
+    (void)processParamTx();
+    (void)processTXMsgQueue();
 
     ZP_Error txStatus = transmit();
-    status |= txStatus;
 
     ZP_Error linkHealth = linkStatus;
     linkHealth |= txStatus;
@@ -156,7 +152,7 @@ ZP_Error TelemetryManager::processTXMsgQueue() {
                 }
                 
                 if (mavlinkMessage.len > 0) {
-                    packedMsgBuffer->push(&mavlinkMessage);
+                    result |= packedMsgBuffer->push(&mavlinkMessage);
                 }
             }
         }
@@ -174,7 +170,7 @@ ZP_Error TelemetryManager::processTXMsgQueue() {
             if (mavlinkMessage.len == 0) {
                 result |= ZP_ERROR_FAIL;
             } else {
-                packedMsgBuffer->push(&mavlinkMessage);
+                result |= packedMsgBuffer->push(&mavlinkMessage);
             }
         }
     }
@@ -194,11 +190,11 @@ ZP_Error TelemetryManager::transmit() {
     }
 
     int qCount = 0;
-    packedMsgBuffer->count(qCount);
+    result |= packedMsgBuffer->count(qCount);
 
     if (result == ZP_ERROR_OK && !(qCount == 0 && txBufIdx == 0)) {
         while (qCount > 0 && txBufIdx < TM_MAX_TX_BYTES) {
-            packedMsgBuffer->get(&msgToTX);
+            result |= packedMsgBuffer->get(&msgToTX);
             if (result != ZP_ERROR_OK) break;
 
             const uint16_t MSG_LEN = mavlink_msg_to_send_buffer(txBuffer + txBufIdx, &msgToTX);
@@ -294,7 +290,7 @@ ZP_Error TelemetryManager::enqueueParamValueTx(uint16_t index) {
             p->paramId, p->paramValue, p->paramType,
             ZP_PARAM::getCount(), index
         );
-        packedMsgBuffer->push(&response);
+        result |= packedMsgBuffer->push(&response);
     } else if (p == nullptr) {
         result |= ZP_ERROR_FAIL;
     }

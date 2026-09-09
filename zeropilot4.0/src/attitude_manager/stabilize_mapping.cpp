@@ -14,24 +14,24 @@ StabilizeMapping::StabilizeMapping(float control_iter_period_s, AcroMapping &acr
     decimationCounter(0),
     stabilizeRollCmd(STABILIZE_PID_OUTPUT_SHIFT),
     stabilizePitchCmd(STABILIZE_PID_OUTPUT_SHIFT) {
-        rollPID.pidInitState();
-        pitchPID.pidInitState();
+        (void)rollPID.pidInitState();
+        (void)pitchPID.pidInitState();
 }
 
 // Setter for *roll* PID consts
 void StabilizeMapping::setRollPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    rollPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+    (void)rollPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
 }
 
 // Setter for *pitch* PID consts
 void StabilizeMapping::setPitchPIDConstants(float newKp, float newKi, float newKd, float newTau, uint8_t newIMaxPct) noexcept {
-    pitchPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
+    (void)pitchPID.setConstants(newKp, newKi, newKd, newTau, newIMaxPct);
 }
 
 // Resetter for both roll and pitch PIDs (needed for unit testing)
 void StabilizeMapping::resetControlLoopState() noexcept {
-    rollPID.pidInitState();
-    pitchPID.pidInitState();
+    (void)rollPID.pidInitState();
+    (void)pitchPID.pidInitState();
     decimationCounter = 0;
     stabilizeRollCmd = STABILIZE_PID_OUTPUT_SHIFT;
     stabilizePitchCmd = STABILIZE_PID_OUTPUT_SHIFT;
