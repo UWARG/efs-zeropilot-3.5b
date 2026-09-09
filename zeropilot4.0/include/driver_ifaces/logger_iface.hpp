@@ -1,6 +1,5 @@
 #pragma once
 
-
 class ILogger {
     protected:
         ILogger() = default;
