@@ -286,7 +286,9 @@ ZP_Error SystemManager::updateBatteryFSM() {
     ZP_Error result = ZP_ERROR_OK;
     batteryData.isValid = false;         
 
-    result |= ZP_BIT::report(ZP_BIT_ID::PM_DATA_VALID, pmDriver->readData(&batteryData.pmData));
+    ZP_Error pmStatus = pmDriver->readData(&batteryData.pmData);
+    result |= pmStatus;
+    (void)ZP_BIT::report(ZP_BIT_ID::PM_DATA_VALID, pmStatus);
 
     if (result == ZP_ERROR_OK) {
         batteryData.isValid = true;         

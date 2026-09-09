@@ -6,65 +6,23 @@ namespace ZP_BIT {
     namespace {
 
         typedef struct {
-            const char* name;
-            BitPhase_e  phase;
-            BitLevel_e  level;
-            uint32_t    failMs;       // continuous failure before live flips to FAILING
-            uint32_t    clearMs;      // continuous success before live flips back to PASSING
-            uint32_t    mavSensorBit; // MAV_SYS_STATUS_SENSOR_*, 0 if unmapped
-            bool        blocksArming;
-        } BitConfig_t;
-
-        typedef struct {
-            BitState_e     live;
-            BitState_e     latched;
-            BitState_e     runState;  // what the current uninterrupted run of reports says
-            uint32_t       edgeMs;    // when that run began
-            uint32_t       failMs;    // seeded from the table, overridable at runtime
-            uint32_t       clearMs;
-            bool           changed;   // live transitioned; consumed by dispatch()
-            void*          context;
-            BitHandlerCb_t onChange;
+            BitState_e live; // Current state
+            BitState_e latched; // Latched on fault
+            BitState_e runState; // Current running state after failMs or clearMs
+            uint32_t edgeMs; // Timestamp of last change of running state
+            uint32_t failMs;
+            uint32_t clearMs;
+            bool changed; // Flag to detect change
+            uint32_t lastErrorBits; // Last reported ZP_Error, held raw since ZP_Error cannot be assigned
+            void* context; // Context pointer for callback
+            BitHandlerCb_t onChange; // Callback for on change
         } BitStatus_t;
-
-        // Owner column records which manager reports each BIT. Exactly one writer per BIT is what
-        // makes the lock-free table safe across the AM/SM/TM threads.
-        //
-        //  name                      phase                   level                failMs clearMs  mavSensorBit                              blocksArming   owner
-        constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
-            {"PARAM_TABLE_INIT",  BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, 0,                                              true},  // initModel
-            {"IMU_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_3D_GYRO,                  true},  // initDrivers
-            {"GPS1_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // initDrivers
-            {"GPS2_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // initDrivers, H7 only
-            {"BARO_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE,        false}, // initDrivers
-            {"RC_INIT",           BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_RC_RECEIVER,              true},  // initDrivers
-            {"PM_INIT",           BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_BATTERY,                  false}, // initDrivers
-            {"TELEM_INIT",        BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, 0,                                              false}, // initDrivers
-            {"RANGEFINDER_INIT",  BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_LASER_POSITION,           false}, // initDrivers
-            {"MOTOR_INIT",        BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS,            true},  // initDrivers
-            {"CAN_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::WARNING,       0,      0, 0,                                              false}, // initDrivers
-
-            {"RC_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL,    500,    150, MAV_SYS_STATUS_SENSOR_RC_RECEIVER,              true},  // SM   @20Hz
-            {"IMU_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL,     50,     50, MAV_SYS_STATUS_SENSOR_3D_GYRO,                  true},  // AM   @1kHz
-            {"GPS_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,    500, MAV_SYS_STATUS_SENSOR_GPS,                      false}, // AM   @1kHz
-            {"BARO_DATA_VALID",   BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    1000,    500, MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE,        false}, // AM   @1kHz
-            {"PM_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,    500, MAV_SYS_STATUS_SENSOR_BATTERY,                  false}, // SM   @20Hz
-            {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,    500, MAV_SYS_STATUS_SENSOR_LASER_POSITION,           false}, // AM   @1kHz
-            {"TELEM_LINK_VALID",  BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    3000,   1000, 0,                                              false}, // TM   @20Hz
-            {"BATT_LOW",          BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,       0,      0, MAV_SYS_STATUS_SENSOR_BATTERY,                  false}, // SM   @20Hz
-            {"BATT_CRITICAL",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL,      0,      0, MAV_SYS_STATUS_SENSOR_BATTERY,                  true},  // SM   @20Hz
-            {"AM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,   2000, 0,                                              false}, // SM   @1Hz
-            {"SM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,   2000, 0,                                              false}, // SM   @1Hz
-            {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,    2000,   2000, 0,                                              false}, // SM   @1Hz
-        };
 
         BitStatus_t bitStatus[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)];
         ISystemUtils* clockDriver = nullptr;
 
-        constexpr uint16_t BIT_TOTAL = static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS);
-
         inline bool indexValid(ZP_BIT_ID id) {
-            return static_cast<uint16_t>(id) < BIT_TOTAL;
+            return id < ZP_BIT_ID::NUM_BIT_IDS;
         }
     }
 
@@ -75,15 +33,16 @@ namespace ZP_BIT {
 
         clockDriver = clock;
 
-        for (uint16_t i = 0; i < BIT_TOTAL; i++) {
-            bitStatus[i].live     = BitState_e::UNKNOWN;
-            bitStatus[i].latched  = BitState_e::UNKNOWN;
+        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
+            bitStatus[i].live = BitState_e::UNKNOWN;
+            bitStatus[i].latched = BitState_e::UNKNOWN;
             bitStatus[i].runState = BitState_e::UNKNOWN;
-            bitStatus[i].edgeMs   = 0;
-            bitStatus[i].failMs   = BIT_CONFIG[i].failMs;
-            bitStatus[i].clearMs  = BIT_CONFIG[i].clearMs;
-            bitStatus[i].changed  = false;
-            bitStatus[i].context  = nullptr;
+            bitStatus[i].edgeMs = 0;
+            bitStatus[i].failMs = BIT_CONFIG[i].failMs;
+            bitStatus[i].clearMs = BIT_CONFIG[i].clearMs;
+            bitStatus[i].changed = false;
+            bitStatus[i].lastErrorBits = ZP_ERROR_OK.raw();
+            bitStatus[i].context = nullptr;
             bitStatus[i].onChange = nullptr;
         }
 
@@ -91,9 +50,11 @@ namespace ZP_BIT {
     }
 
     ZP_Error report(ZP_BIT_ID id, ZP_Error status) {
-        // Reporting must never alter the caller's status, even when BIT itself is misused
-        if (!indexValid(id) || clockDriver == nullptr) {
-            return status;
+        if (!indexValid(id)) {
+            return ZP_ERROR_RANGE;
+        }
+        if (clockDriver == nullptr) {
+            return ZP_ERROR_NOT_READY;
         }
 
         const BitConfig_t& config = BIT_CONFIG[static_cast<uint16_t>(id)];
@@ -101,6 +62,9 @@ namespace ZP_BIT {
 
         const BitState_e OBSERVED = (status == ZP_ERROR_OK) ? BitState_e::SUCCESS : BitState_e::FAILURE;
         const uint32_t NOW = clockDriver->getCurrentTimestampMs();
+
+        // Kept so getError can say why the BIT is failing. A passing report clears it.
+        state.lastErrorBits = status.raw();
 
         // A change of run restarts the debounce window
         if (state.runState != OBSERVED) {
@@ -130,7 +94,7 @@ namespace ZP_BIT {
             }
         }
 
-        return status;
+        return ZP_ERROR_OK;
     }
 
     namespace {
@@ -150,7 +114,7 @@ namespace ZP_BIT {
     }
 
     ZP_Error dispatch() {
-        for (uint16_t i = 0; i < BIT_TOTAL; i++) {
+        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
             if (!bitStatus[i].changed) {
                 continue;
             }
@@ -169,7 +133,7 @@ namespace ZP_BIT {
     }
 
     ZP_Error clearLatched() {
-        for (uint16_t i = 0; i < BIT_TOTAL; i++) {
+        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
             bitStatus[i].latched = bitStatus[i].live;
         }
 
@@ -206,8 +170,15 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
+    ZP_Error getError(ZP_BIT_ID id) {
+        if (!indexValid(id)) {
+            return ZP_ERROR_RANGE;
+        }
+        return ZP_Error(bitStatus[static_cast<uint16_t>(id)].lastErrorBits);
+    }
+
     ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking) {
-        for (uint16_t i = 0; i < BIT_TOTAL; i++) {
+        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
             if (!BIT_CONFIG[i].blocksArming) {
                 continue;
             }
@@ -227,11 +198,9 @@ namespace ZP_BIT {
         outEnabled = 0;
         outHealth = 0;
 
-        // Several BITs can share one sensor bit (IMU_INIT and IMU_DATA_VALID are both 3D_GYRO).
-        // Collect failures separately so the result does not depend on table order.
         uint32_t failingMask = 0;
 
-        for (uint16_t i = 0; i < BIT_TOTAL; i++) {
+        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
             const uint32_t SENSOR_BIT = BIT_CONFIG[i].mavSensorBit;
             if (SENSOR_BIT == 0 || bitStatus[i].live == BitState_e::UNKNOWN) {
                 continue;

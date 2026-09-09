@@ -26,17 +26,17 @@ static constexpr uint32_t TF02PRO_PROCESS_CMD_DELAY_MS = 100; // Wait time for T
 
 Rangefinder::Rangefinder(I2C_HandleTypeDef *hi2c) : hi2c(hi2c) {}
 
-int Rangefinder::init() {
+ZP_Error Rangefinder::init() {
     // Check firmware version to see if the rangefinder is present and alive
     if (sendCmdCheckResp(FIRMWARE_VERSION_CMD, sizeof(FIRMWARE_VERSION_CMD), 
                         FIRMWARE_VERSION_RESPONSE, sizeof(FIRMWARE_VERSION_RESPONSE)) != HAL_OK) {
-        return -1;
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
     }
 
     // Configure output format to centimeters
     if (sendCmdCheckResp(OUTPUT_FORMAT_CM_CMD, sizeof(OUTPUT_FORMAT_CM_CMD), 
                         OUTPUT_FORMAT_CM_SUCCESS_RESPONSE, sizeof(OUTPUT_FORMAT_CM_SUCCESS_RESPONSE)) != HAL_OK) {
-        return -1;
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
     }
 
     // Maybe configure the frame rate, but the default is 100Hz which is fine for now
@@ -44,9 +44,9 @@ int Rangefinder::init() {
     // Save configs
     if (sendCmdCheckResp(SAVE_CONFIG_CMD, sizeof(SAVE_CONFIG_CMD), 
                         SAVE_CONFIG_SUCCESS_RESPONSE, sizeof(SAVE_CONFIG_SUCCESS_RESPONSE)) != HAL_OK) {
-        return -1;
+        return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
     }
-    return 0;
+    return ZP_ERROR_OK;
 }
 
 RangefinderData_t Rangefinder::readData() {

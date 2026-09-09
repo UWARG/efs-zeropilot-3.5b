@@ -124,7 +124,8 @@ void AttitudeManager::amUpdate() {
     ScaledImuBatch_t scaledImuData = {};
     ZP_Error imuStatus = imuDriver->readRawData(imuData);
     imuStatus |= imuDriver->scaleIMUData(imuData, scaledImuData);
-    result |= ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, imuStatus);
+    result |= imuStatus;
+    (void)ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, imuStatus);
     for (int i = 0; i < scaledImuData.count; i++) {
         if (scaledImuData.data[i].imuId == 0) { // Only feed one IMU's data for FFT sampling as we need a continuous time stream.
             harmonicNotchFilter.pushSample(scaledImuData.data[i].xgyro, scaledImuData.data[i].ygyro, scaledImuData.data[i].zgyro);
@@ -206,7 +207,9 @@ void AttitudeManager::amUpdate() {
 
     // Get GPS data
     GpsData_t gpsData = {};
-    result |= ZP_BIT::report(ZP_BIT_ID::GPS_DATA_VALID, gpsDriver->readData(gpsData));
+    ZP_Error gpsStatus = gpsDriver->readData(gpsData);
+    result |= gpsStatus;
+    (void)ZP_BIT::report(ZP_BIT_ID::GPS_DATA_VALID, gpsStatus);
     if (gpsData.isNew) {
         lastValidGps = gpsData;
     }

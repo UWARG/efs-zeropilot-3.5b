@@ -114,7 +114,7 @@ protected:
         ON_CALL(mockAMQueue, count(_)).WillByDefault(DoAll(SetArgReferee<0>(0), Return(ZP_ERROR_OK)));
         ON_CALL(mockTMQueue, push(_)).WillByDefault(Return(ZP_ERROR_OK));
         ON_CALL(mockFFT, init(_)).WillByDefault(Return(true));
-        ON_CALL(mockRangefinder, init()).WillByDefault(Return(0));
+        ON_CALL(mockRangefinder, init()).WillByDefault(Return(ZP_ERROR_OK));
     }
 
     // RC health is owned by SM, so these stand in for it

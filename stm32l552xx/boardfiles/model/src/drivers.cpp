@@ -154,9 +154,9 @@ void initDrivers()
     (void)ZP_BIT::report(ZP_BIT_ID::PM_INIT, pmHandle->init());
     if (rangefinderHandle != nullptr) {
         (void)ZP_BIT::report(ZP_BIT_ID::RANGEFINDER_INIT,
-                             (rangefinderHandle->init() == 0) ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+                             rangefinderHandle->init());
     }
-    (void)ZP_BIT::report(ZP_BIT_ID::BARO_INIT, barometerHandle->init() ? ZP_ERROR_OK : ZP_ERROR_FAIL);
+    (void)ZP_BIT::report(ZP_BIT_ID::BARO_INIT, barometerHandle->init());
 
     // 6. Finalize structure
     for (int i = 0; i < 8; i++) {

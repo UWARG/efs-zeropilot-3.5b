@@ -7,7 +7,7 @@ class Rangefinder : public IRangefinder {
 public:
     Rangefinder(I2C_HandleTypeDef *hi2c);
 
-    int init() override;
+    ZP_Error init() override;
     RangefinderData_t readData() override;
 
     void txCallback();

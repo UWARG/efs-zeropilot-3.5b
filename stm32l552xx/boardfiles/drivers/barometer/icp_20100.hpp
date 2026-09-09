@@ -2,6 +2,7 @@
 
 #include "stm32l5xx.h"
 #include "barometer_iface.hpp"
+#include "zp_error.h"
 #include <cmath>
 #include <cstdint>
 
@@ -14,7 +15,7 @@ class Barometer : public IBarometer {
     public:
         Barometer(I2C_HandleTypeDef *hi2c);
         bool readData(BaroData_t &data);
-        bool init(); 
+        ZP_Error init(); 
         void rxCallback();
         void errorCallback();
         bool firWarmupPoll();

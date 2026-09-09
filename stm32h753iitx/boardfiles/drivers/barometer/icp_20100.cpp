@@ -134,58 +134,58 @@ static bool waitForDeviceReady(I2C_HandleTypeDef *hi2c, uint8_t &version);
 Barometer::Barometer(I2C_HandleTypeDef *hi2c) :
 	hi2c(hi2c), callbackState(NOT_STARTED), fifoRegister(0) {}
 	
-bool Barometer::init() {
+ZP_Error Barometer::init() {
     // Steps 1-3: Wait for the ASIC to finish its power-on boot, dummy I2C writes, and read the version register
     uint8_t version = 0x00;
-    if (!waitForDeviceReady(hi2c, version)) return false;
+    if (!waitForDeviceReady(hi2c, version)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 
     if (version == VERSION_B) {
-        return firWarmupPoll();
+        return firWarmupPoll() ? ZP_ERROR_OK : (ZP_ERROR_EXT_API | ZP_ERROR_FAIL);
     }
 
 	// Step 4: Check boot up status from OTP_Status2 register. Check specifically bit 0.
 	uint8_t bootStatus = 0x00;
 	if (!readRegisterBlocking(hi2c, ICP20100_OTP_STATUS2, bootStatus)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	// Mask boot status register to only read the 0th bit
 	bootStatus &= OTP_STATUS2_BOOT_STATUS_BM;
 
 	if (bootStatus == OTP_STATUS2_BOOT_STATUS_VALID) { // Initialization done, barometer did not go through power cycle.
-		return firWarmupPoll();
+		return firWarmupPoll() ? ZP_ERROR_OK : (ZP_ERROR_EXT_API | ZP_ERROR_FAIL);
 	}
 
 	// Step 5: Bring ASIC into power mode to get access to main registers
 	// Set the 3rd bit of the modeSelect register to 1.
 	uint8_t modeSelect = 0x00;
 	if (!readRegisterBlocking(hi2c, ICP20100_REG_MODE_SELECT, modeSelect)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	modeSelect |= ICP20100_MODE_SELECT_POWER_MODE_BM; // Read previous register and toggle the power-mode bit to preserve previous bits
 	
-	if (!waitForModeSync(hi2c)) return false;// MODE_SELECT is only writable once DEVICE_STATUS's MODE_SYNC_STATUS is set
+	if (!waitForModeSync(hi2c)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;// MODE_SELECT is only writable once DEVICE_STATUS's MODE_SYNC_STATUS is set
 
 	if (!writeRegisterWithVerify(hi2c, ICP20100_REG_MODE_SELECT, modeSelect)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	HAL_Delay(ICP20100_POWER_MODE_DELAY_MS); // blocking delay, as required by data sheet
 
 	// Step 6: Unlock main registers by setting the Master_Lock register to 0x1f
-	if (!unlockOrLock(hi2c, false)) return false;
+	if (!unlockOrLock(hi2c, false)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 
 	//Step 7: Enable OTP and write switch by setting the config1 register's bits 0 and 1 to 1.
 	uint8_t otpConfig = 0x00;
 	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_CONFIG_1, I2C_MEMADD_SIZE_8BIT, &otpConfig, 1, HAL_MAX_DELAY) != HAL_OK) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	otpConfig |= (ICP20100_OTP_ENABLE_BOTH); // Sets bits 011
 
 	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_CONFIG_1, otpConfig)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	HAL_Delay(ICP20100_SHORT_DELAY_MS); // should be wait 10 microseconds
@@ -194,13 +194,13 @@ bool Barometer::init() {
 	uint8_t reset = 0x00;
 
 	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_DBG2, I2C_MEMADD_SIZE_8BIT, &reset, 1, HAL_MAX_DELAY) != HAL_OK) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	reset |= (ICP20100_OTP_DBG2_RESET_BM);
 
 	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_DBG2, reset)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	HAL_Delay(ICP20100_SHORT_DELAY_MS);
@@ -208,92 +208,92 @@ bool Barometer::init() {
 	reset &= ~(ICP20100_OTP_DBG2_RESET_BM);
 
 	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_DBG2, reset)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	HAL_Delay(ICP20100_SHORT_DELAY_MS);
 
 	// STEP 9: Program redundant read 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRA_LSB, ICP20100_OTP_MRA_LSB_VALUE)) return false;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRA_MSB, ICP20100_OTP_MRA_MSB_VALUE)) return false;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRB_LSB, ICP20100_OTP_MRB_LSB_VALUE)) return false;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRB_MSB, ICP20100_OTP_MRB_MSB_VALUE)) return false;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MR_LSB, ICP20100_OTP_MR_LSB_VALUE)) return false;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MR_MSB, ICP20100_OTP_MR_MSB_VALUE)) return false;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRA_LSB, ICP20100_OTP_MRA_LSB_VALUE)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRA_MSB, ICP20100_OTP_MRA_MSB_VALUE)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRB_LSB, ICP20100_OTP_MRB_LSB_VALUE)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MRB_MSB, ICP20100_OTP_MRB_MSB_VALUE)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MR_LSB, ICP20100_OTP_MR_LSB_VALUE)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_MR_MSB, ICP20100_OTP_MR_MSB_VALUE)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 
 	// STEP 10: Write address content and read command
 	uint8_t commandAddress = ICP20100_OTP_ADDR_OFFSET;
 	// Select the OTP offset-trim address to read from
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_ADDRESS, commandAddress)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_ADDRESS, commandAddress)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	commandAddress = 0x00; //X0010000
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_COMMAND, I2C_MEMADD_SIZE_8BIT, &commandAddress, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_COMMAND, I2C_MEMADD_SIZE_8BIT, &commandAddress, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	commandAddress &= ~ICP20100_OTP_COMMAND_FIELD_MASK;
 	commandAddress |= ICP20100_OTP_COMMAND_READ_REQUEST;
 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_COMMAND, commandAddress)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_COMMAND, commandAddress)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 11: Wait for OTP read to finish
-	if (!waitForOtpStatusClear(hi2c)) return false;
+	if (!waitForOtpStatusClear(hi2c)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 
 	// STEP 12: Read offset from the OTP_RDATA register
 	uint8_t offset = 0;
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_RDATA, I2C_MEMADD_SIZE_8BIT, &offset, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_RDATA, I2C_MEMADD_SIZE_8BIT, &offset, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 13: Write next address
 	commandAddress = ICP20100_OTP_ADDR_GAIN;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_ADDRESS, commandAddress)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_ADDRESS, commandAddress)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	commandAddress = 0x00;
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_COMMAND, I2C_MEMADD_SIZE_8BIT, &commandAddress, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_COMMAND, I2C_MEMADD_SIZE_8BIT, &commandAddress, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	commandAddress &= ~ICP20100_OTP_COMMAND_FIELD_MASK;
 	commandAddress |= ICP20100_OTP_COMMAND_READ_REQUEST;
 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_COMMAND, commandAddress)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_COMMAND, commandAddress)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 14: Wait for OTP read to finish
-	if (!waitForOtpStatusClear(hi2c)) return false;
+	if (!waitForOtpStatusClear(hi2c)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 
 	// STEP 15: Read gain from OTP_RDATA register
 	uint8_t gain = 0x0000;
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_RDATA, I2C_MEMADD_SIZE_8BIT, &gain, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_RDATA, I2C_MEMADD_SIZE_8BIT, &gain, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// Step 16: Write next address content
 
 	commandAddress = ICP20100_OTP_ADDR_HFOSC;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_ADDRESS, commandAddress)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_ADDRESS, commandAddress)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 	commandAddress = 0x00; //X0010000
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_COMMAND, I2C_MEMADD_SIZE_8BIT, &commandAddress, 1, HAL_MAX_DELAY) != HAL_OK){ return false; }
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_COMMAND, I2C_MEMADD_SIZE_8BIT, &commandAddress, 1, HAL_MAX_DELAY) != HAL_OK){ return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; }
 
 	commandAddress &= ~ICP20100_OTP_COMMAND_FIELD_MASK;
 	commandAddress |= ICP20100_OTP_COMMAND_READ_REQUEST;
 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_COMMAND, commandAddress)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_COMMAND, commandAddress)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 17: Wait for OTP read to finish
 	if (!waitForOtpStatusClear(hi2c)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	// STEP 18: Read HfOsc
 	uint8_t HfOsc = 0x00;
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_RDATA, I2C_MEMADD_SIZE_8BIT, &HfOsc, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_RDATA, I2C_MEMADD_SIZE_8BIT, &HfOsc, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 19: Disable OTP
 
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_CONFIG_1, I2C_MEMADD_SIZE_8BIT, &otpConfig, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_OTP_CONFIG_1, I2C_MEMADD_SIZE_8BIT, &otpConfig, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 	otpConfig &= ~(ICP20100_OTP_ENABLE_BOTH);
 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_CONFIG_1, otpConfig)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_CONFIG_1, otpConfig)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	HAL_Delay(ICP20100_SHORT_DELAY_MS); // Needs to wait atleast 10 microseconds, waits 1 milisecond
 
 	// STEP 20: Write offset to main registers
 	uint8_t trimReg;
 
-	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_TRIM1_MSB, I2C_MEMADD_SIZE_8BIT, &trimReg, 1, HAL_MAX_DELAY) != HAL_OK) return false; 
+	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_TRIM1_MSB, I2C_MEMADD_SIZE_8BIT, &trimReg, 1, HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// Clear the 6-bit PEFE_OFFSET_TRIM field (bits 5:0)
 	trimReg &= ~ICP20100_TRIM1_MSB_OFFSET_FIELD_MASK;
@@ -302,25 +302,25 @@ bool Barometer::init() {
 	trimReg |= offsetLow;
 
 	// Write back
-	if (!writeRegisterWithVerify(hi2c, ICP20100_TRIM1_MSB, trimReg)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_TRIM1_MSB, trimReg)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 21: Write gain to main registers
 	uint8_t rData = 0x00;
 	if (HAL_I2C_Mem_Read(hi2c, ICP20100_I2C_ADDR, ICP20100_TRIM2_MSB,
-				 I2C_MEMADD_SIZE_8BIT, &rData, 1, HAL_MAX_DELAY) != HAL_OK ) return false; 
+				 I2C_MEMADD_SIZE_8BIT, &rData, 1, HAL_MAX_DELAY) != HAL_OK ) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	rData &= ~ICP20100_TRIM2_MSB_GAIN_FIELD_MASK;  // Clear bits 4, 5, 6
 	gain &= ICP20100_GAIN_VALUE_MASK;  // Mask bits 1, 2, 3 to extract gain value required, as per datasheet
 	rData |= (gain << ICP20100_TRIM2_MSB_GAIN_SHIFT);  // Set bits 4, 5, 6 to bits 1, 2, 3 from gain value
 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_TRIM2_MSB, rData)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_TRIM2_MSB, rData)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 22: Write HfOsc trim value to main registers
-	if (!writeRegisterWithVerify(hi2c, ICP20100_TRIM2_LSB, HfOsc)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_TRIM2_LSB, HfOsc)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 23: Lock main registers
 	if (!unlockOrLock(hi2c, true)) {
-		return false;
+		return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
 	}
 
 	 // STEP 24: Move to standby
@@ -332,20 +332,20 @@ bool Barometer::init() {
 		                 I2C_MEMADD_SIZE_8BIT,
 		                 &powerMode,
 		                 1,
-		                 HAL_MAX_DELAY) != HAL_OK) return false; 
+		                 HAL_MAX_DELAY) != HAL_OK) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	powerMode &= ~(ICP20100_MODE_SELECT_POWER_MODE_BM);
 
-	if (!waitForModeSync(hi2c)) return false;
-	if (!writeRegisterWithVerify(hi2c, ICP20100_REG_MODE_SELECT, powerMode)) return false; 
+	if (!waitForModeSync(hi2c)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL;
+	if (!writeRegisterWithVerify(hi2c, ICP20100_REG_MODE_SELECT, powerMode)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
 	// STEP 25: Check boot up status to 1, avoid reintialization
 
 	uint8_t bootConfig = ICP20100_OTP_STATUS2_BOOTUP;
 
-	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_STATUS2, bootConfig)) return false; 
+	if (!writeRegisterWithVerify(hi2c, ICP20100_OTP_STATUS2, bootConfig)) return ZP_ERROR_EXT_API | ZP_ERROR_FAIL; 
 
-	return firWarmupPoll();
+	return firWarmupPoll() ? ZP_ERROR_OK : (ZP_ERROR_EXT_API | ZP_ERROR_FAIL);
 }
 
 bool Barometer::firWarmupPoll() {
