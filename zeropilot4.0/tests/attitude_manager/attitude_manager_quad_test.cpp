@@ -71,8 +71,6 @@ protected:
 
         ON_CALL(mockSystemUtils, getCurrentTimestampMs()).WillByDefault(Invoke([this]() { return nowMs; }));
 
-        // BIT holds static state, so reset it per test. Seeding the window is what SM does at
-        // construction; AM only ever reads the verdict.
         (void)ZP_BIT::init(&mockSystemUtils);
         (void)ZP_BIT::setPersistence(ZP_BIT_ID::RC_DATA_VALID, rcFailMs, AM_UPDATE_LOOP_DELAY_MS * 3);
         ON_CALL(mockIMU, readRawData(_)).WillByDefault(DoAll(SetArgReferee<0>(RawImuBatch_t{}), Return(ZP_ERROR_OK)));      // Empty batch, count 0
@@ -84,7 +82,6 @@ protected:
         ON_CALL(mockRangefinder, init()).WillByDefault(Return(ZP_ERROR_OK));
     }
 
-    // RC health is owned by SM, so these stand in for it
     void failRcBit() {
         (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, ZP_ERROR_OK);
         (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, ZP_ERROR_NOT_READY);
@@ -92,7 +89,6 @@ protected:
         (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, ZP_ERROR_NOT_READY);
     }
 
-    // AM reads the latched verdict, which only a disarm clears
     void clearRcBit() {
         (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, ZP_ERROR_OK);
         nowMs += rcFailMs + 1;

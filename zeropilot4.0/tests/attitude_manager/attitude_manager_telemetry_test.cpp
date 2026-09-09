@@ -49,7 +49,6 @@ protected:
     MotorGroupInstance_t motorGroup{motorInstances, 4};
 
     void SetUp() override {
-        // BIT holds a static clock pointer and static state, so re-point and reset it per test
         (void)ZP_BIT::init(&mockSystemUtils);
         ZP_PARAM::init();
 

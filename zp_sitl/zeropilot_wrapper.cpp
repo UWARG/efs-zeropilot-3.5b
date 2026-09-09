@@ -121,8 +121,8 @@ static PyObject* ZP_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
 
         self->sysUtils = new SITL_SystemUtils();
 
-        // BIT needs a clock before any manager reports into it
         ZP_BIT::init(self->sysUtils);
+        
         self->mathUtils = new SITL_MathUtils();
         self->fft = new SITL_FFT();
         self->amQueue = new SITL_Queue<RCMotorControlMessage_t>();

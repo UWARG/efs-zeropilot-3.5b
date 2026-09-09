@@ -6,35 +6,10 @@
 
 namespace ZP_PARAM {
 
-    // Internal storage hidden from other files using static linkage
     static Param_t params[static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)];
 
-    // Internal helper to initialize a single entry
-    static ZP_Error initParam(ZP_PARAM_ID id, const char* name, float default_val, uint8_t type) {
-        ZP_Error result = ZP_ERROR_OK;
-        uint16_t index = static_cast<uint16_t>(id);
-
-        // Accumulate errors using the bitwise OR operator
-        if (name == nullptr) {
-            result |= ZP_ERROR_NULLPTR;
-        } 
-        
-        if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
-            result |= ZP_ERROR_INVALID_ARG;
-        }
-
-        // Only proceed if no error bits have been set
-        if (result == ZP_ERROR_OK) {
-            std::strncpy(params[index].paramId, name, PARAM_MAX_IDENTIFIER_LEN - 1);
-            params[index].paramId[PARAM_MAX_IDENTIFIER_LEN - 1] = '\0';
-            
-            params[index].paramValue = default_val;
-            params[index].paramType = type;
-            params[index].context = nullptr;
-            params[index].setter = nullptr;
-        }
-
-        return result;
+    namespace {
+        static ZP_Error initParam(ZP_PARAM_ID id, const char* name, float default_val, uint8_t type);
     }
 
     ZP_Error init() {
@@ -367,6 +342,36 @@ namespace ZP_PARAM {
 
     uint16_t getCount() {
         return static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT);
+    }
+
+
+    namespace {
+        static ZP_Error initParam(ZP_PARAM_ID id, const char* name, float default_val, uint8_t type) {
+            ZP_Error result = ZP_ERROR_OK;
+            uint16_t index = static_cast<uint16_t>(id);
+    
+            // Accumulate errors using the bitwise OR operator
+            if (name == nullptr) {
+                result |= ZP_ERROR_NULLPTR;
+            } 
+            
+            if (index >= static_cast<uint16_t>(ZP_PARAM_ID::PARAM_COUNT)) {
+                result |= ZP_ERROR_INVALID_ARG;
+            }
+    
+            // Only proceed if no error bits have been set
+            if (result == ZP_ERROR_OK) {
+                std::strncpy(params[index].paramId, name, PARAM_MAX_IDENTIFIER_LEN - 1);
+                params[index].paramId[PARAM_MAX_IDENTIFIER_LEN - 1] = '\0';
+                
+                params[index].paramValue = default_val;
+                params[index].paramType = type;
+                params[index].context = nullptr;
+                params[index].setter = nullptr;
+            }
+    
+            return result;
+        }
     }
 
 }

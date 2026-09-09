@@ -49,54 +49,6 @@ SystemManager::SystemManager(
     bindBitHandlers();
 }
 
-ZP_Error SystemManager::bindBitHandlers() {
-    ZP_Error result = ZP_ERROR_OK;
-
-    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
-        // Catches the table drifting out of step with ZP_BIT_ID
-        if (BIT_HANDLERS[i].id != static_cast<ZP_BIT_ID>(i)) {
-            result |= ZP_ERROR_CONFIG;
-            continue;
-        }
-        result |= ZP_BIT::bindHandler(static_cast<ZP_BIT_ID>(i), static_cast<void*>(this), BIT_HANDLERS[i].action);
-    }
-
-    // Preserve the timing of the failsafe this replaces
-    float fsTimeout = 0.0f;
-    if (ZP_PARAM::get(ZP_PARAM_ID::RC_FS_TIMEOUT, fsTimeout) == ZP_ERROR_OK) {
-        result |= ZP_BIT::setPersistence(ZP_BIT_ID::RC_DATA_VALID,
-                                         static_cast<uint32_t>(fsTimeout * 1000.0f),
-                                         SM_UPDATE_LOOP_DELAY_MS * 3);
-    }
-
-    return result;
-}
-
-const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
-    static const SMBitHandler_t UNKNOWN_ROW = {
-        ZP_BIT_ID::NUM_BIT_IDS, "Unknown BIT failed", SystemManager::reportBitCallback
-    };
-
-    if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
-        return UNKNOWN_ROW;
-    }
-    return BIT_HANDLERS[static_cast<uint16_t>(id)];
-}
-
-ZP_Error SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
-    const uint32_t BUDGET_US = budgetMs * 1000;
-
-    // Fails once a loop is sustained at 80% of its budget, matching the threshold the old
-    // "about to exceed scheduled rate" warning used
-    ZP_Error timing = ZP_ERROR_OK;
-    if (maxExecUs >= (BUDGET_US * 8) / 10) {
-        timing |= ZP_ERROR_TIMEOUT;
-    }
-
-    (void)ZP_BIT::report(id, timing);
-    return ZP_ERROR_OK;
-}
-
 void SystemManager::smUpdate() {
     ZP_Error result = ZP_ERROR_OK;
     systemUtilsDriver->profilerBegin(profilerId);
@@ -111,17 +63,13 @@ void SystemManager::smUpdate() {
 
 
     // Get RC data from the RC receiver and passthrough to AM if new.
-    // Gate on this call's own status, not the tick-wide accumulator: bits from the watchdog or
-    // safety switch above must not suppress RC passthrough, and they can no longer be cleared.
     RCControl rcData;
     ZP_Error rcStatus = rcDriver->getRCData(rcData);
     result |= rcStatus;
 
-    // A stale frame is a health failure rather than a driver error. RC_DATA_VALID's debounce
-    // window is seeded from RC_FS_TIMEOUT, so this replaces the old oldDataCount timer exactly.
     ZP_Error rcHealth = rcStatus;
     if (!rcData.isDataNew) {
-        rcHealth |= ZP_ERROR_NOT_READY;
+        rcHealth |= ZP_ERROR_RESOURCE_UNAVAILABLE;
     }
     (void)ZP_BIT::report(ZP_BIT_ID::RC_DATA_VALID, rcHealth);
 
@@ -213,7 +161,6 @@ void SystemManager::smUpdate() {
         #endif
     }
 
-    // A disarm is what clears latched faults, so a fault cannot silently un-block arming
     if (prevArmed && !armed) {
         result |= ZP_BIT::clearLatched();
         bitDisarmLatch = false;
@@ -223,14 +170,12 @@ void SystemManager::smUpdate() {
     // Fire handlers for anything that changed state this tick
     result |= ZP_BIT::dispatch();
 
-    // Re-nag about a blocking fault on the same interval the safety switch uses
     ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
     if (ZP_BIT::prearmCheck(blockingBit) != ZP_ERROR_OK) {
         bitPrearmCntrMs += SM_UPDATE_LOOP_DELAY_MS;
 
         if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
             bitPrearmCntrMs = 0;
-            // Only CRITICAL BITs block arming, so the nag severity is fixed
             result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, bitRow(blockingBit).failText);
         }
     } else {
@@ -324,20 +269,61 @@ ZP_Error SystemManager::updateBatteryFSM() {
                 }
             }
 
-            // A severity ladder over two BITs: LOW is a warning, CRITICAL latches and blocks
-            // arming. Both are monotone, so a critical battery fails BATT_LOW as well. The FSM
-            // above has already applied BATT_LOW_TIMER, so both BITs use a zero debounce window.
             const bool IS_BATT_LOW = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_LOW) ||
                                  (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
             const bool IS_BATT_CRITICAL = (batteryData.chargeState == MAV_BATTERY_CHARGE_STATE_CRITICAL);
 
-            (void)ZP_BIT::report(ZP_BIT_ID::BATT_LOW, IS_BATT_LOW ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
-            (void)ZP_BIT::report(ZP_BIT_ID::BATT_CRITICAL, IS_BATT_CRITICAL ? ZP_ERROR_INVALID_DATA : ZP_ERROR_OK);
+            (void)ZP_BIT::report(ZP_BIT_ID::BATT_LOW, IS_BATT_LOW ? ZP_ERROR_FAIL : ZP_ERROR_OK);
+            (void)ZP_BIT::report(ZP_BIT_ID::BATT_CRITICAL, IS_BATT_CRITICAL ? ZP_ERROR_FAIL : ZP_ERROR_OK);
 
         }
     }
 
     return result;
+}
+
+ZP_Error SystemManager::bindBitHandlers() {
+    ZP_Error result = ZP_ERROR_OK;
+
+    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
+        if (BIT_HANDLERS[i].id != static_cast<ZP_BIT_ID>(i)) {
+            result |= ZP_ERROR_CONFIG;
+            continue;
+        }
+        result |= ZP_BIT::bindHandler(static_cast<ZP_BIT_ID>(i), static_cast<void*>(this), BIT_HANDLERS[i].action);
+    }
+
+    float fsTimeout = 0.0f;
+    if (ZP_PARAM::get(ZP_PARAM_ID::RC_FS_TIMEOUT, fsTimeout) == ZP_ERROR_OK) {
+        result |= ZP_BIT::setPersistence(ZP_BIT_ID::RC_DATA_VALID,
+                                         static_cast<uint32_t>(fsTimeout * 1000.0f),
+                                         SM_UPDATE_LOOP_DELAY_MS * 3);
+    }
+
+    return result;
+}
+
+const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
+    static const SMBitHandler_t UNKNOWN_ROW = {
+        ZP_BIT_ID::NUM_BIT_IDS, "Unknown BIT failed", SystemManager::reportBitCallback
+    };
+
+    if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
+        return UNKNOWN_ROW;
+    }
+    return BIT_HANDLERS[static_cast<uint16_t>(id)];
+}
+
+ZP_Error SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
+    const uint32_t BUDGET_US = budgetMs * 1000;
+
+    ZP_Error timing = ZP_ERROR_OK;
+    if (maxExecUs >= (BUDGET_US * 8) / 10) {
+        timing |= ZP_ERROR_TIMEOUT;
+    }
+
+    (void)ZP_BIT::report(id, timing);
+    return ZP_ERROR_OK;
 }
 
 ZP_Error SystemManager::sendRCDataToTelemetryManager(const RCControl &rcData) {
@@ -491,7 +477,6 @@ void SystemManager::disarmBitCallback(void* context, ZP_BIT_ID id, BitLevel_e le
         return;
     }
 
-    // Cleared only on the armed -> disarmed edge, so recovery alone cannot re-arm the aircraft
     ctx->bitDisarmLatch = true;
     (void)ctx->sendStatusTextToTelemetryManager(MAV_SEVERITY_EMERGENCY, "Disarming");
 }

@@ -52,7 +52,6 @@ ZP_Error PID::pidOutput(float setpoint, float measurement, float &output) noexce
     else if (pidIntegral < integralMinLim) { pidIntegral = integralMinLim; }
 
     // PID Derivative with low-pass filter
-    // Note: Applying a check here to ensure t > 0 could be a future stability improvement
     pidDerivative = ((-1.0f * 2.0f * kd * (measurement - prevMeasurement)) + ((2.0f * tau - t) * pidDerivative)) / ((2.0f * tau) + t);
     
     // PID control effort
@@ -66,7 +65,6 @@ ZP_Error PID::pidOutput(float setpoint, float measurement, float &output) noexce
     prevError = error;
     prevMeasurement = measurement;
 
-    // Direct assignment to reference
     output = pidControlEffort;
 
     return result;

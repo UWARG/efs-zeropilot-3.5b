@@ -176,7 +176,6 @@ namespace ZP_BIT {
             return ZP_ERROR_RANGE;
         }
 
-        // Copy first so the assignment takes an rvalue: ZP_Error only allows move assignment
         outError = ZP_Error(bitStatus[static_cast<uint16_t>(id)].lastError);
         return ZP_ERROR_OK;
     }

@@ -32,7 +32,6 @@ TelemetryManager::~TelemetryManager() = default;
 void TelemetryManager::tmUpdate() {
     systemUtilsDriver->profilerBegin(profilerId);
     
-    // Accumulate status across all steps using the |= operator
     ZP_Error status = ZP_ERROR_OK;
 
     ZP_Error linkStatus = receive();
@@ -43,35 +42,11 @@ void TelemetryManager::tmUpdate() {
     ZP_Error txStatus = transmit();
     status |= txStatus;
 
-    // TELEM_LINK_VALID covers the radio itself, so only the two calls that touch it are reported
     ZP_Error linkHealth = linkStatus;
     linkHealth |= txStatus;
     (void)ZP_BIT::report(ZP_BIT_ID::TELEM_LINK_VALID, linkHealth);
 
     systemUtilsDriver->profilerEnd(profilerId);
-}
-
-ZP_Error TelemetryManager::processParamTx() {
-    ZP_Error result = ZP_ERROR_OK;
-    constexpr uint8_t BURST_SZ = 4;
-
-    for (uint8_t i = 0; i < BURST_SZ; ++i) {
-        if (currParamListTxIdx >= ZP_PARAM::getCount()) {
-            break;
-        }
-
-        // Accumulate errors from the enqueuing process
-        result |= enqueueParamValueTx(currParamListTxIdx);
-        
-        // If an error bit was set during enqueue, we stop the burst
-        if (result != ZP_ERROR_OK) {
-            break;
-        }
-
-        ++currParamListTxIdx;
-    }
-    
-    return result;
 }
 
 ZP_Error TelemetryManager::processTXMsgQueue() {
@@ -253,7 +228,6 @@ ZP_Error TelemetryManager::receive() {
 
     for (uint16_t i = 0; i < receivedBytes; ++i) {
         if (mavlink_parse_char(0, rxBuffer[i], &msgToRX, &status)) {
-            // Stack the processing result
             result |= processRxMsg(msgToRX);
             msgToRX = {};
         }
@@ -279,7 +253,6 @@ ZP_Error TelemetryManager::processRxMsg(const mavlink_message_t &msg) {
                 result |= ZP_PARAM::getIndexById(paramId, paramIndex);
             }
 
-            // Always attempt to enqueue if the index is valid
             if (result == ZP_ERROR_OK) {
                 result |= enqueueParamValueTx(static_cast<uint16_t>(paramIndex));
             }
@@ -290,7 +263,6 @@ ZP_Error TelemetryManager::processRxMsg(const mavlink_message_t &msg) {
             mavlink_param_set_t setMsg;
             mavlink_msg_param_set_decode(&msg, &setMsg);
 
-            // Accumulate errors from setter and lookup
             result |= ZP_PARAM::setParamById(setMsg.param_id, setMsg.param_value);
             
             int16_t idx = 0;
@@ -327,5 +299,26 @@ ZP_Error TelemetryManager::enqueueParamValueTx(uint16_t index) {
         result |= ZP_ERROR_FAIL;
     }
 
+    return result;
+}
+
+ZP_Error TelemetryManager::processParamTx() {
+    ZP_Error result = ZP_ERROR_OK;
+    constexpr uint8_t BURST_SZ = 4;
+
+    for (uint8_t i = 0; i < BURST_SZ; ++i) {
+        if (currParamListTxIdx >= ZP_PARAM::getCount()) {
+            break;
+        }
+
+        result |= enqueueParamValueTx(currParamListTxIdx);
+        
+        if (result != ZP_ERROR_OK) {
+            break;
+        }
+
+        ++currParamListTxIdx;
+    }
+    
     return result;
 }

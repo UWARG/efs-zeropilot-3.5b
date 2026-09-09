@@ -242,15 +242,10 @@ void AttitudeManager::amUpdate() {
     // Get data from Queue and motor outputs
     ZP_Error controlRes = getControlInputs(&controlMsg);
 
-    // An empty queue is the normal case at the 1 kHz AM rate between SM's 20 Hz pushes, so only a
-    // genuine queue fault is worth accumulating.
     if (controlRes != ZP_ERROR_NOT_READY) {
         result |= controlRes;
     }
 
-    // RC health is owned by SM, which debounces it against RC_FS_TIMEOUT. AM reads the latched
-    // verdict rather than running a second timer of its own off an empty queue, which at the 1 kHz
-    // AM rate is the normal case between SM's 20 Hz pushes.
     BitState_e rcState = BitState_e::UNKNOWN;
     result |= ZP_BIT::getLatched(ZP_BIT_ID::RC_DATA_VALID, rcState);
 
@@ -280,8 +275,6 @@ void AttitudeManager::amUpdate() {
 
         result |= outputToMotors(motorOutputs, false);
 
-        // Clear the arm pulse here too: the old early-return skipped it, so a disarm edge
-        // coinciding with failsafe entry stayed latched until the next edge.
         setArmFlag = false;
 
         systemUtilsDriver->profilerEnd(profilerId);
@@ -294,7 +287,6 @@ void AttitudeManager::amUpdate() {
         failsafeTriggered = false;
     }
 
-    // Update armedFlag and activateFlightMode() on rising edge
     if (controlMsg.arm != armedFlag) {
         setArmFlag = true;
         armedFlag = controlMsg.arm;
@@ -303,7 +295,6 @@ void AttitudeManager::amUpdate() {
         }
     }
 
-    // Update current flightmode if changed
     if (controlMsg.flightMode != currentFlightMode) {
         switch (controlMsg.flightMode) {
 
