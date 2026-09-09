@@ -34,52 +34,11 @@ private:
 public:
 	Mahony();
 	// Initializer
-    ZP_Error begin(float sampleFrequency) { 
-        ZP_Error result = ZP_ERROR_OK;
-
-        if (sampleFrequency <= 0.0f) {
-            result |= ZP_ERROR_INVALID_ARG;
-        }
-        if (isInitialized) {
-            result |= ZP_ERROR_ALREADY_INITIALIZED;
-        }
-
-        if (result == ZP_ERROR_OK) {
-            invSampleFreq = 1.0f / sampleFrequency; 
-            isInitialized = true;
-        }
-        return result;
-    }
+	ZP_Error begin(float sampleFrequency);
 
 	ZP_Error updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt);
 
-	ZP_Error getAttitude(Attitude_t& out_attitude) {
-        ZP_Error result = ZP_ERROR_OK;
-   
-        if (!isInitialized) {
-            result |= ZP_ERROR_NOT_READY;
-        }
-        
-        if (result == ZP_ERROR_OK) {
-            out_attitude.roll = roll * 57.29578f;
-            out_attitude.pitch = pitch * 57.29578f;
-            out_attitude.yaw = yaw * 57.29578f + 180.0f;
-        }
-        return result;
-    }
+	ZP_Error getAttitude(Attitude_t& out_attitude);
 
-	ZP_Error getAttitudeRadians(Attitude_t& out_attitude) {
-        ZP_Error result = ZP_ERROR_OK;
-   
-        if (!isInitialized) {
-            result |= ZP_ERROR_NOT_READY;
-        }
-        
-        if (result == ZP_ERROR_OK) {
-            out_attitude.roll = roll;
-            out_attitude.pitch = pitch;
-            out_attitude.yaw = yaw;
-        }
-        return result;
-    }
+	ZP_Error getAttitudeRadians(Attitude_t& outAttitude);
 };

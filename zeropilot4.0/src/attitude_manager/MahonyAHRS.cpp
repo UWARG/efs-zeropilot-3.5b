@@ -54,6 +54,27 @@ Mahony::Mahony()
 }
 
 //-------------------------------------------------------------------------------------------
+// Initializer
+
+ZP_Error Mahony::begin(float sampleFrequency)
+{
+	ZP_Error result = ZP_ERROR_OK;
+
+	if (sampleFrequency <= 0.0f) {
+		result |= ZP_ERROR_INVALID_ARG;
+	}
+	if (isInitialized) {
+		result |= ZP_ERROR_ALREADY_INITIALIZED;
+	}
+
+	if (result == ZP_ERROR_OK) {
+		invSampleFreq = 1.0f / sampleFrequency;
+		isInitialized = true;
+	}
+	return result;
+}
+
+//-------------------------------------------------------------------------------------------
 // IMU algorithm update
 
 ZP_Error Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt)
@@ -130,6 +151,41 @@ ZP_Error Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, flo
 	pitch = asinf(-2.0f * (q1*q3 - q0*q2));
 	yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
 
+	return result;
+}
+
+//-------------------------------------------------------------------------------------------
+// Attitude accessors
+
+ZP_Error Mahony::getAttitude(Attitude_t& out_attitude)
+{
+	ZP_Error result = ZP_ERROR_OK;
+
+	if (!isInitialized) {
+		result |= ZP_ERROR_NOT_READY;
+	}
+
+	if (result == ZP_ERROR_OK) {
+		out_attitude.roll = roll * 57.29578f;
+		out_attitude.pitch = pitch * 57.29578f;
+		out_attitude.yaw = yaw * 57.29578f + 180.0f;
+	}
+	return result;
+}
+
+ZP_Error Mahony::getAttitudeRadians(Attitude_t& outAttitude)
+{
+	ZP_Error result = ZP_ERROR_OK;
+
+	if (!isInitialized) {
+		result |= ZP_ERROR_NOT_READY;
+	}
+
+	if (result == ZP_ERROR_OK) {
+		outAttitude.roll = roll;
+		outAttitude.pitch = pitch;
+		outAttitude.yaw = yaw;
+	}
 	return result;
 }
 
