@@ -116,10 +116,10 @@ typedef union TMMessageData_u {
     uint32_t sensorsPresent;
     uint32_t sensorsEnabled;
     uint32_t sensorsHealth;
-    uint16_t load;             // cpu load, 0.1% units
-    uint16_t voltageBattery;   // mV
-    int16_t  currentBattery;   // cA, -1 if unmeasured
-    int8_t   batteryRemaining; // %, -1 if unmeasured
+    uint16_t load;
+    uint16_t voltageBattery;
+    int16_t currentBattery;
+    int8_t batteryRemaining;
   } sysStatusData;
 } TMMessageData_t;
 
@@ -142,7 +142,7 @@ typedef struct TMMessage{
 } TMMessage_t;
 
 inline ZP_Error heartbeatPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status) {
-    const TMMessageData_t DATA = {.heartbeatData = {base_mode, custom_mode, system_status}};
+    const TMMessageData_t DATA = {.heartbeatData={base_mode, custom_mode, system_status}};
     data = TMMessage_t{TMMessage_t::HEARTBEAT_DATA, DATA, time_boot_ms};
     return ZP_ERROR_OK;
 }
@@ -151,8 +151,9 @@ inline ZP_Error statusTextPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t
     ZP_Error result = ZP_ERROR_OK;
     if (text == nullptr) {
         result |= ZP_ERROR_NULLPTR;
-    } else {
-        TMMessageData_t msgData = {.statusTextData = {severity, "", id, chunk_seq }};
+    }
+    else {
+        TMMessageData_t msgData = {.statusTextData={severity, "", id, chunk_seq}};
         constexpr size_t MAX_LEN = sizeof(msgData.statusTextData.text) - 1; // Reserve space for null terminator
 
         // Get length in a firmware safe way without using strlen which may read out of bounds if text is not null terminated
@@ -168,10 +169,13 @@ inline ZP_Error statusTextPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t
 }
 
 inline ZP_Error gpsRawDataPack(TMMessage_t &data, uint32_t time_boot_ms, uint8_t fix_type, int32_t lat, int32_t lon, int32_t alt,
-                                 uint16_t eph, uint16_t epv, uint16_t vel, uint16_t cog, uint8_t satellites_visible) {
+                                 uint16_t eph, uint16_t epv, uint16_t vel, uint16_t cog, uint8_t satellites_visible,
+                                 int32_t alt_el = 0, uint32_t h_acc = 0, uint32_t v_acc = 0,
+                                 uint32_t vel_acc = 0, uint32_t hdg_acc = 0, uint16_t yaw = 0) {
     const TMMessageData_t DATA = {
         .gpsRawData = {
-            fix_type, lat, lon, alt, eph, epv, vel, cog, satellites_visible
+            fix_type, lat, lon, alt, eph, epv, vel, cog, satellites_visible,
+            alt_el, h_acc, v_acc, vel_acc, hdg_acc, yaw
         }
     };
     data = TMMessage_t{TMMessage_t::GPS_RAW_DATA, DATA, time_boot_ms};
