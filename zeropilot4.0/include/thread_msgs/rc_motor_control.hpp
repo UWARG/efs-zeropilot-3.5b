@@ -14,7 +14,7 @@ enum class FlightMode_e : uint32_t {
     #endif
 };
 
-inline ZP_Error validateFlightMode(uint32_t val) {
+inline ZP_Error isValidFlightMode(uint32_t val) {
     switch (static_cast<FlightMode_e>(val)) {
         #ifdef PLANE
         case FlightMode_e::MANUAL:

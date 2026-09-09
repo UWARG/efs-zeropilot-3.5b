@@ -57,7 +57,7 @@ ZP_Error SMParamSetup::setFltMode(SystemManager* ctx, uint8_t idx, float val) {
 
     uint32_t mode = static_cast<uint32_t>(val);
 
-    ZP_Error result = validateFlightMode(mode);
+    ZP_Error result = isValidFlightMode(mode);
     if (result != ZP_ERROR_OK) return result;
 
     ctx->flightModes[idx] = static_cast<FlightMode_e>(mode);
