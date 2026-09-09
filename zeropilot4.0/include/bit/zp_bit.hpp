@@ -61,7 +61,6 @@ typedef struct {
     uint32_t failMs;
     uint32_t clearMs;
     uint32_t mavSensorBit; // MAV_SYS_STATUS_SENSOR_*, 0 if unmapped
-    bool blocksArming;
 } BitConfig_t;
 
 namespace ZP_BIT {
@@ -87,7 +86,19 @@ namespace ZP_BIT {
     ZP_Error clearLatched();
 
     /*
-    @brief Sets the persistence value for a BIT for a state change
+    @brief Overrides the table default for how long a failing run must last before the BIT fails
+    @param failMs: The time to declare a BIT to be failed
+    */
+    ZP_Error setFailPersistence(ZP_BIT_ID id, uint32_t failMs);
+
+    /*
+    @brief Overrides the table default for how long a passing run must last before the BIT clears
+    @param clearMs: The time to declare a BIT to be successful
+    */
+    ZP_Error setClearPersistence(ZP_BIT_ID id, uint32_t clearMs);
+
+    /*
+    @brief Sets both persistence values for a BIT for a state change
     @param failMs: The time to declare a BIT to be failed
     @param clearMs: The time to declare a BIT to be successful
     */
@@ -100,11 +111,10 @@ namespace ZP_BIT {
     ZP_Error getLatched(ZP_BIT_ID id, BitState_e& outState);
 
     /*
-    @brief The ZP_Error most recently reported for this BIT, ZP_ERROR_OK while it is passing
-    @retval the stored error, or ZP_ERROR_RANGE if the id is out of range. ZP_Error cannot be
-            assigned, so this returns by value rather than through an out param.
+    @brief Gets the ZP_Error most recently reported for this BIT, ZP_ERROR_OK while it is passing
+    @param outError: receives the stored error
     */
-    ZP_Error getError(ZP_BIT_ID id);
+    ZP_Error getError(ZP_BIT_ID id, ZP_Error& outError);
 
     // ZP_ERROR_OK means armable. Otherwise outFirstBlocking is the first BIT that blocks arming
     ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking);
@@ -112,32 +122,36 @@ namespace ZP_BIT {
     // MAVLink SYS_STATUS onboard_control_sensors_* bitmasks
     ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth);
 
-    const char* name(ZP_BIT_ID id);
+    /*
+    @brief Gets the name of a BIT
+    @param outName: receives the name, left untouched if the id is out of range
+    */
+    ZP_Error name(ZP_BIT_ID id, const char*& outName);
 }
 
 inline constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
-    {"PARAM_TABLE_INIT",  BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL, 0, 0, 0,                                       true},  // initModel
-    {"IMU_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_3D_GYRO,           true},  // initDrivers
-    {"GPS1_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_GPS,               false}, // initDrivers
-    {"GPS2_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_GPS,               false}, // initDrivers
-    {"BARO_INIT",         BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE, false}, // initDrivers
-    {"RC_INIT",           BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_RC_RECEIVER,       true},  // initDrivers
-    {"PM_INIT",           BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_BATTERY,           false}, // initDrivers
-    {"TELEM_INIT",        BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, 0,                                       false}, // initDrivers
-    {"RANGEFINDER_INIT",  BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_LASER_POSITION,    false}, // initDrivers
-    {"MOTOR_INIT",        BitPhase_e::POWER_ON,   BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS,     true},  // initDrivers
-    {"CAN_INIT",          BitPhase_e::POWER_ON,   BitLevel_e::WARNING,  0, 0, 0,                                       false}, // initDrivers
+    {"PARAM_TABLE_INIT",  BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, 0},
+    {"IMU_INIT",          BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_3D_GYRO},
+    {"GPS1_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_GPS},
+    {"GPS2_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_GPS},
+    {"BARO_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE},
+    {"RC_INIT",           BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_RC_RECEIVER},
+    {"PM_INIT",           BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_BATTERY},
+    {"TELEM_INIT",        BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, 0},
+    {"RANGEFINDER_INIT",  BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_LASER_POSITION},
+    {"MOTOR_INIT",        BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS}, 
+    {"CAN_INIT",          BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, 0},
 
-    {"RC_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 500,  150,  MAV_SYS_STATUS_SENSOR_RC_RECEIVER,       true},  // SM
-    {"IMU_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 50,   50,   MAV_SYS_STATUS_SENSOR_3D_GYRO,           true},  // AM
-    {"GPS_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_GPS,               false}, // AM
-    {"BARO_DATA_VALID",   BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  1000, 500,  MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE, false}, // AM
-    {"PM_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_BATTERY,           false}, // SM
-    {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_LASER_POSITION,    false}, // AM
-    {"TELEM_LINK_VALID",  BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  3000, 1000, 0,                                       false}, // TM
-    {"BATT_LOW",          BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  0,    0,    MAV_SYS_STATUS_SENSOR_BATTERY,           false}, // SM
-    {"BATT_CRITICAL",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0,    0,    MAV_SYS_STATUS_SENSOR_BATTERY,           true},  // SM
-    {"AM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0,                                       false}, // SM
-    {"SM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0,                                       false}, // SM
-    {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0,                                       false}, // SM
+    {"RC_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 500,  150,  MAV_SYS_STATUS_SENSOR_RC_RECEIVER},
+    {"IMU_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 50,   50,   MAV_SYS_STATUS_SENSOR_3D_GYRO},
+    {"GPS_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_GPS},
+    {"BARO_DATA_VALID",   BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  1000, 500,  MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE},
+    {"PM_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_BATTERY},
+    {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_LASER_POSITION},
+    {"TELEM_LINK_VALID",  BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  3000, 1000, 0},
+    {"BATT_LOW",          BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  0,    0,    MAV_SYS_STATUS_SENSOR_BATTERY},
+    {"BATT_CRITICAL",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0,    0,    MAV_SYS_STATUS_SENSOR_BATTERY},
+    {"AM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0},
+    {"SM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0},
+    {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0},
 };

@@ -8,7 +8,10 @@ class [[nodiscard]] ZP_Error { // NOLINT
         constexpr ZP_Error(const ZP_Error&) = default;
         
         ZP_Error& operator=(const ZP_Error&) = delete;
-        ZP_Error& operator=(const ZP_Error&&) = delete;
+        ZP_Error& operator=(ZP_Error&& rhs) {
+            bits = rhs.bits;
+            return *this;
+        }
 
         ZP_Error& operator|=(const ZP_Error& rhs) {
             bits |= rhs.bits;
