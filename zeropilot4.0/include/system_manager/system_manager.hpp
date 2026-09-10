@@ -45,6 +45,7 @@ static constexpr uint32_t SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S = 10; // Send s
 
 typedef struct {
     ZP_BIT_ID id;
+    uint32_t mavSensorBit; // MAV_SYS_STATUS_SENSOR_*, 0 if unmapped
     const char* failText;
     BitHandlerCb_t action;
 } SMBitHandler_t;
@@ -118,6 +119,8 @@ class SystemManager {
         ZP_Error sendRCDataToTelemetryManager(const RCControl &rcData);
         ZP_Error sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
         ZP_Error sendSysStatusToTelemetryManager();
+
+        ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth);
         ZP_Error sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId);
         ZP_Error sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id = 0, uint8_t chunk_seq = 0);
 
@@ -134,28 +137,27 @@ class SystemManager {
 };
 
 inline const SMBitHandler_t SystemManager::BIT_HANDLERS[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
-    {ZP_BIT_ID::PARAM_TABLE_INIT,       "PreArm: Param table init failed", reportBitCallback},
-    {ZP_BIT_ID::IMU_INIT,               "PreArm: IMU init failed",         reportBitCallback},
-    {ZP_BIT_ID::GPS1_INIT,              "GPS1 init failed",                reportBitCallback},
-    {ZP_BIT_ID::GPS2_INIT,              "GPS2 init failed",                reportBitCallback},
-    {ZP_BIT_ID::BARO_INIT,              "Baro init failed",                reportBitCallback},
-    {ZP_BIT_ID::RC_INIT,                "PreArm: RC init failed",          reportBitCallback},
-    {ZP_BIT_ID::PM_INIT,                "Power module init failed",        reportBitCallback},
-    {ZP_BIT_ID::TELEM_INIT,             "Telemetry init failed",           reportBitCallback},
-    {ZP_BIT_ID::RANGEFINDER_INIT,       "Rangefinder init failed",         reportBitCallback},
-    {ZP_BIT_ID::MOTOR_INIT,             "PreArm: Motor init failed",       reportBitCallback},
-    {ZP_BIT_ID::CAN_INIT,               "CAN init failed",                 reportBitCallback},
-
-    {ZP_BIT_ID::RC_DATA_VALID,          "PreArm: RC disconnected",         disarmBitCallback},
-    {ZP_BIT_ID::IMU_DATA_VALID,         "PreArm: IMU data invalid",        reportBitCallback},
-    {ZP_BIT_ID::GPS_DATA_VALID,         "GPS data invalid",                reportBitCallback},
-    {ZP_BIT_ID::BARO_DATA_VALID,        "Baro data invalid",               reportBitCallback},
-    {ZP_BIT_ID::PM_DATA_VALID,          "Power module data invalid",       reportBitCallback},
-    {ZP_BIT_ID::RANGEFINDER_DATA_VALID, "Rangefinder data invalid",        reportBitCallback},
-    {ZP_BIT_ID::TELEM_LINK_VALID,       "Telemetry link lost",             reportBitCallback},
-    {ZP_BIT_ID::BATT_LOW,               "Battery low",                     reportBitCallback},
-    {ZP_BIT_ID::BATT_CRITICAL,          "PreArm: Battery critical",        reportBitCallback},
-    {ZP_BIT_ID::AM_LOOP_TIMING,         "AM loop overrun",                 reportBitCallback},
-    {ZP_BIT_ID::SM_LOOP_TIMING,         "SM loop overrun",                 reportBitCallback},
-    {ZP_BIT_ID::TM_LOOP_TIMING,         "TM loop overrun",                 reportBitCallback},
+    {ZP_BIT_ID::PARAM_TABLE_INIT,       0,                                       "PreArm: Param table init failed", reportBitCallback},
+    {ZP_BIT_ID::IMU_INIT,               MAV_SYS_STATUS_SENSOR_3D_GYRO,           "PreArm: IMU init failed",         reportBitCallback},
+    {ZP_BIT_ID::GPS1_INIT,              MAV_SYS_STATUS_SENSOR_GPS,               "GPS1 init failed",                reportBitCallback},
+    {ZP_BIT_ID::GPS2_INIT,              MAV_SYS_STATUS_SENSOR_GPS,               "GPS2 init failed",                reportBitCallback},
+    {ZP_BIT_ID::BARO_INIT,              MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE, "Baro init failed",                reportBitCallback},
+    {ZP_BIT_ID::RC_INIT,                MAV_SYS_STATUS_SENSOR_RC_RECEIVER,       "PreArm: RC init failed",          reportBitCallback},
+    {ZP_BIT_ID::PM_INIT,                MAV_SYS_STATUS_SENSOR_BATTERY,           "Power module init failed",        reportBitCallback},
+    {ZP_BIT_ID::TELEM_INIT,             0,                                       "Telemetry init failed",           reportBitCallback},
+    {ZP_BIT_ID::RANGEFINDER_INIT,       MAV_SYS_STATUS_SENSOR_LASER_POSITION,    "Rangefinder init failed",         reportBitCallback},
+    {ZP_BIT_ID::MOTOR_INIT,             MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS,     "PreArm: Motor init failed",       reportBitCallback},
+    {ZP_BIT_ID::CAN_INIT,               0,                                       "CAN init failed",                 reportBitCallback},
+    {ZP_BIT_ID::RC_DATA_VALID,          MAV_SYS_STATUS_SENSOR_RC_RECEIVER,       "PreArm: RC disconnected",         disarmBitCallback},
+    {ZP_BIT_ID::IMU_DATA_VALID,         MAV_SYS_STATUS_SENSOR_3D_GYRO,           "PreArm: IMU data invalid",        reportBitCallback},
+    {ZP_BIT_ID::GPS_DATA_VALID,         MAV_SYS_STATUS_SENSOR_GPS,               "GPS data invalid",                reportBitCallback},
+    {ZP_BIT_ID::BARO_DATA_VALID,        MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE, "Baro data invalid",               reportBitCallback},
+    {ZP_BIT_ID::PM_DATA_VALID,          MAV_SYS_STATUS_SENSOR_BATTERY,           "Power module data invalid",       reportBitCallback},
+    {ZP_BIT_ID::RANGEFINDER_DATA_VALID, MAV_SYS_STATUS_SENSOR_LASER_POSITION,    "Rangefinder data invalid",        reportBitCallback},
+    {ZP_BIT_ID::TELEM_LINK_VALID,       0,                                       "Telemetry link lost",             reportBitCallback},
+    {ZP_BIT_ID::BATT_LOW,               MAV_SYS_STATUS_SENSOR_BATTERY,           "Battery low",                     reportBitCallback},
+    {ZP_BIT_ID::BATT_CRITICAL,          MAV_SYS_STATUS_SENSOR_BATTERY,           "PreArm: Battery critical",        reportBitCallback},
+    {ZP_BIT_ID::AM_LOOP_TIMING,         0,                                       "AM loop overrun",                 reportBitCallback},
+    {ZP_BIT_ID::SM_LOOP_TIMING,         0,                                       "SM loop overrun",                 reportBitCallback},
+    {ZP_BIT_ID::TM_LOOP_TIMING,         0,                                       "TM loop overrun",                 reportBitCallback},
 };

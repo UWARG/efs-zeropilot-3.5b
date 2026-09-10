@@ -3,7 +3,6 @@
 #include <cstdint>
 #include "zp_error.h"
 #include "systemutils_iface.hpp"
-#include "mavlink.h"
 
 enum class BitPhase_e : uint8_t {
     POWER_ON,
@@ -60,7 +59,6 @@ typedef struct {
     BitLevel_e level;
     uint32_t failMs;
     uint32_t clearMs;
-    uint32_t mavSensorBit; // MAV_SYS_STATUS_SENSOR_*, 0 if unmapped
 } BitConfig_t;
 
 namespace ZP_BIT {
@@ -119,8 +117,6 @@ namespace ZP_BIT {
     // ZP_ERROR_OK means armable. Otherwise outFirstBlocking is the first BIT that blocks arming
     ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking);
 
-    // MAVLink SYS_STATUS onboard_control_sensors_* bitmasks
-    ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth);
 
     /*
     @brief Gets the name of a BIT
@@ -130,28 +126,28 @@ namespace ZP_BIT {
 }
 
 inline constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
-    {"PARAM_TABLE_INIT",  BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, 0},
-    {"IMU_INIT",          BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_3D_GYRO},
-    {"GPS1_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_GPS},
-    {"GPS2_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_GPS},
-    {"BARO_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE},
-    {"RC_INIT",           BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_RC_RECEIVER},
-    {"PM_INIT",           BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_BATTERY},
-    {"TELEM_INIT",        BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, 0},
-    {"RANGEFINDER_INIT",  BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, MAV_SYS_STATUS_SENSOR_LASER_POSITION},
-    {"MOTOR_INIT",        BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0, MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS}, 
-    {"CAN_INIT",          BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0, 0},
+    {"PARAM_TABLE_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
+    {"IMU_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
+    {"GPS1_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"GPS2_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"BARO_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"RC_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
+    {"PM_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"TELEM_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"RANGEFINDER_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"MOTOR_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0}, 
+    {"CAN_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
 
-    {"RC_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 500,  150,  MAV_SYS_STATUS_SENSOR_RC_RECEIVER},
-    {"IMU_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 50,   50,   MAV_SYS_STATUS_SENSOR_3D_GYRO},
-    {"GPS_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_GPS},
-    {"BARO_DATA_VALID",   BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  1000, 500,  MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE},
-    {"PM_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_BATTERY},
-    {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500,  MAV_SYS_STATUS_SENSOR_LASER_POSITION},
-    {"TELEM_LINK_VALID",  BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  3000, 1000, 0},
-    {"BATT_LOW",          BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  0,    0,    MAV_SYS_STATUS_SENSOR_BATTERY},
-    {"BATT_CRITICAL",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0,    0,    MAV_SYS_STATUS_SENSOR_BATTERY},
-    {"AM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0},
-    {"SM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0},
-    {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000, 0},
+    {"RC_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 500, 150},
+    {"IMU_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 50, 50},
+    {"GPS_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 500},
+    {"BARO_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 1000, 500},
+    {"PM_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 500},
+    {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 500},
+    {"TELEM_LINK_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 3000, 1000},
+    {"BATT_LOW", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 0, 0},
+    {"BATT_CRITICAL", BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0, 0},
+    {"AM_LOOP_TIMING", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 2000},
+    {"SM_LOOP_TIMING", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 2000},
+    {"TM_LOOP_TIMING", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 2000},
 };

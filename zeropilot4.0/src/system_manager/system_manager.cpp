@@ -305,7 +305,7 @@ ZP_Error SystemManager::bindBitHandlers() {
 
 const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
     static const SMBitHandler_t UNKNOWN_ROW = {
-        ZP_BIT_ID::NUM_BIT_IDS, "Unknown BIT failed", SystemManager::reportBitCallback
+        ZP_BIT_ID::NUM_BIT_IDS, 0, "Unknown BIT failed", SystemManager::reportBitCallback
     };
 
     if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
@@ -376,13 +376,55 @@ ZP_Error SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
     return result;
 }
 
+ZP_Error SystemManager::getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth) {
+    ZP_Error result = ZP_ERROR_OK;
+
+    outPresent = 0;
+    outEnabled = 0;
+    outHealth = 0;
+
+    uint32_t failingMask = 0;
+
+    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
+        const uint32_t SENSOR_BIT = BIT_HANDLERS[i].mavSensorBit;
+
+        BitState_e state = BitState_e::UNKNOWN;
+        result |= ZP_BIT::getLive(static_cast<ZP_BIT_ID>(i), state);
+
+        // An unmapped or never-reported BIT says nothing about the sensor
+        if (SENSOR_BIT == 0 || state == BitState_e::UNKNOWN) {
+            continue;
+        }
+
+        outPresent |= SENSOR_BIT;
+        outEnabled |= SENSOR_BIT;
+
+        if (state == BitState_e::SUCCESS) {
+            outHealth |= SENSOR_BIT;
+        } else {
+            failingMask |= SENSOR_BIT;
+        }
+    }
+
+    outHealth &= ~failingMask;
+
+    ZP_BIT_ID blocking = ZP_BIT_ID::NUM_BIT_IDS;
+    outPresent |= MAV_SYS_STATUS_PREARM_CHECK;
+    outEnabled |= MAV_SYS_STATUS_PREARM_CHECK;
+    if (ZP_BIT::prearmCheck(blocking) == ZP_ERROR_OK) {
+        outHealth |= MAV_SYS_STATUS_PREARM_CHECK;
+    }
+
+    return result;
+}
+
 ZP_Error SystemManager::sendSysStatusToTelemetryManager() {
     ZP_Error result = ZP_ERROR_OK;
 
     uint32_t present = 0;
     uint32_t enabled = 0;
     uint32_t health = 0;
-    result |= ZP_BIT::getHealthMask(present, enabled, health);
+    result |= getHealthMask(present, enabled, health);
 
     TMMessage_t sysStatusMsg;
     uint32_t currentTime = systemUtilsDriver->getCurrentTimestampMs();

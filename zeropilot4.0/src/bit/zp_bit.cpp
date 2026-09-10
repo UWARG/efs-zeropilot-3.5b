@@ -1,5 +1,4 @@
 #include "zp_bit.hpp"
-#include "mavlink.h"
 #include <utility>
 
 namespace ZP_BIT {
@@ -197,40 +196,6 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth) {
-        outPresent = 0;
-        outEnabled = 0;
-        outHealth = 0;
-
-        uint32_t failingMask = 0;
-
-        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
-            const uint32_t SENSOR_BIT = BIT_CONFIG[i].mavSensorBit;
-            if (SENSOR_BIT == 0 || bitStatus[i].currentState == BitState_e::UNKNOWN) {
-                continue;
-            }
-
-            outPresent |= SENSOR_BIT;
-            outEnabled |= SENSOR_BIT;
-
-            if (bitStatus[i].currentState == BitState_e::SUCCESS) {
-                outHealth |= SENSOR_BIT;
-            } else {
-                failingMask |= SENSOR_BIT;
-            }
-        }
-
-        outHealth &= ~failingMask;
-
-        ZP_BIT_ID blocking = ZP_BIT_ID::NUM_BIT_IDS;
-        outPresent |= MAV_SYS_STATUS_PREARM_CHECK;
-        outEnabled |= MAV_SYS_STATUS_PREARM_CHECK;
-        if (prearmCheck(blocking) == ZP_ERROR_OK) {
-            outHealth |= MAV_SYS_STATUS_PREARM_CHECK;
-        }
-
-        return ZP_ERROR_OK;
-    }
 
     ZP_Error name(ZP_BIT_ID id, const char*& outName) {
         if (!indexValid(id)) {
