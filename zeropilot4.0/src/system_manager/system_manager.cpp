@@ -96,7 +96,7 @@ void SystemManager::smUpdate() {
 
     // Determine system status based on RC connection and arm state
     ZP_BIT_ID emergencyBit = ZP_BIT_ID::NUM_BIT_IDS;
-    const bool BIT_BLOCKING = (ZP_BIT::prearmCheck(emergencyBit) != ZP_ERROR_OK);
+    const bool BIT_BLOCKING = (prearmCheck(emergencyBit) != ZP_ERROR_OK);
 
     MAV_STATE systemStatus = MAV_STATE_ACTIVE;
     if (BIT_BLOCKING && armed) {
@@ -171,7 +171,7 @@ void SystemManager::smUpdate() {
     (void)ZP_BIT::dispatch();
 
     ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
-    if (ZP_BIT::prearmCheck(blockingBit) != ZP_ERROR_OK) {
+    if (prearmCheck(blockingBit) != ZP_ERROR_OK) {
         bitPrearmCntrMs += SM_UPDATE_LOOP_DELAY_MS;
 
         if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
@@ -362,7 +362,7 @@ ZP_Error SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         rcDataMessage.throttle = rcChannelReversed[2] ? 100.0f - rcData.throttle : rcData.throttle;
         rcDataMessage.yaw = rcChannelReversed[3] ? 100.0f - rcData.yaw : rcData.yaw;
         ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
-        const bool BIT_PREARM_OK = (ZP_BIT::prearmCheck(blockingBit) == ZP_ERROR_OK);
+        const bool BIT_PREARM_OK = (prearmCheck(blockingBit) == ZP_ERROR_OK);
 
         // The safety-switch term is load bearing, and BIT is now the second gate
         rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && BIT_PREARM_OK && !bitDisarmLatch;
@@ -374,6 +374,28 @@ ZP_Error SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         result |= amRCQueue->push(&rcDataMessage);
     }
     return result;
+}
+
+ZP_Error SystemManager::prearmCheck(ZP_BIT_ID& outFirstBlocking) {
+    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
+        if (BIT_CONFIG[i].level != BitLevel_e::CRITICAL) {
+            continue;
+        }
+
+        const ZP_BIT_ID ID = static_cast<ZP_BIT_ID>(i);
+        BitState_e live = BitState_e::UNKNOWN;
+        BitState_e latched = BitState_e::UNKNOWN;
+        (void)ZP_BIT::getLive(ID, live);
+        (void)ZP_BIT::getLatched(ID, latched);
+
+        // UNKNOWN never blocks: hardware that is absent on this airframe is simply never reported
+        if (latched == BitState_e::FAILURE || live == BitState_e::FAILURE) {
+            outFirstBlocking = ID;
+            return ZP_ERROR_NOT_READY;
+        }
+    }
+
+    return ZP_ERROR_OK;
 }
 
 ZP_Error SystemManager::getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth) {
@@ -411,7 +433,7 @@ ZP_Error SystemManager::getHealthMask(uint32_t& outPresent, uint32_t& outEnabled
     ZP_BIT_ID blocking = ZP_BIT_ID::NUM_BIT_IDS;
     outPresent |= MAV_SYS_STATUS_PREARM_CHECK;
     outEnabled |= MAV_SYS_STATUS_PREARM_CHECK;
-    if (ZP_BIT::prearmCheck(blocking) == ZP_ERROR_OK) {
+    if (prearmCheck(blocking) == ZP_ERROR_OK) {
         outHealth |= MAV_SYS_STATUS_PREARM_CHECK;
     }
 

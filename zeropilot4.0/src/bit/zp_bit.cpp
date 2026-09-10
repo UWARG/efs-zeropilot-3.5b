@@ -179,22 +179,6 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking) {
-        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
-            // Skip non-critical BITs
-            if (BIT_CONFIG[i].level != BitLevel_e::CRITICAL) {
-                continue;
-            }
-
-            // UNKNOWN never blocks: hardware that is absent on this airframe is simply never reported
-            if (bitStatus[i].latchedFault == BitState_e::FAILURE || bitStatus[i].currentState == BitState_e::FAILURE) {
-                outFirstBlocking = static_cast<ZP_BIT_ID>(i);
-                return ZP_ERROR_NOT_READY;
-            }
-        }
-
-        return ZP_ERROR_OK;
-    }
 
 
     ZP_Error name(ZP_BIT_ID id, const char*& outName) {

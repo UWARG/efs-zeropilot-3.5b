@@ -120,6 +120,9 @@ class SystemManager {
         ZP_Error sendHeartbeatDataToTelemetryManager(uint8_t baseMode, uint32_t customMode, MAV_STATE systemStatus);
         ZP_Error sendSysStatusToTelemetryManager();
 
+        // ZP_ERROR_OK means armable. Otherwise outFirstBlocking is the first BIT that blocks arming
+        ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking);
+
         ZP_Error getHealthMask(uint32_t& outPresent, uint32_t& outEnabled, uint32_t& outHealth);
         ZP_Error sendBatteryDataToTelemetryManager(const BatteryData_t &batteryData, const uint8_t batteryId);
         ZP_Error sendStatusTextToTelemetryManager(MAV_SEVERITY severity, const char text[50], uint16_t id = 0, uint8_t chunk_seq = 0);

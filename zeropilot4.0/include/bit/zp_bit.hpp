@@ -114,8 +114,6 @@ namespace ZP_BIT {
     */
     ZP_Error getError(ZP_BIT_ID id, ZP_Error& outError);
 
-    // ZP_ERROR_OK means armable. Otherwise outFirstBlocking is the first BIT that blocks arming
-    ZP_Error prearmCheck(ZP_BIT_ID& outFirstBlocking);
 
 
     /*
