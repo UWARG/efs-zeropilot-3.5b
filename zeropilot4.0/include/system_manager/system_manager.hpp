@@ -146,7 +146,7 @@ inline const SMBitHandler_t SystemManager::BIT_HANDLERS[static_cast<uint16_t>(ZP
     {ZP_BIT_ID::MOTOR_INIT,             "PreArm: Motor init failed",       reportBitCallback},
     {ZP_BIT_ID::CAN_INIT,               "CAN init failed",                 reportBitCallback},
 
-    {ZP_BIT_ID::RC_DATA_VALID,          "PreArm: RC disconnected",         reportBitCallback},
+    {ZP_BIT_ID::RC_DATA_VALID,          "PreArm: RC disconnected",         disarmBitCallback},
     {ZP_BIT_ID::IMU_DATA_VALID,         "PreArm: IMU data invalid",        reportBitCallback},
     {ZP_BIT_ID::GPS_DATA_VALID,         "GPS data invalid",                reportBitCallback},
     {ZP_BIT_ID::BARO_DATA_VALID,        "Baro data invalid",               reportBitCallback},
