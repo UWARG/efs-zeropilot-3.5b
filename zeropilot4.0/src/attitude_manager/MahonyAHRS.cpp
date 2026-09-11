@@ -159,6 +159,41 @@ ZP_Error Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay, flo
 }
 
 //-------------------------------------------------------------------------------------------
+// Attitude accessors
+
+ZP_Error Mahony::getAttitude(Attitude_t& out_attitude)
+{
+	ZP_Error result = ZP_ERROR_OK;
+
+	if (!isInitialized) {
+		result |= ZP_ERROR_NOT_READY;
+	}
+
+	if (result == ZP_ERROR_OK) {
+		out_attitude.roll = roll * 57.29578f;
+		out_attitude.pitch = pitch * 57.29578f;
+		out_attitude.yaw = yaw * 57.29578f + 180.0f;
+	}
+	return result;
+}
+
+ZP_Error Mahony::getAttitudeRadians(Attitude_t& outAttitude)
+{
+	ZP_Error result = ZP_ERROR_OK;
+
+	if (!isInitialized) {
+		result |= ZP_ERROR_NOT_READY;
+	}
+
+	if (result == ZP_ERROR_OK) {
+		outAttitude.roll = roll;
+		outAttitude.pitch = pitch;
+		outAttitude.yaw = yaw;
+	}
+	return result;
+}
+
+//-------------------------------------------------------------------------------------------
 // Fast inverse square-root
 
 ZP_Error Mahony::invSqrt(float x, float &output)
