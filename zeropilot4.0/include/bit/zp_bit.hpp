@@ -47,6 +47,8 @@ enum class ZP_BIT_ID : uint16_t { // NOLINT
     AM_LOOP_TIMING,
     SM_LOOP_TIMING,
     TM_LOOP_TIMING,
+    IWDG_REFRESH,
+    LOGGER_VALID,
 
     NUM_BIT_IDS
 };
@@ -135,4 +137,6 @@ inline constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT
     {"AM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000},
     {"SM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000},
     {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000},
+    {"IWDG_REFRESH",      BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0,    0},
+    {"LOGGER_VALID",      BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  1000, 1000},
 };

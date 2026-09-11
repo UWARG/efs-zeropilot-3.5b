@@ -50,7 +50,7 @@ void SystemManager::smUpdate() {
     systemUtilsDriver->profilerBegin(profilerId);
 
     // Kick the watchdog
-    (void)iwdgDriver->refreshWatchdog();
+    (void)ZP_BIT::report(ZP_BIT_ID::IWDG_REFRESH, iwdgDriver->refreshWatchdog());
 
     // Update the state of the safety switch if the driver is available
     if (safetySwitchDriver != nullptr) {
@@ -129,12 +129,12 @@ void SystemManager::smUpdate() {
     }
 
     // Log if new messages
-    // Gate on this call's own status: a watchdog or RC bit must not suppress logging
     int counter = 0;
-    ZP_Error countStatus = smLoggerQueue->count(counter);
-    if (counter > 0 && countStatus == ZP_ERROR_OK) {
-        (void)sendMessagesToLogger();
+    ZP_Error loggerStatus = smLoggerQueue->count(counter);
+    if (counter > 0 && loggerStatus == ZP_ERROR_OK) {
+        loggerStatus |= sendMessagesToLogger();
     }
+    (void)ZP_BIT::report(ZP_BIT_ID::LOGGER_VALID, loggerStatus);
 
     // Send profiler stats at 1Hz
     if (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_HEARTBEAT_RATE_HZ) == 0) {

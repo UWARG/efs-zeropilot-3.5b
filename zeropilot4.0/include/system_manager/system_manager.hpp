@@ -166,4 +166,6 @@ inline const SystemManager::BitHandler_t SystemManager::BIT_HANDLERS[static_cast
     {ZP_BIT_ID::AM_LOOP_TIMING,         0,                                       "AM loop overrun",                 BitFailsafe_e::REPORT},
     {ZP_BIT_ID::SM_LOOP_TIMING,         0,                                       "SM loop overrun",                 BitFailsafe_e::REPORT},
     {ZP_BIT_ID::TM_LOOP_TIMING,         0,                                       "TM loop overrun",                 BitFailsafe_e::REPORT},
+    {ZP_BIT_ID::IWDG_REFRESH,           0,                                       "PreArm: Watchdog refresh failed", BitFailsafe_e::REPORT},
+    {ZP_BIT_ID::LOGGER_VALID,           0,                                       "Logger failed",                   BitFailsafe_e::REPORT},
 };
