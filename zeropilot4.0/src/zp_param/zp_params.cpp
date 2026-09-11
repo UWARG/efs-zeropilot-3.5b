@@ -16,7 +16,6 @@ namespace ZP_PARAM {
         ZP_Error result = ZP_ERROR_OK;
         std::memset(params, 0, sizeof(params));
 
-
         // Define your parameter set
         result |= initParam(ZP_PARAM_ID::SERVO1_TRIM, "SERVO1_TRIM", 1500, MAV_PARAM_TYPE_UINT16);
         result |= initParam(ZP_PARAM_ID::SERVO1_MIN, "SERVO1_MIN", 1000, MAV_PARAM_TYPE_UINT16);
@@ -350,7 +349,6 @@ namespace ZP_PARAM {
             ZP_Error result = ZP_ERROR_OK;
             uint16_t index = static_cast<uint16_t>(id);
     
-            // Accumulate errors using the bitwise OR operator
             if (name == nullptr) {
                 result |= ZP_ERROR_NULLPTR;
             } 
