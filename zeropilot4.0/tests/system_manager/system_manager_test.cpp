@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <cstring>
 #include "system_manager.hpp"
 #include "zp_params.hpp"
 #include "zp_bit.hpp"
@@ -278,4 +279,62 @@ TEST_F(SystemManagerTest, RCFlightmodeSwitching) {
         ::testing::Mock::VerifyAndClearExpectations(&mockRC);
         ::testing::Mock::VerifyAndClearExpectations(&mockAMQueue);
     }
+}
+
+TEST_F(SystemManagerTest, CriticalReportBitSendsTextWithoutDisarmFailsafe) {
+    // BIT debounce needs a clock that moves
+    uint32_t nowMs = 0;
+    ON_CALL(mockSystemUtils, getCurrentTimestampMs()).WillByDefault(Invoke([&nowMs]() { return nowMs; }));
+
+    // Keep the battery healthy so IMU_DATA_VALID is the only failing BIT
+    ON_CALL(mockPM, readData(_)).WillByDefault(Invoke([](PMData_t* data) {
+        data->busVoltage = paramValue(ZP_PARAM_ID::BATT_LOW_VOLT) + 5.0f;
+        return ZP_ERROR_OK;
+    }));
+
+    RCControl rc;
+    rc.arm = 100.0f;
+    rc.isDataNew = true;
+    ON_CALL(mockRC, getRCData(_)).WillByDefault(DoAll(SetArgReferee<0>(rc), Return(ZP_ERROR_OK)));
+
+    int failTexts = 0;
+    int disarmTexts = 0;
+    uint8_t failSeverity = 0;
+    ON_CALL(mockTMQueue, push(_)).WillByDefault(Invoke([&](TMMessage_t* msg) {
+        if (msg->dataType == TMMessage_t::STATUSTEXT_DATA) {
+            if (std::strcmp(msg->tmMessageData.statusTextData.text, "PreArm: IMU data invalid") == 0) {
+                failTexts++;
+                failSeverity = msg->tmMessageData.statusTextData.severity;
+            } else if (std::strcmp(msg->tmMessageData.statusTextData.text, "Disarming") == 0) {
+                disarmTexts++;
+            }
+        }
+        return ZP_ERROR_OK;
+    }));
+
+    bool lastArm = true;
+    ON_CALL(mockAMQueue, push(_)).WillByDefault(Invoke([&lastArm](RCMotorControlMessage_t* msg) {
+        lastArm = msg->arm;
+        return ZP_ERROR_OK;
+    }));
+
+    SystemManager sm(&mockSystemUtils, &mockWatchdog, &mockLogger, mockSafetySwitchPtr,
+                     &mockRC, &mockPM, &mockAMQueue, &mockTMQueue, &mockLogQueue);
+
+    // IMU_DATA_VALID is CRITICAL with a REPORT failsafe. AM owns it, so fail it directly past its debounce
+    (void)ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, ZP_ERROR_FAIL);
+    nowMs += BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::IMU_DATA_VALID)].failMs;
+    (void)ZP_BIT::report(ZP_BIT_ID::IMU_DATA_VALID, ZP_ERROR_FAIL);
+
+    const int TICKS = 2 * SM_SCHEDULING_RATE_HZ;
+    for (int i = 0; i < TICKS; i++) {
+        sm.smUpdate();
+        nowMs += SM_UPDATE_LOOP_DELAY_MS;
+    }
+
+    EXPECT_GE(failTexts, 2) << "the failure text repeats while the BIT is failing";
+    EXPECT_LE(failTexts, TICKS / (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_BIT_FAIL_RATE_HZ) + 1) << "and is rate limited";
+    EXPECT_EQ(failSeverity, MAV_SEVERITY_CRITICAL) << "a CRITICAL BIT reports at critical severity";
+    EXPECT_EQ(disarmTexts, 0) << "a REPORT failsafe must not trigger the disarm action";
+    EXPECT_FALSE(lastArm) << "a CRITICAL BIT still blocks arming through the pre-arm check";
 }

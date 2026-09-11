@@ -223,7 +223,7 @@ void AttitudeManager::amUpdate() {
     // Get rangefinder data
     RangefinderData_t rangefinderData = {};
     if (rangefinderDriver != nullptr) {
-        rangefinderData = rangefinderDriver->readData();
+        (void)ZP_BIT::report(ZP_BIT_ID::RANGEFINDER_DATA_VALID, rangefinderDriver->readData(rangefinderData));
         if (rangefinderData.isNew) {
             lastNewRangefinderData = rangefinderData;
         }

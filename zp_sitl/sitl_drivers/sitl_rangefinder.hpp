@@ -8,7 +8,10 @@ private:
 public:
 
     ZP_Error init() override { return ZP_ERROR_OK; }
-    RangefinderData_t readData() override { return data; }
+    ZP_Error readData(RangefinderData_t &outData) override {
+        outData = data;
+        return ZP_ERROR_OK;
+    }
 
     void update_from_plant(float sim_altitude) {
         data.distance = sim_altitude;
