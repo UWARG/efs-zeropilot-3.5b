@@ -2,6 +2,7 @@
 
 #include "telemlink_iface.hpp"
 #include "rfd_defines.hpp"
+#include "zp_error.h"
 #include "stm32l5xx_hal.h"
 
 class RFD : public ITelemLink {
@@ -12,20 +13,20 @@ public:
     RFD(UART_HandleTypeDef* huart);
     ~RFD();
 
-    void transmit(const uint8_t* data, uint16_t size) override;
-    uint16_t receive(uint8_t* buffer, uint16_t bufferSize) override;
+    ZP_Error transmit(const uint8_t* data, uint16_t size) override;
+    ZP_Error receive(uint8_t* buffer, uint16_t bufferSize, uint16_t &received_size) override;
 
     // Getters
     UART_HandleTypeDef* getHuart() const;
 
     // DMA callback
-    void receiveCallback(uint16_t size);
+    ZP_Error receiveCallback(uint16_t size);
 
     // Start DMA
-    void init();
+    ZP_Error init();
 
 private:
-    uint16_t getRXTransferSize(uint16_t idx);
+    ZP_Error getRXTransferSize(uint16_t idx, uint16_t& output);
     UART_HandleTypeDef* huart;
     uint8_t rxBuffer[BUFFER_SIZE];
 
