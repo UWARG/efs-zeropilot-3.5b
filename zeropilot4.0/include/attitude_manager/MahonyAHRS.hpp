@@ -37,8 +37,4 @@ public:
 	ZP_Error begin(float sampleFrequency);
 
 	ZP_Error updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float dt);
-
-	ZP_Error getAttitude(Attitude_t& out_attitude);
-
-	ZP_Error getAttitudeRadians(Attitude_t& outAttitude);
 };
