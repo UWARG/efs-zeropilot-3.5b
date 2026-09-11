@@ -56,10 +56,10 @@ protected:
         ON_CALL(mockIMU, readRawData(_)).WillByDefault(DoAll(SetArgReferee<0>(RawImuBatch_t{}), Return(ZP_ERROR_OK)));      // Empty batch, count 0
         ON_CALL(mockIMU, scaleIMUData(_, _)).WillByDefault(DoAll(SetArgReferee<1>(ScaledImuBatch_t{}), Return(ZP_ERROR_OK))); // Empty batch, count 0
         ON_CALL(mockGPS, readData(_)).WillByDefault(DoAll(SetArgReferee<0>(GpsData_t{}), Return(ZP_ERROR_OK)));
-        ON_CALL(mockBarometer, readData(_)).WillByDefault(Return(true));
+        ON_CALL(mockBarometer, readData(_)).WillByDefault(Return(ZP_ERROR_OK));
         ON_CALL(mockAMQueue, count(_)).WillByDefault(DoAll(SetArgReferee<0>(0), Return(ZP_ERROR_OK)));
         ON_CALL(mockTMQueue, push(_)).WillByDefault(Return(ZP_ERROR_OK));
-        ON_CALL(mockFFT, init(_)).WillByDefault(Return(true));
+        ON_CALL(mockFFT, init(_)).WillByDefault(Return(ZP_ERROR_OK));
         ON_CALL(mockRangefinder, init()).WillByDefault(Return(ZP_ERROR_OK));
     }
 };
@@ -185,7 +185,7 @@ TEST_F(AttitudeManagerTelemetryTest, ScaledPressureTelemetrySent) {
     EXPECT_CALL(mockBarometer, readData(_))
         .WillRepeatedly(Invoke([&baroData](BaroData_t& outData) {
             outData = baroData;
-            return true;
+            return ZP_ERROR_OK;
         }));
 
     int pressureCount = 0;
