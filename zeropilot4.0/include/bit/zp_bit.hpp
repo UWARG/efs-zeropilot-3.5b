@@ -51,8 +51,6 @@ enum class ZP_BIT_ID : uint16_t { // NOLINT
     NUM_BIT_IDS
 };
 
-typedef void (*BitHandlerCb_t)(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state);
-
 typedef struct {
     const char* name;
     BitPhase_e phase;
@@ -70,15 +68,6 @@ namespace ZP_BIT {
     @retval whether the report was recorded, not the health of the BIT
     */
     ZP_Error report(ZP_BIT_ID id, ZP_Error status);
-
-    /*
-    @brief Registers a handler for a BIT when the status changes
-    @param context: pointer to a context object that can be accessed in the handler
-    */
-    ZP_Error bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler);
-
-    // Fires the handlers for each BIT which had a live state change
-    ZP_Error dispatch();
 
     // Clears every latched fault
     ZP_Error clearLatched();
@@ -114,8 +103,6 @@ namespace ZP_BIT {
     */
     ZP_Error getError(ZP_BIT_ID id, ZP_Error& outError);
 
-
-
     /*
     @brief Gets the name of a BIT
     @param outName: receives the name, left untouched if the id is out of range
@@ -125,27 +112,27 @@ namespace ZP_BIT {
 
 inline constexpr BitConfig_t BIT_CONFIG[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)] = {
     {"PARAM_TABLE_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
-    {"IMU_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
-    {"GPS1_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
-    {"GPS2_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
-    {"BARO_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
-    {"RC_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
-    {"PM_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
-    {"TELEM_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
-    {"RANGEFINDER_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
-    {"MOTOR_INIT", BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0}, 
-    {"CAN_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING, 0, 0},
+    {"IMU_INIT",         BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
+    {"GPS1_INIT",        BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
+    {"GPS2_INIT",        BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
+    {"BARO_INIT",        BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
+    {"RC_INIT",          BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0},
+    {"PM_INIT",          BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
+    {"TELEM_INIT",       BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
+    {"RANGEFINDER_INIT", BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
+    {"MOTOR_INIT",       BitPhase_e::POWER_ON, BitLevel_e::CRITICAL, 0, 0}, 
+    {"CAN_INIT",         BitPhase_e::POWER_ON, BitLevel_e::WARNING,  0, 0},
 
-    {"RC_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 500, 150},
-    {"IMU_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 50, 50},
-    {"GPS_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 500},
-    {"BARO_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 1000, 500},
-    {"PM_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 500},
-    {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 500},
-    {"TELEM_LINK_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 3000, 1000},
-    {"BATT_LOW", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 0, 0},
-    {"BATT_CRITICAL", BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0, 0},
-    {"AM_LOOP_TIMING", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 2000},
-    {"SM_LOOP_TIMING", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 2000},
-    {"TM_LOOP_TIMING", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING, 2000, 2000},
+    {"RC_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 500,  150},
+    {"IMU_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 50,   50},
+    {"GPS_DATA_VALID",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500},
+    {"BARO_DATA_VALID",   BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  1000, 500},
+    {"PM_DATA_VALID",     BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500},
+    {"RNGFND_DATA_VALID", BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 500},
+    {"TELEM_LINK_VALID",  BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  3000, 1000},
+    {"BATT_LOW",          BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  0,    0},
+    {"BATT_CRITICAL",     BitPhase_e::CONTINUOUS, BitLevel_e::CRITICAL, 0,    0},
+    {"AM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000},
+    {"SM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000},
+    {"TM_LOOP_TIMING",    BitPhase_e::CONTINUOUS, BitLevel_e::WARNING,  2000, 2000},
 };

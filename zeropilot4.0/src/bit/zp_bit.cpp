@@ -12,16 +12,12 @@ namespace ZP_BIT {
             uint32_t edgeMs; // Timestamp of last change of running state
             uint32_t failMs;
             uint32_t clearMs;
-            bool changed; // Flag to detect change
             ZP_Error lastError; // Last reported error
-            void* context; // Context pointer for callback
-            BitHandlerCb_t onChange; // Callback for on change
         } BitStatus_t;
 
         BitStatus_t bitStatus[static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)];
         ISystemUtils* clockDriver = nullptr;
 
-        ZP_Error bindHandlerInternal(ZP_BIT_ID id, void* context, BitHandlerCb_t handler);
 
         inline bool indexValid(ZP_BIT_ID id);
     }
@@ -40,10 +36,7 @@ namespace ZP_BIT {
             bitStatus[i].edgeMs = 0;
             bitStatus[i].failMs = BIT_CONFIG[i].failMs;
             bitStatus[i].clearMs = BIT_CONFIG[i].clearMs;
-            bitStatus[i].changed = false;
             bitStatus[i].lastError = ZP_Error();
-            bitStatus[i].context = nullptr;
-            bitStatus[i].onChange = nullptr;
         }
 
         return ZP_ERROR_OK;
@@ -84,7 +77,6 @@ namespace ZP_BIT {
 
         if (newState != state.currentState) {
             state.currentState = newState;
-            state.changed = true;
 
             if (newState == BitState_e::FAILURE && config.level == BitLevel_e::CRITICAL) {
                 state.latchedFault = BitState_e::FAILURE;
@@ -94,28 +86,7 @@ namespace ZP_BIT {
         return ZP_ERROR_OK;
     }
 
-    ZP_Error bindHandler(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
-        return bindHandlerInternal(id, context, handler);
-    }
 
-    ZP_Error dispatch() {
-        for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
-            if (!bitStatus[i].changed) {
-                continue;
-            }
-
-            bitStatus[i].changed = false;
-
-            if (bitStatus[i].onChange != nullptr) {
-                bitStatus[i].onChange(bitStatus[i].context,
-                                      static_cast<ZP_BIT_ID>(i),
-                                      BIT_CONFIG[i].level,
-                                      bitStatus[i].currentState);
-            }
-        }
-
-        return ZP_ERROR_OK;
-    }
 
     ZP_Error clearLatched() {
         for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
@@ -191,15 +162,6 @@ namespace ZP_BIT {
     }
 
      namespace {
-        ZP_Error bindHandlerInternal(ZP_BIT_ID id, void* context, BitHandlerCb_t handler) {
-            if (!indexValid(id)) {
-                return ZP_ERROR_RANGE;
-            }
-
-            bitStatus[static_cast<uint16_t>(id)].context = context;
-            bitStatus[static_cast<uint16_t>(id)].onChange = handler;
-            return ZP_ERROR_OK;
-        }
 
         inline bool indexValid(ZP_BIT_ID id) {
             return id < ZP_BIT_ID::NUM_BIT_IDS;

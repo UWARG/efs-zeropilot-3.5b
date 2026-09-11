@@ -6,8 +6,6 @@
 
 #define LOG_TIMING 0
 
-static MAV_SEVERITY toMavSeverity(BitLevel_e level);
-
 SystemManager::SystemManager(
     ISystemUtils *systemUtilsDriver,
     IIndependentWatchdog *iwdgDriver,
@@ -35,8 +33,7 @@ SystemManager::SystemManager(
         safetySwitchPrearmCntrMs(0),
         rcConnected(false),
         prevArmed(false),
-        bitDisarmLatch(false),
-        bitPrearmCntrMs(0),
+        bitFailsafe(BitFailsafe_e::NONE),
         rcChannelReversed{},
         batteryData({PMData_t{}, MAV_BATTERY_CHARGE_STATE_OK, 0, 0}),
         socEstimator(batteryData),
@@ -46,7 +43,7 @@ SystemManager::SystemManager(
     (void)paramSetup.loadAllParams();
     (void)paramSetup.bindAllParamCallbacks();
     systemUtilsDriver->profilerRegister("SM", &profilerId);
-    (void)bindBitHandlers();
+    (void)initBitHandlers();
 }
 
 void SystemManager::smUpdate() {
@@ -59,7 +56,6 @@ void SystemManager::smUpdate() {
     if (safetySwitchDriver != nullptr) {
         (void)safetySwitchUpdate();
     }
-
 
     // Get RC data from the RC receiver and passthrough to AM if new.
     RCControl rcData;
@@ -75,6 +71,8 @@ void SystemManager::smUpdate() {
     BitState_e rcBitState = BitState_e::UNKNOWN;
     (void)ZP_BIT::getLive(ZP_BIT_ID::RC_DATA_VALID, rcBitState);
     rcConnected = (rcBitState == BitState_e::SUCCESS);
+
+    (void)applyBitFailsafes();
 
     if (rcStatus == ZP_ERROR_OK && rcData.isDataNew) {
         (void)sendRCDataToAttitudeManager(rcData);
@@ -163,24 +161,8 @@ void SystemManager::smUpdate() {
 
     if (prevArmed && !armed) {
         (void)ZP_BIT::clearLatched();
-        bitDisarmLatch = false;
     }
     prevArmed = armed;
-
-    // Fire handlers for anything that changed state this tick
-    (void)ZP_BIT::dispatch();
-
-    ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
-    if (prearmCheck(blockingBit) != ZP_ERROR_OK) {
-        bitPrearmCntrMs += SM_UPDATE_LOOP_DELAY_MS;
-
-        if (bitPrearmCntrMs >= (SM_SAFETY_SWITCH_PREARM_MSG_INTERVAL_S * 1000)) {
-            bitPrearmCntrMs = 0;
-            (void)sendStatusTextToTelemetryManager(MAV_SEVERITY_CRITICAL, bitRow(blockingBit).failText);
-        }
-    } else {
-        bitPrearmCntrMs = 0;
-    }
 
     // Increment scheduling counter
     smSchedulingCounter = (smSchedulingCounter + 1) % SM_SCHEDULING_RATE_HZ;
@@ -282,7 +264,7 @@ ZP_Error SystemManager::updateBatteryFSM() {
     return result;
 }
 
-ZP_Error SystemManager::bindBitHandlers() {
+ZP_Error SystemManager::initBitHandlers() {
     ZP_Error result = ZP_ERROR_OK;
 
     for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
@@ -290,7 +272,6 @@ ZP_Error SystemManager::bindBitHandlers() {
             result |= ZP_ERROR_CONFIG;
             continue;
         }
-        result |= ZP_BIT::bindHandler(static_cast<ZP_BIT_ID>(i), static_cast<void*>(this), BIT_HANDLERS[i].action);
     }
 
     float fsTimeout = 0.0f;
@@ -303,15 +284,40 @@ ZP_Error SystemManager::bindBitHandlers() {
     return result;
 }
 
-const SMBitHandler_t& SystemManager::bitRow(ZP_BIT_ID id) {
-    static const SMBitHandler_t UNKNOWN_ROW = {
-        ZP_BIT_ID::NUM_BIT_IDS, 0, "Unknown BIT failed", SystemManager::reportBitCallback
-    };
+ZP_Error SystemManager::applyBitFailsafes() {
+    ZP_Error result = ZP_ERROR_OK;
+    const bool REPORT_TICK = (smSchedulingCounter % (SM_SCHEDULING_RATE_HZ / SM_TELEMETRY_BIT_FAIL_RATE_HZ)) == 0;
+    BitFailsafe_e failsafe = BitFailsafe_e::NONE;
 
-    if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS)) {
-        return UNKNOWN_ROW;
+    for (uint16_t i = 0; i < static_cast<uint16_t>(ZP_BIT_ID::NUM_BIT_IDS); i++) {
+        const ZP_BIT_ID ID = static_cast<ZP_BIT_ID>(i);
+        BitState_e live = BitState_e::UNKNOWN;
+        BitState_e latched = BitState_e::UNKNOWN;
+        result |= ZP_BIT::getLive(ID, live);
+        result |= ZP_BIT::getLatched(ID, latched);
+
+        // latched keeps a CRITICAL fault active until the pilot lowers the arm switch
+        if (live != BitState_e::FAILURE && latched != BitState_e::FAILURE) {
+            continue;
+        }
+
+        if (REPORT_TICK) {
+            const MAV_SEVERITY SEVERITY = (BIT_CONFIG[i].level == BitLevel_e::CRITICAL) ? MAV_SEVERITY_CRITICAL : MAV_SEVERITY_WARNING;
+            result |= sendStatusTextToTelemetryManager(SEVERITY, BIT_HANDLERS[i].failText);
+        }
+
+        if (BIT_HANDLERS[i].failsafe > failsafe) {
+            failsafe = BIT_HANDLERS[i].failsafe;
+        }
     }
-    return BIT_HANDLERS[static_cast<uint16_t>(id)];
+
+    bitFailsafe = failsafe;
+
+    if (bitFailsafe == BitFailsafe_e::DISARM && REPORT_TICK) {
+        result |= sendStatusTextToTelemetryManager(MAV_SEVERITY_EMERGENCY, "Disarming");
+    }
+
+    return result;
 }
 
 ZP_Error SystemManager::reportLoopTiming(ZP_BIT_ID id, uint32_t maxExecUs, uint32_t budgetMs) {
@@ -364,8 +370,7 @@ ZP_Error SystemManager::sendRCDataToAttitudeManager(const RCControl &rcData) {
         ZP_BIT_ID blockingBit = ZP_BIT_ID::NUM_BIT_IDS;
         const bool BIT_PREARM_OK = (prearmCheck(blockingBit) == ZP_ERROR_OK);
 
-        // The safety-switch term is load bearing, and BIT is now the second gate
-        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && BIT_PREARM_OK && !bitDisarmLatch;
+        rcDataMessage.arm = (rcData.arm > SM_RC_ARM_THRESHOLD) && !isSafetySwitchEngaged && BIT_PREARM_OK && (bitFailsafe != BitFailsafe_e::DISARM);
         #ifdef PLANE
         rcDataMessage.flapAngle = rcData.aux2;
         #endif
@@ -522,29 +527,4 @@ ZP_Error SystemManager::sendMessagesToLogger() {
         }
     }
     return result;
-}
-
-void SystemManager::reportBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
-    SystemManager* ctx = static_cast<SystemManager*>(context);
-    if (ctx == nullptr || state != BitState_e::FAILURE) {
-        return;
-    }
-
-    (void)ctx->sendStatusTextToTelemetryManager(toMavSeverity(level), bitRow(id).failText);
-}
-
-void SystemManager::disarmBitCallback(void* context, ZP_BIT_ID id, BitLevel_e level, BitState_e state) {
-    reportBitCallback(context, id, level, state);
-
-    SystemManager* ctx = static_cast<SystemManager*>(context);
-    if (ctx == nullptr || state != BitState_e::FAILURE) {
-        return;
-    }
-
-    ctx->bitDisarmLatch = true;
-    (void)ctx->sendStatusTextToTelemetryManager(MAV_SEVERITY_EMERGENCY, "Disarming");
-}
-
-static MAV_SEVERITY toMavSeverity(BitLevel_e level) {
-    return (level == BitLevel_e::CRITICAL) ? MAV_SEVERITY_CRITICAL : MAV_SEVERITY_WARNING;
 }
